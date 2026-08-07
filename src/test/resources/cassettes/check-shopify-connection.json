@@ -1,0 +1,33 @@
+{
+  "tool": "check_shopify_connection",
+  "toolInput": {},
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Connexion Shopify OK — boutique : Velotrip.fr"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query CheckConnection { shop { name } }",
+        "variables": {}
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "shop": {
+            "name": "Velotrip.fr"
+          }
+        }
+      }
+    }
+  ]
+}

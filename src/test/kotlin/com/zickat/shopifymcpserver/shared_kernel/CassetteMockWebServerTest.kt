@@ -8,19 +8,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.Test
 
 class CassetteMockWebServerTest {
-
-    private val client = OkHttpClient()
-    private val jsonMediaType = "application/json".toMediaType()
 
     private val threeCallCassetteJson = """
         {
@@ -47,17 +39,6 @@ class CassetteMockWebServerTest {
         }
     """.trimIndent()
 
-    private fun postGraphQL(server: MockWebServer, query: String, variables: JsonElement): Response {
-        val body = buildJsonObject {
-            put("query", JsonPrimitive(query))
-            put("variables", variables)
-        }
-        val requestBody = Json.encodeToString(JsonElement.serializer(), body).toRequestBody(jsonMediaType)
-        return client.newCall(
-            Request.Builder().url(server.url("/admin/api/2025-01/graphql.json")).post(requestBody).build(),
-        ).execute()
-    }
-
     @Test
     fun `forShopifyAdminGraphQL replays cassette responses over real HTTP requests, in cassette order`() {
         // given
@@ -67,7 +48,7 @@ class CassetteMockWebServerTest {
         // when
         val responses = cassette.calls.map { call ->
             val request = Json.decodeFromJsonElement(ShopifyAdminGraphQLRequest.serializer(), call.request)
-            postGraphQL(server, request.query, request.variables)
+            CassetteMockWebServer.postGraphQL(server, request.query, request.variables)
         }
 
         // then
@@ -107,7 +88,7 @@ class CassetteMockWebServerTest {
         }
 
         // when
-        postGraphQL(server, "query CheckConnection { shop { name } }", buildJsonObject {})
+        CassetteMockWebServer.postGraphQL(server, "query CheckConnection { shop { name } }", buildJsonObject {})
         val recordedRequest = server.takeRequest()
 
         // then
@@ -131,7 +112,7 @@ class CassetteMockWebServerTest {
         }
 
         // when
-        postGraphQL(
+        CassetteMockWebServer.postGraphQL(
             server,
             "query GetProduct(${'$'}id: ID!) { product(id: ${'$'}id) { title description } }",
             buildJsonObject { put("id", JsonPrimitive("gid://shopify/Product/999")) },
