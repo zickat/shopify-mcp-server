@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: shopify-mcp-server
+
+  ai:
+    mcp:
+      server:
+        protocol: STREAMABLE
+        name: "shopify-mcp-server"
+        version: "0.0.1"
+        type: SYNC
+        description: "Serveur MCP distant du catalogue Shopify — credentials, OAuth, droits par boutique, audit"
+        streamable-http:
+          mcp-endpoint: /mcp
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/shopify_mcp_server}
+
+# security.md : "pas d'endpoint public sauf ceux explicitement marqués comme tels". Aucun
+# AuthenticationFilter/CredentialResolver n'est câblé au lot 0 (LOT0-05/LOT0-06) : il n'existe donc
+# aucun endpoint de domaine à protéger pour l'instant. La liste d'exposition Actuator ci-dessous est
+# écrite explicitement (pas laissée à un défaut implicite) pour que "health" soit un choix, pas un
+# oubli, et pour qu'ajouter un endpoint plus tard oblige à toucher cette ligne.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+  health:
+    mongodb:
+      # Docker (donc Mongo) est absent de cette machine de dev, et aucun module de ce lot n'a
+      # encore de dépendance réelle à Mongo (LOT0-03 introduit le premier modèle). Sans ça,
+      # MongoHealthIndicator fait échouer /actuator/health (503) sur une DB qu'aucun code
+      # applicatif n'utilise encore — faux négatif, pas un vrai signal de santé du service.
+      # À RETIRER dès que LOT0-03 branche un vrai repository sur une instance Mongo disponible :
+      # à partir de là, Mongo down doit redevenir un vrai motif de DOWN.
+      enabled: false

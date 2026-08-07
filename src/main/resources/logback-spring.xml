@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Logs structurés JSON dès le squelette — backend.md §Logging. Posé maintenant pour que
+         personne ne soit tenté d'ajouter un println de debug en attendant un lot plus tardif. -->
+    <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>tenantId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <!-- security.md : ne jamais logger de données sensibles (tokens, mots de passe, PII).
+                 tenantId/userId sont des identifiants métier, pas des secrets. -->
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="JSON_STDOUT"/>
+    </root>
+</configuration>

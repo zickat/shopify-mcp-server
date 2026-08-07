@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Triplet D14, actée le 2026-08-07 et vérifiée deux fois au runtime (LOT0-01, puis rejeu
+         complet sous D14 — voir progress.md des deux mêmes dates). Ne PAS déclarer de propriété
+         kotlin.version ici : elle doit venir par héritage de spring-boot-dependencies:4.1.0
+         (résout à 2.3.21). Forcer une version hors BOM est précisément ce qui avait fait dériver
+         le triplet précédent de deux lignes Kotlin (2.2.21 au lieu de ce que Boot gérait lui-même). -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.0</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.zickat</groupId>
+    <artifactId>shopify-mcp-server</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>shopify-mcp-server</name>
+    <description>Serveur MCP distant du catalogue Shopify — credentials, OAuth, droits par boutique, audit</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <!-- kotlin.version : volontairement absent, héritée du BOM spring-boot-dependencies:4.1.0
+             (D14). Vérifier avec `mvn help:evaluate -Dexpression=kotlin.version -q -DforceStdout`. -->
+        <spring-ai.version>2.0.0</spring-ai.version>
+        <spring-modulith.version>2.1.0</spring-modulith.version>
+        <arrow.version>2.2.3</arrow.version>
+        <shedlock.version>7.7.0</shedlock.version>
+        <springdoc.version>3.1.0</springdoc.version>
+        <!-- Non gérées par le BOM Boot (libs hors périmètre Spring) : version épinglée à la main,
+             vérifiée disponible sur Maven Central au 2026-08-07. -->
+        <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
+        <kotlinx-datetime.version>0.8.0</kotlinx-datetime.version>
+        <kotest.version>6.2.3</kotest.version>
+    </properties>
+
+    <dependencies>
+        <!-- Kotlin -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-serialization-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-datetime-jvm</artifactId>
+            <version>${kotlinx-datetime.version}</version>
+        </dependency>
+
+        <!-- Transport MCP — D14 -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+            <version>${spring-ai.version}</version>
+        </dependency>
+
+        <!-- Persistance — D9 (MongoDB, pas Mongock) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-kotlin-sync</artifactId>
+        </dependency>
+
+        <!-- Verrou distribué -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-spring</artifactId>
+            <version>${shedlock.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-mongo</artifactId>
+            <version>${shedlock.version}</version>
+        </dependency>
+
+        <!-- Fonctionnel -->
+        <dependency>
+            <groupId>io.arrow-kt</groupId>
+            <artifactId>arrow-core</artifactId>
+            <version>${arrow.version}</version>
+        </dependency>
+
+        <!-- Modulith -->
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-starter-core</artifactId>
+            <version>${spring-modulith.version}</version>
+        </dependency>
+
+        <!-- Observabilité / doc -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash-logback-encoder.version}</version>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.modulith</groupId>
+            <artifactId>spring-modulith-starter-test</artifactId>
+            <version>${spring-modulith.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.kotest</groupId>
+            <artifactId>kotest-assertions-core-jvm</artifactId>
+            <version>${kotest.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.kotest</groupId>
+            <artifactId>kotest-assertions-arrow-jvm</artifactId>
+            <version>${kotest.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <configuration>
+                    <args>
+                        <arg>-Xjsr305=strict</arg>
+                        <arg>-Xannotation-default-target=param-property</arg>
+                    </args>
+                    <compilerPlugins>
+                        <plugin>spring</plugin>
+                        <plugin>kotlinx-serialization</plugin>
+                    </compilerPlugins>
+                </configuration>
+                <dependencies>
+                    <!-- ${kotlin.version} n'est pas déclarée dans ce pom : elle est résolue par
+                         héritage depuis spring-boot-dependencies:4.1.0. Référencée ici pour que ces
+                         plugins-dépendances utilisent la même version que le compilateur Kotlin,
+                         sans jamais la fixer nous-mêmes. -->
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-allopen</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-serialization</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</project>
