@@ -2,6 +2,7 @@ package com.zickat.shopifymcpserver.tenancy
 
 import arrow.core.Either
 import com.zickat.shopifymcpserver.identity.IdentityExposedServiceFake
+import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.tenancy.domain.AccessResolutionUseCase
 import com.zickat.shopifymcpserver.tenancy.domain.models.Grant
@@ -27,6 +28,20 @@ class AccessResolutionUseCaseGrantIsReReadEveryCallTest {
             findActiveByIdentityAndStoreInvocationCount++
             return delegate.findActiveByIdentityAndStore(identityId, storeId)
         }
+    }
+
+    private class InvocationCountingIdentityExposedService(private val delegate: IdentityExposedService) : IdentityExposedService {
+        var isActiveInvocationCount = 0
+            private set
+
+        override fun exists(identityId: String): Boolean = delegate.exists(identityId)
+
+        override fun isActive(identityId: String): Boolean {
+            isActiveInvocationCount++
+            return delegate.isActive(identityId)
+        }
+
+        override fun resolve(issuer: String, subject: String): Either<UseCaseError, String> = delegate.resolve(issuer, subject)
     }
 
     private val identityExposedService = IdentityExposedServiceFake()
@@ -58,5 +73,33 @@ class AccessResolutionUseCaseGrantIsReReadEveryCallTest {
         }
 
         countingGrantRepository.findActiveByIdentityAndStoreInvocationCount shouldBe callCount
+    }
+
+    @Test
+    fun `resolve should hit the identity's active status on every single call — a revocation applies on the very next call, no cache may delay it`() {
+        val delegateIdentityExposedService = IdentityExposedServiceFake()
+        val countingIdentityExposedService = InvocationCountingIdentityExposedService(delegateIdentityExposedService)
+        val storeRepositoryForThisTest = StoreFakeRepository()
+        val grantRepositoryForThisTest = GrantFakeRepository(countingIdentityExposedService, storeRepositoryForThisTest)
+        val useCaseWithCountingIdentityExposedService =
+            AccessResolutionUseCase(countingIdentityExposedService, grantRepositoryForThisTest, storeRepositoryForThisTest)
+        val store = StoreFixtures().build()
+        storeRepositoryForThisTest.store[store.id.value] = store
+        val identityId = delegateIdentityExposedService.resolve(issuer, subject).shouldBeRight()
+        grantRepositoryForThisTest.save(
+            GrantFixtures()
+                .withIdentityId(identityId)
+                .withStoreId(store.id)
+                .withRole(GrantRole.VIEWER)
+                .withGrantedBy(identityId)
+                .build(),
+        )
+
+        val callCount = 5
+        repeat(callCount) {
+            useCaseWithCountingIdentityExposedService.resolve(issuer, subject, store.id.value).shouldBeRight()
+        }
+
+        countingIdentityExposedService.isActiveInvocationCount shouldBe callCount
     }
 }

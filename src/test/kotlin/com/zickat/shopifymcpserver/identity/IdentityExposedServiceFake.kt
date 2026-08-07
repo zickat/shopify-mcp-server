@@ -8,9 +8,14 @@ import org.bson.types.ObjectId
 
 class IdentityExposedServiceFake : IdentityExposedService {
     val existingIds = mutableSetOf<String>()
+    val revokedIds = mutableSetOf<String>()
     private val byIssuerSubject = mutableMapOf<Pair<String, String>, String>()
 
+    fun revoke(identityId: String) = apply { revokedIds.add(identityId) }
+
     override fun exists(identityId: String): Boolean = identityId in existingIds
+
+    override fun isActive(identityId: String): Boolean = identityId in existingIds && identityId !in revokedIds
 
     override fun resolve(issuer: String, subject: String): Either<UseCaseError, String> {
         val id = byIssuerSubject.getOrPut(issuer to subject) {

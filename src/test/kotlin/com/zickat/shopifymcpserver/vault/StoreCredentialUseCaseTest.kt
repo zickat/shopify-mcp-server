@@ -1,11 +1,14 @@
 package com.zickat.shopifymcpserver.vault
 
+import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake
 import com.zickat.shopifymcpserver.vault.domain.StoreCredentialUseCase
 import com.zickat.shopifymcpserver.vault.domain.models.StoreCredentialId
 import com.zickat.shopifymcpserver.vault.domain.repositories.ACTIVE_MASTER_KEY_REF
+import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
 
 class StoreCredentialUseCaseTest {
@@ -83,5 +86,23 @@ class StoreCredentialUseCaseTest {
         (after.rotatedAt != null) shouldBe true
 
         useCase.revealOrFail(rotatedId).contentEquals("shpat_rotated".toByteArray()) shouldBe true
+    }
+
+    @Test
+    fun `reveal should fail when a store's ciphertext and wrappedDek are copied onto another store's document — AAD binds decryption to the store that produced it`() {
+        val idOnStoreOne = useCase.storeOrFail("store-1", "shpat_store-1-secret".toByteArray())
+        val credentialOnStoreOne = repository.store.getValue(idOnStoreOne.value)
+        val idOnStoreTwo = useCase.storeOrFail("store-2", "shpat_store-2-secret".toByteArray())
+        val credentialOnStoreTwo = repository.store.getValue(idOnStoreTwo.value)
+
+        val forgedCredentialOnStoreTwo = credentialOnStoreTwo.copy(
+            ciphertext = credentialOnStoreOne.ciphertext,
+            wrappedDek = credentialOnStoreOne.wrappedDek,
+        )
+        repository.store[idOnStoreTwo.value] = forgedCredentialOnStoreTwo
+
+        val result = useCase.reveal(idOnStoreTwo)
+
+        result.shouldBeLeft().shouldBeInstanceOf<TechnicalError>().messageKey shouldBe "storeCredential.crypto.failed"
     }
 }

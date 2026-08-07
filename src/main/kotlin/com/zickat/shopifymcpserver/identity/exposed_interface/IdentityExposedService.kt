@@ -8,5 +8,7 @@ import org.springframework.modulith.NamedInterface
 interface IdentityExposedService {
     fun exists(identityId: String): Boolean
 
+    fun isActive(identityId: String): Boolean
+
     fun resolve(issuer: String, subject: String): Either<UseCaseError, String>
 }

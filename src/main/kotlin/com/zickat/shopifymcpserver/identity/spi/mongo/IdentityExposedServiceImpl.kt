@@ -17,6 +17,9 @@ class IdentityExposedServiceImpl(
     override fun exists(identityId: String): Boolean =
         identityRepository.findById(IdentityId(identityId)).isRight()
 
+    override fun isActive(identityId: String): Boolean =
+        identityRepository.findById(IdentityId(identityId)).fold({ false }, { it.isActive })
+
     override fun resolve(issuer: String, subject: String): Either<UseCaseError, String> =
         identityUseCase.findOrCreate(issuer, subject, displayName = subject).map { it.id.value }
 }

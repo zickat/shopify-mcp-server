@@ -111,6 +111,21 @@ class AccessResolutionUseCaseTest {
     }
 
     @Test
+    fun `a revoked identity is refused even with an active operator grant — revocation overrides every grant it holds`() {
+        val storeId = registerStore()
+        val identityId = resolveIdentity()
+        grantOn(storeId, GrantRole.OPERATOR, identityId)
+
+        val beforeRevocation = useCase.resolve(issuer, subject, storeId)
+        beforeRevocation.isRight() shouldBe true
+
+        identityExposedService.revoke(identityId)
+
+        val afterRevocation = useCase.resolve(issuer, subject, storeId)
+        afterRevocation.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>().messageKey shouldBe "access.denied"
+    }
+
+    @Test
     fun `an unknown storeId is refused with the same error as a missing grant — no store enumeration`() {
         val identityId = resolveIdentity()
         val realStoreId = registerStore()

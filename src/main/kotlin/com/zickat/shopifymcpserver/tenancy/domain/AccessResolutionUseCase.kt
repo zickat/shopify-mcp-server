@@ -24,6 +24,10 @@ class AccessResolutionUseCase(
     fun resolve(issuer: String, subject: String, storeId: String): Either<UseCaseError, AccessContext> = either {
         val identityId = identityExposedService.resolve(issuer, subject).bind()
 
+        if (!identityExposedService.isActive(identityId)) {
+            raise(accessDenied(storeId))
+        }
+
         val store = storeRepository.findById(StoreId(storeId)).orNullIfNotFound().bind()
         if (store == null || store.isArchived) {
             raise(accessDenied(storeId))

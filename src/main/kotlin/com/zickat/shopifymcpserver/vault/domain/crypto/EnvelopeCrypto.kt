@@ -16,19 +16,21 @@ object EnvelopeCrypto {
 
     fun generateDataKey(): ByteArray = ByteArray(KEY_LENGTH_BYTES).also { secureRandom.nextBytes(it) }
 
-    fun encrypt(plaintext: ByteArray, key: ByteArray): ByteArray {
+    fun encrypt(plaintext: ByteArray, key: ByteArray, aad: ByteArray): ByteArray {
         val iv = ByteArray(IV_LENGTH_BYTES).also { secureRandom.nextBytes(it) }
         val cipher = Cipher.getInstance(ALGORITHM)
         cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec(key, KEY_ALGORITHM), GCMParameterSpec(TAG_LENGTH_BITS, iv))
+        cipher.updateAAD(aad)
         return iv + cipher.doFinal(plaintext)
     }
 
-    fun decrypt(payload: ByteArray, key: ByteArray): ByteArray {
+    fun decrypt(payload: ByteArray, key: ByteArray, aad: ByteArray): ByteArray {
         require(payload.size > IV_LENGTH_BYTES) { "payload too short to contain an IV" }
         val iv = payload.copyOfRange(0, IV_LENGTH_BYTES)
         val ciphertext = payload.copyOfRange(IV_LENGTH_BYTES, payload.size)
         val cipher = Cipher.getInstance(ALGORITHM)
         cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, KEY_ALGORITHM), GCMParameterSpec(TAG_LENGTH_BITS, iv))
+        cipher.updateAAD(aad)
         return cipher.doFinal(ciphertext)
     }
 }

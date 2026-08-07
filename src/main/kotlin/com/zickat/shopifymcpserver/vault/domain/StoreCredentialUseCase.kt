@@ -62,12 +62,13 @@ class StoreCredentialUseCase(
     fun reveal(id: StoreCredentialId): Either<UseCaseError, ByteArray> = either {
         val credential = repository.findById(id).bind()
         val masterKey = masterKeyProvider.resolve(credential.keyRef).bind()
-        val dek = decryptLoggingOnlyCredentialMetadataOnFailure(credential.wrappedDek, masterKey, credential, step = "unwrap").bind()
-        decryptLoggingOnlyCredentialMetadataOnFailure(credential.ciphertext, dek, credential, step = "decrypt").bind()
+        val aad = credential.storeId.toByteArray()
+        val dek = decryptLoggingOnlyCredentialMetadataOnFailure(credential.wrappedDek, masterKey, aad, credential, step = "unwrap").bind()
+        decryptLoggingOnlyCredentialMetadataOnFailure(credential.ciphertext, dek, aad, credential, step = "decrypt").bind()
     }
 
     private fun encryptLoggingOnlyStoreIdAndStepOnFailure(plaintext: ByteArray, key: ByteArray, storeId: String, step: String): Either<UseCaseError, ByteArray> =
-        runCatching { EnvelopeCrypto.encrypt(plaintext, key) }
+        runCatching { EnvelopeCrypto.encrypt(plaintext, key, aad = storeId.toByteArray()) }
             .fold(
                 onSuccess = { Either.Right(it) },
                 onFailure = { e ->
@@ -76,8 +77,8 @@ class StoreCredentialUseCase(
                 },
             )
 
-    private fun decryptLoggingOnlyCredentialMetadataOnFailure(payload: ByteArray, key: ByteArray, credential: StoreCredential, step: String): Either<UseCaseError, ByteArray> =
-        runCatching { EnvelopeCrypto.decrypt(payload, key) }
+    private fun decryptLoggingOnlyCredentialMetadataOnFailure(payload: ByteArray, key: ByteArray, aad: ByteArray, credential: StoreCredential, step: String): Either<UseCaseError, ByteArray> =
+        runCatching { EnvelopeCrypto.decrypt(payload, key, aad) }
             .fold(
                 onSuccess = { Either.Right(it) },
                 onFailure = { e ->
