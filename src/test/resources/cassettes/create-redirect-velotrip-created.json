@@ -1,0 +1,44 @@
+{
+  "tool": "create_redirect",
+  "toolInput": {
+    "from_path": "/collections/test-lot2-cassette-2026-08-07",
+    "to_path": "/collections/outils-et-reparation-velo"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Redirection créée : /collections/test-lot2-cassette-2026-08-07 → /collections/outils-et-reparation-velo."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation CreateUrlRedirect($urlRedirect: UrlRedirectInput!) {\n      urlRedirectCreate(urlRedirect: $urlRedirect) {\n        urlRedirect { id }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "urlRedirect": {
+            "path": "/collections/test-lot2-cassette-2026-08-07",
+            "target": "/collections/outils-et-reparation-velo"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "urlRedirectCreate": {
+            "urlRedirect": {
+              "id": "gid://shopify/UrlRedirect/1117393453381"
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}
