@@ -1,0 +1,108 @@
+{
+  "realm": "shopify-catalog",
+  "displayName": "Shopify Catalog — MCP clients (pré-enregistrés, D22)",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "loginWithEmailAllowed": true,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "verifyEmail": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": 30,
+  "accessTokenLifespan": 3600,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 0,
+  "clients": [
+    {
+      "clientId": "mcp-claude-hosted",
+      "name": "Claude — surfaces hébergées (claude.ai, Desktop, mobile, Cowork)",
+      "description": "Client pré-enregistré, saisi manuellement par l'opérateur dans les 'Advanced settings' de Claude au moment d'ajouter le connecteur par URL. Toutes les surfaces hébergées partagent le même callback OAuth Anthropic — un seul client suffit pour les quatre.",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "consentRequired": false,
+      "fullScopeAllowed": false,
+      "redirectUris": [
+        "https://claude.ai/api/mcp/auth_callback",
+        "https://claude.com/api/mcp/auth_callback"
+      ],
+      "webOrigins": [],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "mcp-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "https://shopify-mcp-server.example.com/mcp",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "mcp-claude-code",
+      "name": "Claude Code (CLI, redirect loopback)",
+      "description": "Client pré-enregistré pour `claude mcp add-json ... --client-id mcp-claude-code --callback-port <port>`. Voir keycloak/README.md pour la procédure complète.",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "consentRequired": false,
+      "fullScopeAllowed": false,
+      "redirectUris": [
+        "http://localhost:*",
+        "http://127.0.0.1:*"
+      ],
+      "webOrigins": [],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "mcp-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "https://shopify-mcp-server.example.com/mcp",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "val",
+      "enabled": true,
+      "emailVerified": false,
+      "requiredActions": ["UPDATE_PASSWORD"],
+      "credentials": []
+    },
+    {
+      "username": "antoine",
+      "enabled": true,
+      "emailVerified": false,
+      "requiredActions": ["UPDATE_PASSWORD"],
+      "credentials": []
+    }
+  ]
+}
