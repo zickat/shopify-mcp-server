@@ -1,0 +1,32 @@
+# Environnement de développement local — MongoDB pour lancer le service à la main et le taper au
+# curl. Distinct des conteneurs Testcontainers (éphémères, un par run de test, gérés par
+# WithMongoDBContainer.kt) : celui-ci reste debout tant qu'on ne l'arrête pas.
+#
+# Usage :
+#   docker compose up -d        # démarre Mongo en arrière-plan
+#   cp .env.example .env        # MONGODB_URI par défaut pointe déjà sur localhost:27017
+#   set -a; source .env; set +a
+#   mvn spring-boot:run
+#   docker compose down         # arrête Mongo (ajouter -v pour aussi effacer les données)
+#
+# Image épinglée en 7.0 (pas `:latest`), même choix et même justification que
+# WithMongoDBContainer.kt (LOT0-03) : dernière branche majeure stable au 2026-08-07, compatible
+# avec mongodb-driver-kotlin-sync 5.8.0 (géré par le BOM Boot 4.1, D14).
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: shopify-mcp-server-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - shopify-mcp-server-mongodb-dev-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  shopify-mcp-server-mongodb-dev-data:

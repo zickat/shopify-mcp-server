@@ -1,0 +1,63 @@
+name: CI
+
+# Ce dépôt n'a pas encore de remote (2026-08-07) — ce workflow ne s'exécute donc nulle part pour
+# l'instant. Il est écrit maintenant pour ne pas laisser le lot 0 sans CI documentée ; il prendra
+# effet dès que `shopify-mcp-server` sera poussé sur un remote GitHub (voir progress.md, LOT0-09,
+# pour l'argumentaire du choix GitHub Actions plutôt qu'une alternative).
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+# Un nouveau push sur la même branche annule le run en cours plutôt que de le laisser terminer :
+# économise des minutes CI, sans risque de collision Maven puisque chaque run a sa propre VM
+# éphémère (contrairement au poste de dev partagé où deux `mvn` concurrents se sabotent).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: mvn test (unit + Testcontainers + Modulith)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Docker Engine est préinstallé sur les runners GitHub-hosted `ubuntu-latest` — aucune
+      # configuration supplémentaire n'est nécessaire pour que Testcontainers (mongo:7.0) puisse
+      # lancer des conteneurs.
+      #
+      # Une seule invocation Maven, la suite complète (pas de scope réduit aux modules modifiés) :
+      # `mvn test` fait échouer le build si ApplicationModules.verify() (garde-fou Modulith) échoue,
+      # ou si un test référentiel/append-only (audit, LOT0-03/LOT0-07) échoue — ce sont des tests
+      # JUnit ordinaires, un `mvn test` complet les couvre sans étape dédiée. Voir progress.md
+      # (LOT0-03/LOT0-05) pour l'incident qui motive le "suite complète, jamais un sous-ensemble".
+      #
+      # Aucune variable d'environnement (Mongo, clé maîtresse, IdP) n'est nécessaire ici : les tests
+      # d'intégration démarrent leur propre conteneur Mongo (WithMongoDBContainer) et les tests qui
+      # touchent le coffre injectent un MasterKeyProvider fake — vérifié en lisant les tests
+      # concernés avant d'écrire ce workflow, aucun secret, même de test, ne transite par CI.
+      - name: mvn clean test
+        run: mvn --batch-mode --no-transfer-progress clean test
+
+      - name: Upload surefire reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          retention-days: 7
