@@ -7,6 +7,7 @@ import com.zickat.shopifymcpserver.audit.domain.models.AuditLog
 import com.zickat.shopifymcpserver.audit.domain.repositories.AuditLogRepository
 import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
+import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.StoreExposedService
 
@@ -16,7 +17,18 @@ class AuditLogFakeRepository(
 ) : AuditLogRepository {
     val entries = mutableListOf<AuditLog>()
 
+    /**
+     * Bascule de test pour `LOT0-07` — simule une panne d'écriture (Mongo indisponible, timeout…)
+     * sans dépendre d'un vrai comportement d'infra. Utilisée par `AuditLogUseCaseTest` pour
+     * vérifier le fail-closed : ni cette variable, ni son usage, ne contiennent `update`/`delete`/
+     * `remove`/`upsert` (voir `AuditLogAppendOnlyTest`, qui inspecte cette classe par réflexion).
+     */
+    var shouldFailAppend: Boolean = false
+
     override fun append(entry: AuditLog): Either<UseCaseError, AuditLog> {
+        if (shouldFailAppend) {
+            return TechnicalError("test.audit.append.failed").left()
+        }
         entry.identityId?.let {
             if (!identityExposedService.exists(it)) return NotFoundError("auditLog.identity.not.found").left()
         }
