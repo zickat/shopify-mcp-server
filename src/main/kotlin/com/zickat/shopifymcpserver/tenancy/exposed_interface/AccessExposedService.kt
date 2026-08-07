@@ -4,9 +4,11 @@ import arrow.core.Either
 import com.zickat.shopifymcpserver.shared_kernel.TenantContext
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
+import com.zickat.shopifymcpserver.tenancy.exposed_interface.model.GrantedStore
 import org.springframework.modulith.NamedInterface
 
 @NamedInterface("exposed_interface")
 interface AccessExposedService {
     fun resolveAccess(issuer: String, subject: String, storeId: String): Either<UseCaseError, Pair<TenantContext, UserContext>>
+    fun listGrantedStores(identityId: String): Either<UseCaseError, List<GrantedStore>>
 }

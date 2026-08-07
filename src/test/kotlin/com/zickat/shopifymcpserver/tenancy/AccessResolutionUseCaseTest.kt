@@ -135,4 +135,53 @@ class AccessResolutionUseCaseTest {
 
         onMissingGrant.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>().messageKey shouldBe "access.denied"
     }
+
+    @Test
+    fun `listGrantedStores should return an empty list, not an error, for an identity with no grant at all`() {
+        val identityId = resolveIdentity()
+
+        val result = useCase.listGrantedStores(identityId)
+
+        result.shouldBeRight() shouldBe emptyList()
+    }
+
+    @Test
+    fun `listGrantedStores should return every store the identity holds an active grant on`() {
+        val identityId = resolveIdentity()
+        val velotrip = registerStore()
+        val lurelab = registerStore()
+        grantOn(velotrip, GrantRole.OPERATOR, identityId)
+        grantOn(lurelab, GrantRole.VIEWER, identityId)
+
+        val result = useCase.listGrantedStores(identityId).shouldBeRight()
+
+        result.map { it.id.value } shouldBe listOf(velotrip, lurelab)
+    }
+
+    @Test
+    fun `listGrantedStores should not return a store whose grant was revoked`() {
+        val identityId = resolveIdentity()
+        val storeId = registerStore()
+        grantOn(storeId, GrantRole.OPERATOR, identityId)
+        val grantId = grantRepository.store.values.single { it.identityId == identityId }.id
+        grantRepository.store[grantId.value] = grantRepository.store.getValue(grantId.value).copy(revokedAt = Clock.System.now())
+
+        val result = useCase.listGrantedStores(identityId).shouldBeRight()
+
+        result shouldBe emptyList()
+    }
+
+    @Test
+    fun `listGrantedStores should never return another identity's granted store`() {
+        val identityId = resolveIdentity()
+        val otherIdentityId = identityExposedService.resolve(issuer, "operator-2").shouldBeRight()
+        val ownStore = registerStore()
+        val otherStore = registerStore()
+        grantOn(ownStore, GrantRole.OPERATOR, identityId)
+        grantOn(otherStore, GrantRole.OPERATOR, otherIdentityId)
+
+        val result = useCase.listGrantedStores(identityId).shouldBeRight()
+
+        result.map { it.id.value } shouldBe listOf(ownStore)
+    }
 }

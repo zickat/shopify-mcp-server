@@ -53,4 +53,7 @@ class GrantFakeRepository(
         store.values.find { it.identityId == identityId && it.storeId == storeId && it.revokedAt == null }
             ?.right()
             ?: NotFoundError("grant.not.found").left()
+
+    override fun findAllActiveByIdentity(identityId: String): Either<UseCaseError, List<Grant>> =
+        store.values.filter { it.identityId == identityId && it.revokedAt == null }.right()
 }

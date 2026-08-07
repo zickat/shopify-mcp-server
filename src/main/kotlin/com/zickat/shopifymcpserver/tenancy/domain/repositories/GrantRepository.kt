@@ -10,4 +10,5 @@ interface GrantRepository {
     fun save(grant: Grant): Either<UseCaseError, Grant>
     fun findById(id: GrantId): Either<UseCaseError, Grant>
     fun findActiveByIdentityAndStore(identityId: String, storeId: StoreId): Either<UseCaseError, Grant>
+    fun findAllActiveByIdentity(identityId: String): Either<UseCaseError, List<Grant>>
 }

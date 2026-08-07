@@ -28,6 +28,9 @@ class AccessResolutionUseCaseGrantIsReReadEveryCallTest {
             findActiveByIdentityAndStoreInvocationCount++
             return delegate.findActiveByIdentityAndStore(identityId, storeId)
         }
+
+        override fun findAllActiveByIdentity(identityId: String): Either<UseCaseError, List<Grant>> =
+            delegate.findAllActiveByIdentity(identityId)
     }
 
     private class InvocationCountingIdentityExposedService(private val delegate: IdentityExposedService) : IdentityExposedService {

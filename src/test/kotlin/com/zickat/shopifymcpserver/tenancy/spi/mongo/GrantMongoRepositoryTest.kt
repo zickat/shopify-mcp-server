@@ -117,4 +117,26 @@ class GrantMongoRepositoryTest : GrantRepositoryReferentialIntegrityTest, WithMo
                 .shouldBeLeft().shouldBeInstanceOf<NotFoundError>().messageKey shouldBe "grant.not.found"
         }
     }
+
+    @Test
+    fun `findAllActiveByIdentity should return an empty list, not an error, for an identity with no grant`() {
+        val identityId = registerExistingIdentity()
+
+        repository.findAllActiveByIdentity(identityId).shouldBeRight() shouldBe emptyList()
+    }
+
+    @Test
+    fun `findAllActiveByIdentity should return every active grant of the identity and exclude revoked ones`() {
+        val identityId = registerExistingIdentity()
+        val velotrip = registerStore(archived = false)
+        val lurelab = registerStore(archived = false)
+        val active = GrantFixtures().withIdentityId(identityId).withStoreId(velotrip).withGrantedBy(identityId).build()
+        val revoked = GrantFixtures().withIdentityId(identityId).withStoreId(lurelab).withGrantedBy(identityId).revoked().build()
+        repository.save(active).isRight() shouldBe true
+        repository.save(revoked).isRight() shouldBe true
+
+        val result = repository.findAllActiveByIdentity(identityId).shouldBeRight()
+
+        result.map { it.storeId } shouldBe listOf(velotrip)
+    }
 }

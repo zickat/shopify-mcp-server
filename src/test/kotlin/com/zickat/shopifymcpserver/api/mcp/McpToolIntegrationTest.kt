@@ -153,7 +153,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
             "/mcp",
             HttpMethod.POST,
             HttpEntity(
-                """{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"lot0-08-test","version":"0.0.0"}}}""",
+                """{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"lot2-02-test","version":"0.0.0"}}}""",
                 rpcHeaders(token),
             ),
             String::class.java,
@@ -176,15 +176,33 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     private fun toolsList(token: String, sessionId: String) =
         sendJsonRpcRequestAndParseJsonPayload("""{"jsonrpc":"2.0","id":2,"method":"tools/list"}""", token, sessionId)
 
-    private fun toolsCall(token: String, sessionId: String, toolName: String, storeId: String) =
-        sendJsonRpcRequestAndParseJsonPayload(
-            """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"$toolName","arguments":{"storeId":"$storeId"}}}""",
+    private fun toolsCall(token: String, sessionId: String, toolName: String, arguments: Map<String, String> = emptyMap()): Pair<org.springframework.http.ResponseEntity<String>, Map<String, Any?>?> {
+        val argumentsJson = objectMapper.writeValueAsString(arguments)
+        return sendJsonRpcRequestAndParseJsonPayload(
+            """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"$toolName","arguments":$argumentsJson}}""",
             token,
             sessionId,
         )
+    }
+
+    private fun listStores(token: String, sessionId: String) = toolsCall(token, sessionId, "list_stores")
+
+    private fun useStore(token: String, sessionId: String, storeId: String) =
+        toolsCall(token, sessionId, "use_store", mapOf("store_id" to storeId))
+
+    private fun toolResultText(payload: Map<String, Any?>?): Pair<Boolean, String> {
+        val result = payload?.get("result") as? Map<*, *>
+        checkNotNull(result) { "tools/call did not return a result: $payload" }
+        val isError = result["isError"] as? Boolean ?: false
+        val text = ((result["content"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("text") as? String
+        return isError to text.orEmpty()
+    }
 
     private fun registerStore(): String =
         storeRepository.save(StoreFixtures().build()).shouldBeRight().id.value
+
+    private fun registerStore(slug: String): String =
+        storeRepository.save(StoreFixtures().withSlug(slug).build()).shouldBeRight().id.value
 
     private fun resolveIdentity(subject: String): String =
         identityExposedService.resolve(ISSUER_URI, subject).shouldBeRight()
@@ -204,7 +222,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `full handshake with a token — initialize, notifications initialized, tools list, tools call whoami`() {
+    fun `full handshake with a token — initialize, notifications initialized, tools list, tools call list_stores`() {
         val storeId = registerStore()
         val identityId = resolveIdentity("operator-full-handshake")
         grant(identityId, storeId, GrantRole.OPERATOR)
@@ -216,9 +234,12 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         listResponse.statusCode shouldBe HttpStatus.OK
         val tools = (listPayload?.get("result") as? Map<*, *>)?.get("tools") as? List<*>
         checkNotNull(tools) { "tools/list did not return a tools array: $listPayload" }
-        (tools.any { (it as? Map<*, *>)?.get("name") == "whoami" }) shouldBe true
+        (tools.any { (it as? Map<*, *>)?.get("name") == "list_stores" }) shouldBe true
+        (tools.any { (it as? Map<*, *>)?.get("name") == "use_store" }) shouldBe true
+        (tools.any { (it as? Map<*, *>)?.get("name") == "whoami" }) shouldBe false
+        (tools.any { (it as? Map<*, *>)?.get("name") == "touch_store" }) shouldBe false
 
-        val (callResponse, callPayload) = toolsCall(token, sessionId, "whoami", storeId)
+        val (callResponse, callPayload) = listStores(token, sessionId)
         callResponse.statusCode shouldBe HttpStatus.OK
         val result = callPayload?.get("result") as? Map<*, *>
         checkNotNull(result) { "tools/call did not return a result: $callPayload" }
@@ -241,54 +262,50 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `an authenticated identity with no grant is refused on tools call as a 200 CallToolResult with isError, not an HTTP error status, and the refusal is journaled`() {
+    fun `use_store against a store the identity has no grant on is refused as a 200 CallToolResult with isError, not an HTTP error status, and the refusal is journaled`() {
         val storeId = registerStore()
         val subject = "operator-no-grant"
         resolveIdentity(subject)
         val token = jwt(subject)
 
         val sessionId = handshake(token)
-        val (callResponse, callPayload) = toolsCall(token, sessionId, "whoami", storeId)
+        val (callResponse, callPayload) = useStore(token, sessionId, storeId)
 
         callResponse.statusCode shouldBe HttpStatus.OK
-        val result = callPayload?.get("result") as? Map<*, *>
-        checkNotNull(result) { "tools/call did not return a result: $callPayload" }
-        result["isError"] shouldBe true
-        val text = ((result["content"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("text") as? String
-        text.orEmpty() shouldContain "access.denied"
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.denied"
 
         val identityId = resolveIdentity(subject)
         val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
-        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "whoami" }
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "use_store" }
         checkNotNull(deniedEntry) { "no audit entry written for the denied call — audit-before-response is broken" }
         deniedEntry.outcome shouldBe "denied"
         deniedEntry.denialReason shouldBe "access.denied"
     }
 
     @Test
-    fun `a viewer calling the mutation tool directly is refused server-side while whoami (READ) remains callable, regardless of tools list, and the refusal is journaled`() {
+    fun `a viewer calling use_store (MUTATION) directly is refused server-side while list_stores (READ) remains callable, and the refusal is journaled`() {
         val storeId = registerStore()
-        val subject = "viewer-touch-store"
+        val subject = "viewer-use-store"
         val identityId = resolveIdentity(subject)
         grant(identityId, storeId, GrantRole.VIEWER)
         val token = jwt(subject)
 
         val sessionId = handshake(token)
 
-        val (whoamiResponse, whoamiPayload) = toolsCall(token, sessionId, "whoami", storeId)
-        whoamiResponse.statusCode shouldBe HttpStatus.OK
-        (whoamiPayload?.get("result") as? Map<*, *>)?.get("isError") shouldBe false
+        val (listStoresResponse, listStoresPayload) = listStores(token, sessionId)
+        listStoresResponse.statusCode shouldBe HttpStatus.OK
+        (listStoresPayload?.get("result") as? Map<*, *>)?.get("isError") shouldBe false
 
-        val (touchResponse, touchPayload) = toolsCall(token, sessionId, "touch_store", storeId)
-        touchResponse.statusCode shouldBe HttpStatus.OK
-        val touchResult = touchPayload?.get("result") as? Map<*, *>
-        checkNotNull(touchResult) { "tools/call did not return a result: $touchPayload" }
-        touchResult["isError"] shouldBe true
-        val text = ((touchResult["content"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("text") as? String
-        text.orEmpty() shouldContain "access.role.insufficient"
+        val (useStoreResponse, useStorePayload) = useStore(token, sessionId, storeId)
+        useStoreResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(useStorePayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
 
         val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
-        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "touch_store" }
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "use_store" }
         checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal" }
         deniedEntry.outcome shouldBe "denied"
         deniedEntry.denialReason shouldBe "access.role.insufficient"
@@ -296,48 +313,44 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `a tools call against a storeId that does not exist is refused as access denied, not a technical error, and the probe is journaled`() {
+    fun `use_store against a storeId that does not exist is refused as access denied, not a technical error, and the probe is journaled`() {
         val subject = "prober-unknown-store"
         resolveIdentity(subject)
         val token = jwt(subject)
         val unknownStoreId = ObjectId().toHexString()
 
         val sessionId = handshake(token)
-        val (callResponse, callPayload) = toolsCall(token, sessionId, "whoami", unknownStoreId)
+        val (callResponse, callPayload) = useStore(token, sessionId, unknownStoreId)
 
         callResponse.statusCode shouldBe HttpStatus.OK
-        val result = callPayload?.get("result") as? Map<*, *>
-        checkNotNull(result) { "tools/call did not return a result: $callPayload" }
-        result["isError"] shouldBe true
-        val text = ((result["content"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("text") as? String
-        text.orEmpty() shouldContain "access.denied"
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.denied"
 
         val entries = auditLogRepository.findByStore(unknownStoreId).shouldBeRight()
-        val deniedEntry = entries.firstOrNull { it.toolName == "whoami" }
+        val deniedEntry = entries.firstOrNull { it.toolName == "use_store" }
         checkNotNull(deniedEntry) { "no audit entry written for a probe on an unknown storeId — this is exactly what the log must capture" }
         deniedEntry.outcome shouldBe "denied"
         deniedEntry.denialReason shouldBe "access.denied"
     }
 
     @Test
-    fun `a tools call against a malformed storeId is refused as access denied for every guessable shape, not a technical error, and each probe is journaled`() {
+    fun `use_store against a malformed storeId is refused as access denied for every guessable shape, never an unhandled exception, and each probe is journaled`() {
         val subject = "prober-malformed-store"
         resolveIdentity(subject)
         val token = jwt(subject)
         val sessionId = handshake(token)
 
         listOf("velotrip", "velotrip.myshopify.com", "abc123").forEach { malformedStoreId ->
-            val (callResponse, callPayload) = toolsCall(token, sessionId, "whoami", malformedStoreId)
+            val (callResponse, callPayload) = useStore(token, sessionId, malformedStoreId)
 
             callResponse.statusCode shouldBe HttpStatus.OK
-            val result = callPayload?.get("result") as? Map<*, *>
-            checkNotNull(result) { "tools/call did not return a result for storeId '$malformedStoreId': $callPayload" }
-            result["isError"] shouldBe true
-            val text = ((result["content"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("text") as? String
-            text.orEmpty() shouldContain "access.denied"
+            val (isError, text) = toolResultText(callPayload)
+            isError shouldBe true
+            text shouldContain "access.denied"
 
             val entries = auditLogRepository.findByStore(malformedStoreId).shouldBeRight()
-            val deniedEntry = entries.firstOrNull { it.toolName == "whoami" }
+            val deniedEntry = entries.firstOrNull { it.toolName == "use_store" }
             checkNotNull(deniedEntry) { "no audit entry written for a probe on malformed storeId '$malformedStoreId'" }
             deniedEntry.outcome shouldBe "denied"
             deniedEntry.denialReason shouldBe "access.denied"
@@ -345,25 +358,72 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `an operator can call the mutation tool, and the success is journaled`() {
+    fun `an operator can call use_store, and the success is journaled`() {
         val storeId = registerStore()
-        val subject = "operator-touch-store"
+        val subject = "operator-use-store"
         val identityId = resolveIdentity(subject)
         grant(identityId, storeId, GrantRole.OPERATOR)
         val token = jwt(subject)
 
         val sessionId = handshake(token)
-        val (touchResponse, touchPayload) = toolsCall(token, sessionId, "touch_store", storeId)
+        val (useStoreResponse, useStorePayload) = useStore(token, sessionId, storeId)
 
-        touchResponse.statusCode shouldBe HttpStatus.OK
-        val touchResult = touchPayload?.get("result") as? Map<*, *>
-        checkNotNull(touchResult) { "tools/call did not return a result: $touchPayload" }
-        touchResult["isError"] shouldBe false
+        useStoreResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, _) = toolResultText(useStorePayload)
+        isError shouldBe false
 
         val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
-        val okEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "touch_store" }
+        val okEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "use_store" }
         checkNotNull(okEntry) { "no audit entry written for the successful mutation call" }
         okEntry.outcome shouldBe "ok"
         okEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `list_stores shows no active store until use_store is called in that same session`() {
+        val storeId = registerStore()
+        val subject = "operator-list-before-select"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (_, beforePayload) = listStores(token, sessionId)
+        val (_, beforeText) = toolResultText(beforePayload)
+        beforeText shouldContain "Aucune boutique sélectionnée"
+
+        useStore(token, sessionId, storeId)
+
+        val (_, afterPayload) = listStores(token, sessionId)
+        val (_, afterText) = toolResultText(afterPayload)
+        afterText shouldContain "active"
+    }
+
+    @Test
+    fun `two real MCP sessions of the same identity never share their active store — this is the invariant that replaced the per-identity persisted selection`() {
+        val velotripId = registerStore("velotrip")
+        val lurelabId = registerStore("lurelab")
+        val subject = "operator-two-sessions"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, velotripId, GrantRole.OPERATOR)
+        grant(identityId, lurelabId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionDesktop = handshake(token)
+        val sessionCode = handshake(token)
+        (sessionDesktop == sessionCode) shouldBe false
+
+        useStore(token, sessionDesktop, velotripId)
+        useStore(token, sessionCode, lurelabId)
+
+        val (_, desktopListing) = listStores(token, sessionDesktop)
+        val (_, desktopText) = toolResultText(desktopListing)
+        (desktopText.lines().any { it.contains("velotrip") && it.contains("active") }) shouldBe true
+        (desktopText.lines().any { it.contains("lurelab") && it.contains("active") }) shouldBe false
+
+        val (_, codeListing) = listStores(token, sessionCode)
+        val (_, codeText) = toolResultText(codeListing)
+        (codeText.lines().any { it.contains("lurelab") && it.contains("active") }) shouldBe true
+        (codeText.lines().any { it.contains("velotrip") && it.contains("active") }) shouldBe false
     }
 }

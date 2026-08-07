@@ -9,4 +9,7 @@ import org.springframework.stereotype.Repository
 interface GrantSpringDataMongoRepository : MongoRepository<GrantEntity, ObjectId> {
     @Query("{ 'identityId': ?0, 'storeId': ?1, 'revokedAt': null }")
     fun findActiveByIdentityIdAndStoreId(identityId: ObjectId, storeId: ObjectId): GrantEntity?
+
+    @Query("{ 'identityId': ?0, 'revokedAt': null }")
+    fun findAllActiveByIdentityId(identityId: ObjectId): List<GrantEntity>
 }

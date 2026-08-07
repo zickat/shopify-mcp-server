@@ -2,6 +2,7 @@ package com.zickat.shopifymcpserver.tenancy.spi.mongo
 
 import arrow.core.Either
 import arrow.core.left
+import arrow.core.raise.either
 import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
 import com.zickat.shopifymcpserver.shared_kernel.DomainError
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
@@ -56,5 +57,9 @@ class GrantMongoRepository(
         return springDataRepository.findActiveByIdentityIdAndStoreId(ObjectId(identityId), storeObjectId)
             ?.toDomain()
             ?: NotFoundError("grant.not.found").left()
+    }
+
+    override fun findAllActiveByIdentity(identityId: String): Either<UseCaseError, List<Grant>> = either {
+        springDataRepository.findAllActiveByIdentityId(ObjectId(identityId)).map { it.toDomain().bind() }
     }
 }

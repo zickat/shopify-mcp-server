@@ -9,6 +9,7 @@ import com.zickat.shopifymcpserver.shared_kernel.TenantContext
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.tenancy.domain.models.AccessContext
+import com.zickat.shopifymcpserver.tenancy.domain.models.Store
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.models.toAccessRole
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
@@ -42,6 +43,11 @@ class AccessResolutionUseCase(
             tenant = TenantContext(storeId = storeId),
             user = UserContext(identityId = identityId, role = grant.role.toAccessRole()),
         )
+    }
+
+    fun listGrantedStores(identityId: String): Either<UseCaseError, List<Store>> = either {
+        val grants = grantRepository.findAllActiveByIdentity(identityId).bind()
+        grants.mapNotNull { grant -> storeRepository.findById(grant.storeId).orNullIfNotFound().bind() }
     }
 
     private fun accessDenied(storeId: String) = ForbiddenError("access.denied", mapOf("storeId" to storeId))
