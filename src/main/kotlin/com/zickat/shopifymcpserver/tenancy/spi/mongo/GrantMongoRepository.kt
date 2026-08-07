@@ -6,6 +6,7 @@ import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedSer
 import com.zickat.shopifymcpserver.shared_kernel.DomainError
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import com.zickat.shopifymcpserver.shared_kernel.toObjectIdOrNull
 import com.zickat.shopifymcpserver.tenancy.domain.models.Grant
 import com.zickat.shopifymcpserver.tenancy.domain.models.GrantId
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
@@ -50,8 +51,10 @@ class GrantMongoRepository(
             .map { it.toDomain() }
             .orElse(NotFoundError("grant.not.found").left())
 
-    override fun findActiveByIdentityAndStore(identityId: String, storeId: StoreId): Either<UseCaseError, Grant> =
-        springDataRepository.findActiveByIdentityIdAndStoreId(ObjectId(identityId), ObjectId(storeId.value))
+    override fun findActiveByIdentityAndStore(identityId: String, storeId: StoreId): Either<UseCaseError, Grant> {
+        val storeObjectId = storeId.value.toObjectIdOrNull() ?: return NotFoundError("grant.not.found").left()
+        return springDataRepository.findActiveByIdentityIdAndStoreId(ObjectId(identityId), storeObjectId)
             ?.toDomain()
             ?: NotFoundError("grant.not.found").left()
+    }
 }

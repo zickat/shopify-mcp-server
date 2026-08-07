@@ -1,13 +1,16 @@
 package com.zickat.shopifymcpserver.vault.spi.mongo
 
+import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
 import com.zickat.shopifymcpserver.tenancy.StoreFixtures
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
 import com.zickat.shopifymcpserver.vault.StoreCredentialFixtures
 import com.zickat.shopifymcpserver.vault.StoreCredentialRepositoryReferentialIntegrityTest
 import com.zickat.shopifymcpserver.vault.domain.repositories.StoreCredentialRepository
+import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.bson.Document
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -65,5 +68,12 @@ class StoreCredentialMongoRepositoryTest : StoreCredentialRepositoryReferentialI
 
         val active = StoreCredentialFixtures().withStoreId(storeId).build()
         repository.save(active).isRight() shouldBe true
+    }
+
+    @Test
+    fun `should return credential not found, not throw, when the storeId is not a well-formed ObjectId`() {
+        listOf("velotrip", "velotrip.myshopify.com", "abc123").forEach { malformed ->
+            repository.findActiveByStore(malformed).shouldBeLeft().shouldBeInstanceOf<NotFoundError>().messageKey shouldBe "storeCredential.not.found"
+        }
     }
 }

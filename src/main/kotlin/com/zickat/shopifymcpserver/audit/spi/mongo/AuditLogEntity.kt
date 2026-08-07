@@ -16,7 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class AuditLogEntity(
     @Contextual val _id: ObjectId,
     @Contextual val identityId: ObjectId?,
-    @Contextual val storeId: ObjectId,
+    val storeId: String,
     val toolName: String,
     val isMutation: Boolean,
     val outcome: String,
@@ -26,11 +26,12 @@ data class AuditLogEntity(
 ) {
     companion object {
         const val COLLECTION_NAME = "auditLogs"
+        const val STORE_ID_MAX_LENGTH = 128
 
         fun fromDomain(domain: AuditLog): AuditLogEntity = AuditLogEntity(
             _id = ObjectId(domain.id.value),
             identityId = domain.identityId?.let { ObjectId(it) },
-            storeId = ObjectId(domain.storeId),
+            storeId = domain.storeId.take(STORE_ID_MAX_LENGTH),
             toolName = domain.toolName,
             isMutation = domain.isMutation,
             outcome = domain.outcome,
@@ -43,7 +44,7 @@ data class AuditLogEntity(
     fun toDomain(): Either<UseCaseError, AuditLog> = AuditLog(
         id = AuditLogId(_id.toHexString()),
         identityId = identityId?.toHexString(),
-        storeId = storeId.toHexString(),
+        storeId = storeId,
         toolName = toolName,
         isMutation = isMutation,
         outcome = outcome,

@@ -2,6 +2,7 @@ package com.zickat.shopifymcpserver.tenancy.spi.mongo
 
 import com.zickat.shopifymcpserver.identity.IdentityFixtures
 import com.zickat.shopifymcpserver.identity.domain.repositories.IdentityRepository
+import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
 import com.zickat.shopifymcpserver.tenancy.GrantFixtures
 import com.zickat.shopifymcpserver.tenancy.GrantRepositoryReferentialIntegrityTest
@@ -9,8 +10,10 @@ import com.zickat.shopifymcpserver.tenancy.StoreFixtures
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -103,5 +106,15 @@ class GrantMongoRepositoryTest : GrantRepositoryReferentialIntegrityTest, WithMo
         }.exceptionOrNull()
 
         (exception != null) shouldBe true
+    }
+
+    @Test
+    fun `should return grant not found, not throw, when the storeId is not a well-formed ObjectId`() {
+        val identityId = registerExistingIdentity()
+
+        listOf("velotrip", "velotrip.myshopify.com", "abc123").forEach { malformed ->
+            repository.findActiveByIdentityAndStore(identityId, StoreId(malformed))
+                .shouldBeLeft().shouldBeInstanceOf<NotFoundError>().messageKey shouldBe "grant.not.found"
+        }
     }
 }

@@ -5,6 +5,7 @@ import arrow.core.left
 import com.zickat.shopifymcpserver.shared_kernel.DomainError
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import com.zickat.shopifymcpserver.shared_kernel.toObjectIdOrNull
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.StoreExposedService
 import com.zickat.shopifymcpserver.vault.domain.models.StoreCredential
 import com.zickat.shopifymcpserver.vault.domain.models.StoreCredentialId
@@ -35,7 +36,9 @@ class StoreCredentialMongoRepository(
             .map { it.toDomain() }
             .orElse(NotFoundError("storeCredential.not.found").left())
 
-    override fun findActiveByStore(storeId: String): Either<UseCaseError, StoreCredential> =
-        springDataRepository.findActiveByStoreId(ObjectId(storeId))?.toDomain()
+    override fun findActiveByStore(storeId: String): Either<UseCaseError, StoreCredential> {
+        val objectId = storeId.toObjectIdOrNull() ?: return NotFoundError("storeCredential.not.found").left()
+        return springDataRepository.findActiveByStoreId(objectId)?.toDomain()
             ?: NotFoundError("storeCredential.not.found").left()
+    }
 }

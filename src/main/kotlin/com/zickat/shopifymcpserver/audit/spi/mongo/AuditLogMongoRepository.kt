@@ -31,7 +31,7 @@ class AuditLogMongoRepository(
     }
 
     override fun findByStore(storeId: String): Either<UseCaseError, List<AuditLog>> {
-        val query = Query(Criteria.where("storeId").isEqualTo(ObjectId(storeId)))
+        val query = Query(Criteria.where("storeId").isEqualTo(storeId))
             .with(Sort.by(Sort.Direction.DESC, "occurredAt"))
         return mongoTemplate.find(query, AuditLogEntity::class.java).map { it.toDomain() }.sequenceEither()
     }

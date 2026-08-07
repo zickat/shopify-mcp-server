@@ -5,10 +5,10 @@ import arrow.core.left
 import com.zickat.shopifymcpserver.shared_kernel.DomainError
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import com.zickat.shopifymcpserver.shared_kernel.toObjectIdOrNull
 import com.zickat.shopifymcpserver.tenancy.domain.models.Store
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
-import org.bson.types.ObjectId
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Repository
 
@@ -23,10 +23,12 @@ class StoreMongoRepository(
         DomainError("store.duplicate.slug", mapOf("slug" to store.slug)).left()
     }
 
-    override fun findById(id: StoreId): Either<UseCaseError, Store> =
-        springDataRepository.findById(ObjectId(id.value))
+    override fun findById(id: StoreId): Either<UseCaseError, Store> {
+        val objectId = id.value.toObjectIdOrNull() ?: return NotFoundError("store.not.found").left()
+        return springDataRepository.findById(objectId)
             .map { it.toDomain() }
             .orElse(NotFoundError("store.not.found").left())
+    }
 
     override fun findBySlug(slug: String): Either<UseCaseError, Store> =
         springDataRepository.findBySlug(slug)?.toDomain() ?: NotFoundError("store.not.found").left()
