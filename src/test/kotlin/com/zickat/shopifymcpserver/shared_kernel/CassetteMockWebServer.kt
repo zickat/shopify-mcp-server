@@ -28,6 +28,30 @@ object CassetteMockWebServer {
         return server
     }
 
+    /**
+     * Same as [forShopifyAdminGraphQL], but for tests that exercise the real use case chain
+     * (`ShopifyAdminGraphQLUseCase` → vault → token exchange → GraphQL call) instead of posting
+     * directly to the mock server. That chain fetches an access token before its first GraphQL
+     * call, which the cassette itself never recorded — LOT1-01's capture point sits after the
+     * token is already resolved. A synthetic token-exchange response is enqueued first so the
+     * cassette's own responses land on the GraphQL calls they were recorded for, not on the token
+     * exchange.
+     */
+    fun forShopifyAdminGraphQLWithTokenExchange(cassette: Cassette, accessToken: String = "test-access-token"): MockWebServer {
+        val server = MockWebServer()
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody("""{"access_token":"$accessToken"}"""),
+        )
+        cassette.calls
+            .filter { it.sink == SINK_SHOPIFY_ADMIN_GRAPHQL }
+            .forEach { server.enqueue(graphQLEnvelopeResponseOf(it)) }
+        server.start()
+        return server
+    }
+
     fun postGraphQL(server: MockWebServer, query: String, variables: JsonElement): Response {
         val body = buildJsonObject {
             put("query", JsonPrimitive(query))

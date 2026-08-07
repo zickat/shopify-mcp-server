@@ -19,6 +19,7 @@ import com.zickat.shopifymcpserver.tenancy.domain.models.GrantRole
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import com.zickat.shopifymcpserver.tenancy.exposed_interface.ActiveStoreExposedService
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -62,6 +63,9 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
     @Autowired
     private lateinit var auditLogRepository: AuditLogRepository
+
+    @Autowired
+    private lateinit var activeStoreExposedService: ActiveStoreExposedService
 
     private val objectMapper = ObjectMapper()
 
@@ -425,5 +429,49 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         val (_, codeText) = toolResultText(codeListing)
         (codeText.lines().any { it.contains("lurelab") && it.contains("active") }) shouldBe true
         (codeText.lines().any { it.contains("velotrip") && it.contains("active") }) shouldBe false
+    }
+
+    @Test
+    fun `create_redirect (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-create-redirect"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "create_redirect", mapOf("from_path" to "/a", "to_path" to "/b"))
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "create_redirect" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on create_redirect" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `create_redirect without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-create-redirect")
+        val subject = "operator-create-redirect-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "create_redirect", mapOf("from_path" to "/a", "to_path" to "/b"))
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-create-redirect"
     }
 }
