@@ -13,9 +13,15 @@ spring:
         streamable-http:
           mcp-endpoint: /mcp
 
-  data:
-    mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/shopify_mcp_server}
+  # LOT0-03 : le préfixe Boot 3.x `spring.data.mongodb` n'existe plus en Boot 4.1 — la classe de
+  # propriétés a migré vers `org.springframework.boot.mongodb.autoconfigure.MongoProperties`,
+  # préfixe `spring.mongodb` (constaté en décompilant spring-boot-mongodb-4.1.0.jar après qu'un
+  # `spring.data.mongodb.uri` silencieusement ignoré ait fait démarrer le serveur contre
+  # localhost:27017 par défaut, même avec la variable d'env positionnée — aucune erreur, aucun
+  # avertissement, juste le défaut de la lib. À vérifier de la même façon avant toute autre
+  # propriété Mongo si elle semble ignorée).
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/shopify_mcp_server}
 
   security:
     oauth2:
@@ -49,12 +55,7 @@ management:
   endpoint:
     health:
       show-details: never
-  health:
-    mongodb:
-      # Docker (donc Mongo) est absent de cette machine de dev, et aucun module de ce lot n'a
-      # encore de dépendance réelle à Mongo (LOT0-03 introduit le premier modèle). Sans ça,
-      # MongoHealthIndicator fait échouer /actuator/health (503) sur une DB qu'aucun code
-      # applicatif n'utilise encore — faux négatif, pas un vrai signal de santé du service.
-      # À RETIRER dès que LOT0-03 branche un vrai repository sur une instance Mongo disponible :
-      # à partir de là, Mongo down doit redevenir un vrai motif de DOWN.
-      enabled: false
+  # Le contournement posé en LOT0-02 (management.health.mongodb.enabled: false, le temps qu'aucun
+  # module n'ait de dépendance réelle à Mongo et que Docker soit absent) est retiré ici : LOT0-03
+  # branche cinq vrais repositories sur une vraie instance Mongo, Docker est désormais disponible.
+  # L'indicateur de santé Mongo redevient un vrai motif de DOWN, comme prévu dès le départ.

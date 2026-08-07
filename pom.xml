@@ -196,6 +196,25 @@
             <version>${mockwebserver.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Testcontainers — LOT0-03. Versions gérées par le BOM Boot 4.1 (testcontainers-bom
+             2.0.5, importé par spring-boot-dependencies). Testcontainers 2.x a renommé ses
+             artefacts (préfixe testcontainers- : testcontainers-mongodb, pas mongodb — constaté
+             en cherchant l'ancien nom, absent de Maven Central sous cette ligne). -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-mongodb</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -15,6 +15,7 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
+import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.resttestclient.TestRestTemplate
@@ -38,10 +39,23 @@ import java.util.Date
  * Aucun IdP réel : le JWKS est auto-émis (paire RSA générée en mémoire) et servi par un
  * `MockWebServer` local (`testing.md` — « HTTP mocks : OkHttp MockWebServer »). Zéro appel réseau
  * externe, conforme à la tâche.
+ *
+ * **Étend [WithMongoDBContainer] depuis `LOT0-03`** — régression corrigée le 2026-08-07, voir
+ * `progress.md`. Ce test démarre le contexte Spring complet (`@SpringBootTest`), qui inclut depuis
+ * `LOT0-03` `MigrationRunner` (`ApplicationRunner`) : il acquiert un verrou ShedLock contre Mongo
+ * de façon **synchrone et bloquante** au démarrage, avant que le contexte finisse de se lever. Sans
+ * Mongo réel, cet appel échoue après le délai de sélection de serveur (30 s) et fait échouer tout
+ * le contexte (`IllegalState: Failed to load ApplicationContext`) — pas seulement les tests de ce
+ * fichier, **n'importe quel** `@SpringBootTest` futur qui ne fournirait pas de Mongo. C'est un
+ * couplage réel et volontaire, pas un défaut à contourner : en production, le serveur ne doit pas
+ * accepter de trafic avant que ses migrations aient tourné, donc `MigrationRunner` doit rester
+ * bloquant. Le bon endroit pour absorber ce coût est le test, pas la production — d'où le
+ * conteneur partagé plutôt qu'un `management.health.mongodb.enabled: false` ou toute autre façon de
+ * neutraliser `MigrationRunner` pour ce test.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestRestTemplate
-class ResourceServerSecurityTest {
+class ResourceServerSecurityTest : WithMongoDBContainer() {
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
