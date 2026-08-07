@@ -23,6 +23,7 @@ import com.zickat.shopifymcpserver.tenancy.exposed_interface.ActiveStoreExposedS
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import kotlin.time.Clock
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -193,6 +194,14 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
     private fun useStore(token: String, sessionId: String, storeId: String) =
         toolsCall(token, sessionId, "use_store", mapOf("store_id" to storeId))
+
+    private fun toolResultTexts(payload: Map<String, Any?>?): Pair<Boolean, List<String>> {
+        val result = payload?.get("result") as? Map<*, *>
+        checkNotNull(result) { "tools/call did not return a result: $payload" }
+        val isError = result["isError"] as? Boolean ?: false
+        val texts = (result["content"] as? List<*>).orEmpty().mapNotNull { (it as? Map<*, *>)?.get("text") as? String }
+        return isError to texts
+    }
 
     private fun toolResultText(payload: Map<String, Any?>?): Pair<Boolean, String> {
         val result = payload?.get("result") as? Map<*, *>
@@ -473,5 +482,44 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         isError shouldBe true
         text shouldContain "store.selection.missing"
         text shouldContain "velotrip-create-redirect"
+    }
+
+    @Test
+    fun `search_resources (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-search-resources"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "search_resources", mapOf("resource_type" to "collection"))
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `search_resources without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-search-resources")
+        val subject = "operator-search-resources-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "search_resources", mapOf("resource_type" to "collection"))
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-search-resources"
     }
 }
