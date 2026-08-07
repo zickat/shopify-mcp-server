@@ -36,6 +36,12 @@
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
         <kotlinx-datetime.version>0.8.0</kotlinx-datetime.version>
         <kotest.version>6.2.3</kotest.version>
+        <!-- LOT0-05 : candidate D14 pour le resource server OAuth 2.1. Ligne pré-1.0 (14
+             publications en 7 mois) — épinglée en version exacte, jamais en plage ouverte
+             (mise en garde de la tâche, valable quel que soit le choix final documenté dans
+             progress.md). -->
+        <mcp-server-security.version>0.1.14</mcp-server-security.version>
+        <mockwebserver.version>5.4.0</mockwebserver.version>
     </properties>
 
     <dependencies>
@@ -63,6 +69,28 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
             <version>${spring-ai.version}</version>
+        </dependency>
+
+        <!-- Resource server OAuth 2.1 — LOT0-05 (D2 : on valide des jetons, on n'en émet pas).
+             spring-boot-starter-oauth2-resource-server amène spring-boot-starter-security +
+             spring-security-oauth2-resource-server + spring-security-oauth2-jose, toutes
+             gouvernées par notre BOM Boot 4.1 / Spring Security 7.1.0. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <!-- mcp-server-security (PAS -spring-boot) : on utilise la plomberie DSL
+             (McpServerOAuth2Configurer — PRM/RFC 9728, entry point WWW-Authenticate) mais pas son
+             auto-configuration ni sa validation d'audience native (qui dérive l'audience attendue
+             du Host de la requête entrante, pas d'une constante — voir
+             identity/AudienceValidator.kt). Toutes ses dépendances Spring Security sensibles sont
+             en scope provided dans SON pom : c'est notre BOM D14 qui décide de la version qui
+             tourne réellement, jamais la lib — vérifié en inspectant
+             mcp-server-security-0.1.14.pom avant de l'ajouter ici. -->
+        <dependency>
+            <groupId>org.springaicommunity</groupId>
+            <artifactId>mcp-server-security</artifactId>
+            <version>${mcp-server-security.version}</version>
         </dependency>
 
         <!-- Persistance — D9 (MongoDB, pas Mongock) -->
@@ -123,6 +151,24 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Boot 4.1 a extrait TestRestTemplate de spring-boot-test vers ce module dédié
+             (org.springframework.boot.resttestclient.TestRestTemplate) — plus transitif via
+             spring-boot-starter-test, constaté à la compilation. Nécessaire pour
+             ResourceServerSecurityTest (LOT0-05), le seul test qui a besoin d'un vrai contexte
+             Spring + une vraie requête HTTP (filtre de sécurité, pas un controller applicatif). -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-resttestclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- spring-boot-resttestclient a besoin de RestTemplateBuilder (org.springframework.boot.
+             restclient), extrait dans son propre module en Boot 4.1 — constaté à l'exécution
+             (ClassNotFoundException sans lui, pas à la compilation). -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-restclient</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.modulith</groupId>
             <artifactId>spring-modulith-starter-test</artifactId>
@@ -139,6 +185,15 @@
             <groupId>io.kotest</groupId>
             <artifactId>kotest-assertions-arrow-jvm</artifactId>
             <version>${kotest.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- testing.md : "HTTP mocks : OkHttp MockWebServer pour les appels externes". LOT0-05 :
+             sert un JWKS de test en HTTP réel sur localhost (aucun IdP réel, aucun appel réseau
+             externe) pour exercer le vrai chemin NimbusJwtDecoder.withJwkSetUri(...). -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>${mockwebserver.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

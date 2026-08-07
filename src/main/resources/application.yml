@@ -17,11 +17,30 @@ spring:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/shopify_mcp_server}
 
-# security.md : "pas d'endpoint public sauf ceux explicitement marqués comme tels". Aucun
-# AuthenticationFilter/CredentialResolver n'est câblé au lot 0 (LOT0-05/LOT0-06) : il n'existe donc
-# aucun endpoint de domaine à protéger pour l'instant. La liste d'exposition Actuator ci-dessous est
-# écrite explicitement (pas laissée à un défaut implicite) pour que "health" soit un choix, pas un
-# oubli, et pour qu'ajouter un endpoint plus tard oblige à toucher cette ligne.
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # LOT0-05 — D2/D3 : Q1 (choix de l'IdP) n'est pas tranchée. Ces deux valeurs sont les
+          # SEULES choses à changer pour brancher un vrai IdP au lot 2 — aucun code à toucher
+          # (voir identity/ResourceServerSecurityConfiguration.kt). Défauts non fonctionnels : au
+          # démarrage sans variables d'env, le décodeur pointe vers un JWKS local inexistant —
+          # échoue au premier jeton présenté, jamais au démarrage (résolution paresseuse).
+          issuer-uri: ${OAUTH_ISSUER_URI:https://idp.invalid/}
+          jwk-set-uri: ${OAUTH_JWK_SET_URI:http://localhost:0/jwks}
+
+# mcp.security.expected-audience : constante de configuration (jamais dérivée de la requête —
+# voir identity/AudienceValidator.kt). Doit valoir l'URL publique de CE serveur une fois déployé.
+mcp:
+  security:
+    expected-audience: ${MCP_EXPECTED_AUDIENCE:http://localhost:8080/mcp}
+
+# security.md : "pas d'endpoint public sauf ceux explicitement marqués comme tels". Actuator
+# health (LOT0-02) et l'endpoint PRM RFC 9728 (LOT0-05, voir
+# identity/ResourceServerSecurityConfiguration.kt) sont les deux seuls endpoints publics du
+# serveur ; /mcp exige un jeton valide. La liste d'exposition Actuator ci-dessous est écrite
+# explicitement (pas laissée à un défaut implicite) pour que "health" soit un choix, pas un oubli,
+# et pour qu'ajouter un endpoint plus tard oblige à toucher cette ligne.
 management:
   endpoints:
     web:
