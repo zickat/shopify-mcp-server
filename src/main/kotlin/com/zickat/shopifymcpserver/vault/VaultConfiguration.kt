@@ -4,8 +4,11 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 
 /**
- * Module vide posé au lot 0 (LOT0-02) — credentials Shopify chiffrés au repos. Rempli en LOT0-04
- * (clé maîtresse — Q3 : pas de KMS, clé opérée par Val via variable d'environnement).
+ * Module `vault` — credentials Shopify chiffrés au repos (`LOT0-03` : entité + repository ;
+ * `LOT0-04` : chiffrement par enveloppe). `@ComponentScan` (portée sur ce package et ses
+ * sous-packages) suffit à câbler [com.zickat.shopifymcpserver.vault.spi.env.EnvMasterKeyProvider]
+ * (`@Component`) et [com.zickat.shopifymcpserver.vault.domain.StoreCredentialUseCase] (`@Component`)
+ * — aucun `@Bean` explicite n'est nécessaire ici.
  */
 @Configuration
 @ComponentScan
