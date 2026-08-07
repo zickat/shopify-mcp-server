@@ -1,7 +1,9 @@
 package com.zickat.shopifymcpserver.tenancy.spi.mongo
 
-import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import arrow.core.Either
+import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
+import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.StoreExposedService
 import org.springframework.stereotype.Service
 
@@ -15,4 +17,7 @@ class StoreExposedServiceImpl(
 
     override fun existsAndNotArchived(storeId: String): Boolean =
         storeRepository.findById(StoreId(storeId)).fold({ false }, { !it.isArchived })
+
+    override fun resolveStoreIdBySlug(slug: String): Either<UseCaseError, String> =
+        storeRepository.findBySlug(slug).map { it.id.value }
 }

@@ -14,6 +14,7 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shopify.ShopifyAdminHttpClientFake
 import com.zickat.shopifymcpserver.shopify.domain.ShopifyAdminGatewayImpl
 import com.zickat.shopifymcpserver.shopify.domain.ShopifyAdminGraphQLUseCase
+import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake
 import com.zickat.shopifymcpserver.vault.VaultExposedServiceFake
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
@@ -43,19 +44,21 @@ class RelayCheckShopifyConnectionEndToEndTest {
 
     @Test
     fun `Kotlin to TS to the shopify_admin_graphql proxy back to Kotlin to Shopify reproduces the check_shopify_connection cassette output, bit for bit`() {
-        val storeId = "store-velotrip"
+        val storeSlug = "velotrip"
+        val internalStoreId = "507f191e810c19729de860ea"
         val cassette = Cassette.fromClasspathResource("cassettes/check-shopify-connection.json")
         val expectedOutput = json.decodeFromJsonElement(ToolOutput.serializer(), cassette.toolOutput)
         val recordedCall = cassette.calls.single()
         val recordedRequest = json.decodeFromJsonElement(ShopifyAdminGraphQLRequest.serializer(), recordedCall.request)
 
         val vault = VaultExposedServiceFake().apply {
-            plaintextByStoreId[storeId] = """{"apiKey":"key","apiSecret":"secret","shopDomain":"velotrip.myshopify.com"}""".toByteArray()
+            plaintextByStoreId[internalStoreId] = """{"apiKey":"key","apiSecret":"secret","shopDomain":"velotrip.myshopify.com"}""".toByteArray()
         }
         val httpClient = ShopifyAdminHttpClientFake().apply {
             nextGraphQLResult = Json.parseToJsonElement("""{"shop":{"name":"Velotrip.fr"}}""").right()
         }
-        val egressController = RelayEgressController(ShopifyAdminGatewayImpl(ShopifyAdminGraphQLUseCase(vault, httpClient)))
+        val storeExposedService = StoreExposedServiceFake().apply { storeIdBySlug[storeSlug] = internalStoreId }
+        val egressController = RelayEgressController(ShopifyAdminGatewayImpl(ShopifyAdminGraphQLUseCase(vault, httpClient)), storeExposedService)
 
         var egressCalled = false
         val tsDouble = MockWebServer().apply {
@@ -107,7 +110,7 @@ class RelayCheckShopifyConnectionEndToEndTest {
             val manifest = RelayManifest(listOf(RelayManifestEntry("check_shopify_connection", ToolRoute.RELAIS, UseCaseKind.READ)))
             val dispatcher = RelayDispatcher(manifest, relayTsClient)
 
-            val outcome = dispatcher.callRelayedTool("check_shopify_connection", JsonPrimitive("null"), storeId, AccessRole.OPERATOR).shouldBeRight()
+            val outcome = dispatcher.callRelayedTool("check_shopify_connection", JsonPrimitive("null"), storeSlug, AccessRole.OPERATOR).shouldBeRight()
 
             egressCalled shouldBe true
             outcome.isError shouldBe false

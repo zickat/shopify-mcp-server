@@ -21,6 +21,7 @@ import com.zickat.shopifymcpserver.shared_kernel.TenantContext
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
+import com.zickat.shopifymcpserver.tenancy.exposed_interface.model.GrantedStore
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import kotlinx.serialization.Serializable
@@ -87,12 +88,32 @@ class RelayToolRegistrarTest {
         val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, tsClient))
         val descriptor = RelayToolDescriptor("check_shopify_connection", UseCaseKind.READ)
 
-        val result = relayToolCallResult(descriptor, relayGateway, pipeline, "session-1", emptyMap())
+        val result = relayToolCallResult(descriptor, relayGateway, pipeline, accessExposedService, "session-1", emptyMap())
 
         result.isError() shouldBe false
         result.content().map { (it as io.modelcontextprotocol.spec.McpSchema.TextContent).text() } shouldBe expected.content.map { it.text }
         tsClient.calls.single().storeId shouldBe storeId
         tsClient.calls.single().role shouldBe "OPERATOR"
+    }
+
+    @Test
+    fun `the TS process receives the store slug, not the internal Mongo storeId — LOT2-07 cross-process finding`() {
+        authenticateAs(subject)
+        val identityId = identityExposedService.resolve(issuer, subject).getOrNull()!!
+        activeStoreExposedService.select(identityId, "session-1", storeId)
+        accessExposedService.result = (TenantContext(storeId) to UserContext(identityId, AccessRole.OPERATOR)).right()
+        accessExposedService.grantedStoresByIdentity[identityId] = listOf(GrantedStore(storeId, "velotrip"))
+
+        val tsClient = RelayTsClientFake().apply {
+            nextResult = { RelayToolOutcome(listOf(RelayContentBlock("ok")), isError = false).right() }
+        }
+        val manifest = RelayManifest(listOf(RelayManifestEntry("check_shopify_connection", ToolRoute.RELAIS, UseCaseKind.READ)))
+        val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, tsClient))
+        val descriptor = RelayToolDescriptor("check_shopify_connection", UseCaseKind.READ)
+
+        relayToolCallResult(descriptor, relayGateway, pipeline, accessExposedService, "session-1", emptyMap())
+
+        tsClient.calls.single().storeId shouldBe "velotrip"
     }
 
     @Test
@@ -116,7 +137,7 @@ class RelayToolRegistrarTest {
         val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, tsClient))
         val descriptor = RelayToolDescriptor("check_shopify_connection", UseCaseKind.READ)
 
-        val result = relayToolCallResult(descriptor, relayGateway, pipeline, "session-no-selection", emptyMap())
+        val result = relayToolCallResult(descriptor, relayGateway, pipeline, accessExposedService, "session-no-selection", emptyMap())
 
         result.isError() shouldBe true
         (result.content().first() as io.modelcontextprotocol.spec.McpSchema.TextContent).text() shouldContain "store.selection.missing"
@@ -138,7 +159,7 @@ class RelayToolRegistrarTest {
         val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, tsClient))
         val descriptor = RelayToolDescriptor("check_shopify_connection", UseCaseKind.READ)
 
-        val result = relayToolCallResult(descriptor, relayGateway, pipeline, "session-1", emptyMap())
+        val result = relayToolCallResult(descriptor, relayGateway, pipeline, accessExposedService, "session-1", emptyMap())
 
         result.isError() shouldBe true
         (result.content().first() as io.modelcontextprotocol.spec.McpSchema.TextContent).text() shouldContain "relay.ts.network.failed"
@@ -156,7 +177,7 @@ class RelayToolRegistrarTest {
         val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, tsClient))
         val descriptor = RelayToolDescriptor("relayed_mutation_tool", UseCaseKind.MUTATION)
 
-        val result = relayToolCallResult(descriptor, relayGateway, pipeline, "session-1", emptyMap())
+        val result = relayToolCallResult(descriptor, relayGateway, pipeline, accessExposedService, "session-1", emptyMap())
 
         result.isError() shouldBe true
         (result.content().first() as io.modelcontextprotocol.spec.McpSchema.TextContent).text() shouldContain "access.role.insufficient"

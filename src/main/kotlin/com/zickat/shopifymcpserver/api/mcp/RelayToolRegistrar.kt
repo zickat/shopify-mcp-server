@@ -5,6 +5,7 @@ import com.zickat.shopifymcpserver.relay.exposed_interface.RelayToolDescriptor
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
+import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import io.modelcontextprotocol.server.McpServerFeatures
 import io.modelcontextprotocol.server.McpSyncServerExchange
 import io.modelcontextprotocol.spec.McpSchema
@@ -21,17 +22,19 @@ import org.springframework.context.annotation.Configuration
 class RelayToolRegistrarConfiguration(
     private val relayGateway: RelayGateway,
     private val pipeline: AuthenticatedToolPipeline,
+    private val accessExposedService: AccessExposedService,
 ) {
 
     @Bean
     fun relayToolSpecifications(): List<McpServerFeatures.SyncToolSpecification> =
-        relayGateway.relayedTools().map { descriptor -> relayToolSpecification(descriptor, relayGateway, pipeline) }
+        relayGateway.relayedTools().map { descriptor -> relayToolSpecification(descriptor, relayGateway, pipeline, accessExposedService) }
 }
 
 fun relayToolSpecification(
     descriptor: RelayToolDescriptor,
     relayGateway: RelayGateway,
     pipeline: AuthenticatedToolPipeline,
+    accessExposedService: AccessExposedService,
 ): McpServerFeatures.SyncToolSpecification {
     val tool = McpSchema.Tool.builder(descriptor.toolName)
         .description("Relayed tool — routed through the loopback TypeScript process (LOT2-03 scaffolding).")
@@ -39,7 +42,7 @@ fun relayToolSpecification(
         .build()
 
     val handler = BiFunction<McpSyncServerExchange, McpSchema.CallToolRequest, McpSchema.CallToolResult> { exchange, request ->
-        relayToolCallResult(descriptor, relayGateway, pipeline, exchange.sessionId(), request.arguments().orEmpty())
+        relayToolCallResult(descriptor, relayGateway, pipeline, accessExposedService, exchange.sessionId(), request.arguments().orEmpty())
     }
 
     return McpServerFeatures.SyncToolSpecification.builder().tool(tool).callHandler(handler).build()
@@ -49,6 +52,7 @@ fun relayToolCallResult(
     descriptor: RelayToolDescriptor,
     relayGateway: RelayGateway,
     pipeline: AuthenticatedToolPipeline,
+    accessExposedService: AccessExposedService,
     sessionId: String,
     arguments: Map<String, Any?>,
 ): McpSchema.CallToolResult {
@@ -60,7 +64,8 @@ fun relayToolCallResult(
 
     return try {
         pipeline.runForActiveStore(descriptor.toolName, useCase, sessionId, toolInputDigest) { tenant, user ->
-            relayGateway.invoke(descriptor.toolName, toolInputJson, tenant.storeId, user.role).fold(
+            val storeSlugRecognizedByTheRelayedTsProcess = accessExposedService.slugFor(user.identityId, tenant.storeId)
+            relayGateway.invoke(descriptor.toolName, toolInputJson, storeSlugRecognizedByTheRelayedTsProcess, user.role).fold(
                 { error -> relayErrorResult(error) },
                 { outcome ->
                     val builder = McpSchema.CallToolResult.builder().isError(outcome.isError)
