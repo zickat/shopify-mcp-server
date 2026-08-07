@@ -1,0 +1,22 @@
+{
+  "tool": "check_shopify_connection",
+  "toolInput": {},
+  "toolOutput": {
+    "content": [
+      { "type": "text", "text": "Boutique : demo" },
+      { "type": "text", "text": "Connexion Shopify OK — boutique : Demo Store" }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": { "query": "query CheckConnection { shop { name } }", "variables": {} },
+      "response": { "status": 200, "body": { "shop": { "name": "Demo Store" } } }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": { "query": "query CheckConnection { shop { name } }", "variables": {} },
+      "response": { "status": 200, "body": { "shop": { "name": "Demo Store" } } }
+    }
+  ]
+}
