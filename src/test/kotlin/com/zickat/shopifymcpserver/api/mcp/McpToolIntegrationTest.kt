@@ -21,6 +21,8 @@ import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.ActiveStoreExposedService
 import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
@@ -87,6 +89,17 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
             start()
         }
 
+        private val relayTsDouble = MockWebServer().apply {
+            dispatcher = object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest): MockResponse =
+                    MockResponse()
+                        .setResponseCode(200)
+                        .setHeader("Content-Type", "application/json")
+                        .setBody("""{"content":[{"type":"text","text":"Connexion Shopify OK — boutique : Test Store"}],"isError":false}""")
+            }
+            start()
+        }
+
         @JvmStatic
         @DynamicPropertySource
         fun properties(registry: DynamicPropertyRegistry) {
@@ -95,12 +108,14 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
             }
             registry.add("spring.security.oauth2.resourceserver.jwt.issuer-uri") { ISSUER_URI }
             registry.add("mcp.security.expected-audience") { EXPECTED_AUDIENCE }
+            registry.add("relay.ts.base-url") { relayTsDouble.url("").toString().trimEnd('/') }
         }
 
         @JvmStatic
         @AfterAll
         fun shutdownJwksServer() {
             jwksServer.shutdown()
+            relayTsDouble.shutdown()
         }
 
         private fun jwt(subject: String): String {
@@ -521,5 +536,68 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         isError shouldBe true
         text shouldContain "store.selection.missing"
         text shouldContain "lurelab-search-resources"
+    }
+
+    @Test
+    fun `same authenticated session — native list_stores and relayed check_shopify_connection both succeed and are journaled with correct isMutation and storeId`() {
+        val storeId = registerStore("velotrip-native-and-relayed")
+        val subject = "operator-native-and-relayed"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        useStore(token, sessionId, storeId)
+
+        val (listStoresResponse, listStoresPayload) = listStores(token, sessionId)
+        listStoresResponse.statusCode shouldBe HttpStatus.OK
+        val (listStoresIsError, _) = toolResultText(listStoresPayload)
+        listStoresIsError shouldBe false
+
+        val (checkConnectionResponse, checkConnectionPayload) = toolsCall(token, sessionId, "check_shopify_connection")
+        checkConnectionResponse.statusCode shouldBe HttpStatus.OK
+        val (checkConnectionIsError, checkConnectionText) = toolResultText(checkConnectionPayload)
+        checkConnectionIsError shouldBe false
+        checkConnectionText shouldContain "Connexion Shopify OK"
+
+        val identityEntries = auditLogRepository.findByIdentity(identityId).shouldBeRight()
+        val listStoresEntry = identityEntries.firstOrNull { it.toolName == "list_stores" }
+        checkNotNull(listStoresEntry) { "no audit entry written for the native list_stores call" }
+        listStoresEntry.outcome shouldBe "ok"
+        listStoresEntry.isMutation shouldBe false
+
+        val storeEntries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val checkConnectionEntry = storeEntries.firstOrNull { it.identityId == identityId && it.toolName == "check_shopify_connection" }
+        checkNotNull(checkConnectionEntry) { "no audit entry written for the relayed check_shopify_connection call" }
+        checkConnectionEntry.outcome shouldBe "ok"
+        checkConnectionEntry.isMutation shouldBe false
+        checkConnectionEntry.storeId shouldBe storeId
+    }
+
+    @Test
+    fun `tools list exposes exactly the 80 real tools — 4 native and 76 relayed, no duplicate name`() {
+        val storeId = registerStore()
+        val subject = "operator-tools-list-count"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (listResponse, listPayload) = toolsList(token, sessionId)
+
+        listResponse.statusCode shouldBe HttpStatus.OK
+        val tools = (listPayload?.get("result") as? Map<*, *>)?.get("tools") as? List<*>
+        checkNotNull(tools) { "tools/list did not return a tools array: $listPayload" }
+        val names = tools.mapNotNull { (it as? Map<*, *>)?.get("name") as? String }
+
+        names.toSet() shouldHaveSize names.size
+        names shouldHaveSize 80
+        names shouldContain "list_stores"
+        names shouldContain "use_store"
+        names shouldContain "create_redirect"
+        names shouldContain "search_resources"
+        names shouldContain "check_shopify_connection"
+        names shouldContain "publish_page"
+        names shouldContain "unpublish_page"
     }
 }
