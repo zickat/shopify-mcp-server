@@ -1,9 +1,11 @@
 package com.zickat.shopifymcpserver.shared_kernel
 
 /**
- * Identifie l'utilisateur (opérateur) porteur d'une requête, au sein d'un [TenantContext] donné.
+ * Identifie l'identité (opérateur) porteuse d'une requête au sein d'un [TenantContext] donné, et
+ * le rôle que son grant lui donne sur cette boutique — schema.md §6.
  *
- * Lot 0 : le type existe, sa résolution depuis un jeton OAuth arrive en LOT0-05/LOT0-06
- * (AuthenticationFilter / CredentialResolver — security.md).
+ * Même garantie de construction que [TenantContext] : un seul point,
+ * [com.zickat.shopifymcpserver.tenancy.domain.AccessResolutionUseCase] — voir
+ * `TenantUserContextConstructionTest`.
  */
-data class UserContext(val userId: String)
+data class UserContext(val identityId: String, val role: AccessRole)

@@ -1,5 +1,7 @@
 package com.zickat.shopifymcpserver.identity.exposed_interface
 
+import arrow.core.Either
+import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import org.springframework.modulith.NamedInterface
 
 /**
@@ -17,4 +19,12 @@ import org.springframework.modulith.NamedInterface
 interface IdentityExposedService {
     /** Vrai si une identité avec cet id existe (peu importe son statut actif/révoqué). */
     fun exists(identityId: String): Boolean
+
+    /**
+     * Retrouve l'identité `(issuer, subject)` validée par le resource server (`LOT0-05`), ou la
+     * crée si c'est sa première présentation — schema.md §2, `LOT0-06`. Retourne l'`identityId`
+     * (`String`, même convention que `Grant.identityId`) : `tenancy` n'a besoin que de cet id,
+     * jamais du type `Identity` ni `IdentityId`, réservés au module `identity`.
+     */
+    fun resolve(issuer: String, subject: String): Either<UseCaseError, String>
 }
