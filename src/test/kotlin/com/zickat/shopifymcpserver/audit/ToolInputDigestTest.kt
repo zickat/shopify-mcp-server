@@ -4,11 +4,6 @@ import com.zickat.shopifymcpserver.audit.domain.ToolInputDigest
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-/**
- * `LOT0-07.md`, « comment on vérifie que c'est fini » : contenu de `toolInputDigest` sur une
- * entrée portant du texte éditorial ou une URL signée — vérifie qu'aucune donnée brute n'y figure,
- * seulement l'empreinte documentée par [ToolInputDigest].
- */
 class ToolInputDigestTest {
 
     private val editorialText =

@@ -17,12 +17,6 @@ class AuditLogFakeRepository(
 ) : AuditLogRepository {
     val entries = mutableListOf<AuditLog>()
 
-    /**
-     * Bascule de test pour `LOT0-07` — simule une panne d'écriture (Mongo indisponible, timeout…)
-     * sans dépendre d'un vrai comportement d'infra. Utilisée par `AuditLogUseCaseTest` pour
-     * vérifier le fail-closed : ni cette variable, ni son usage, ne contiennent `update`/`delete`/
-     * `remove`/`upsert` (voir `AuditLogAppendOnlyTest`, qui inspecte cette classe par réflexion).
-     */
     var shouldFailAppend: Boolean = false
 
     override fun append(entry: AuditLog): Either<UseCaseError, AuditLog> {

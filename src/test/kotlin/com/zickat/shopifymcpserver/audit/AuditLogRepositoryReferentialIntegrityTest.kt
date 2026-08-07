@@ -5,11 +5,6 @@ import io.kotest.matchers.shouldBe
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Test
 
-/**
- * `schema.md` §3 — `auditLog → identity` (si non nul) et `auditLog → store` : invariants
- * applicatifs, couverts ici. **Existence seule** — une identité révoquée ou une boutique archivée
- * doivent pouvoir être journalisées (voir `AuditLogMongoRepository`, KDoc).
- */
 interface AuditLogRepositoryReferentialIntegrityTest {
     val repository: AuditLogRepository
 

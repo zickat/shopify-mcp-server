@@ -5,15 +5,9 @@ import io.kotest.matchers.shouldBe
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Test
 
-/**
- * `schema.md` §3 — `storeCredential → store` : invariant applicatif, couvert ici. Patron
- * `testing.md` : contract interface implémentée par le fake ET Mongo
- * ([StoreCredentialFakeRepositoryTest], [com.zickat.shopifymcpserver.vault.spi.mongo.StoreCredentialMongoRepositoryTest]).
- */
 interface StoreCredentialRepositoryReferentialIntegrityTest {
     val repository: StoreCredentialRepository
 
-    /** Enregistre une boutique existante, éventuellement archivée, retourne son id hex. */
     fun registerStore(archived: Boolean): String
 
     @Test

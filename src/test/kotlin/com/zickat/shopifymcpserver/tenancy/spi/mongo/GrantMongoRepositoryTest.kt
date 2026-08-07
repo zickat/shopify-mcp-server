@@ -16,12 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoTemplate
 
-/**
- * `LOT0-03` — les mêmes cas de [GrantRepositoryReferentialIntegrityTest] rejoués contre un vrai
- * MongoDB (patron `testing.md`), plus les vérifications propres au moteur : un index déclaré dans
- * une annotation mais jamais réellement appliqué en base est un bug silencieux classique — on ne
- * vérifie jamais seulement que le code le déclare.
- */
 @SpringBootTest
 class GrantMongoRepositoryTest : GrantRepositoryReferentialIntegrityTest, WithMongoDBContainer() {
 
@@ -98,7 +92,7 @@ class GrantMongoRepositoryTest : GrantRepositoryReferentialIntegrityTest, WithMo
             .append("_id", org.bson.types.ObjectId())
             .append("identityId", org.bson.types.ObjectId(identityId))
             .append("storeId", org.bson.types.ObjectId(storeId.value))
-            .append("role", "superadmin") // hors enum viewer|operator
+            .append("role", "superadmin")
             .append("grantedBy", org.bson.types.ObjectId(identityId))
             .append("createdAt", java.util.Date())
             .append("revokedAt", null)

@@ -2,22 +2,6 @@ package com.zickat.shopifymcpserver.vault.domain.models
 
 import kotlinx.datetime.Instant
 
-/**
- * Un credential Shopify chiffré — `schema.md` §3/§4. `LOT0-03` pose l'entité et son repository ;
- * le chiffrement enveloppe (clé maîtresse → DEK → ciphertext) est `LOT0-04` — `ciphertext` et
- * `wrappedDek` sont donc de simples `ByteArray` opaques ici, pas encore produits par un vrai
- * chiffrement.
- *
- * `storeId` est un `String` (id hex du `Store` référencé), pas le type `StoreId` du module
- * `tenancy` : un module ne référence jamais le type de domaine d'un autre module directement — voir
- * `tenancy.exposed_interface.StoreExposedService`, utilisé par le repository pour l'intégrité
- * référentielle.
- *
- * **Aucun `exposed_interface` de ce module ne doit jamais retourner ce type** (`security.md` :
- * « ne jamais inclure les credentials dans les réponses API standard ») — voir
- * `VaultExposedService`, dont le contrat ne renvoie jamais `StoreCredential` ni ses champs
- * sensibles.
- */
 data class StoreCredential(
     val id: StoreCredentialId,
     val storeId: String,

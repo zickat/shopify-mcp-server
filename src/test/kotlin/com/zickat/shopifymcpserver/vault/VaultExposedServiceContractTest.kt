@@ -10,20 +10,6 @@ import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
 import org.junit.jupiter.api.Test
 
-/**
- * `schema.md` §3 / `LOT0-03` : « aucun `exposed_interface` ne retourne ce document ». Test de
- * structure par réflexion — la garantie doit tenir même si un futur lot ajoute des méthodes à
- * cette interface : ce test échouera si l'une d'elles retourne `StoreCredential`, un `ByteArray`,
- * ou l'un des deux **enveloppé** dans un type générique (`List<StoreCredential>`,
- * `Either<UseCaseError, StoreCredential>`, `Optional<ByteArray>`…).
- *
- * **Renforcé par `LOT0-04`** (le use case y ajoute `reveal(...): Either<UseCaseError, ByteArray>`,
- * mais sur `StoreCredentialUseCase`, jamais sur cette interface) : la version `LOT0-03` ne
- * regardait que le type de retour brut (`method.returnType`), qui subit l'effacement de type — une
- * méthode mal écrite retournant `List<StoreCredential>` aurait un `returnType` égal à `List.class`
- * et serait passée inaperçue. Cette version inspecte aussi `genericReturnType`, récursivement dans
- * les paramètres de type, pour attraper ce cas précis.
- */
 class VaultExposedServiceContractTest {
 
     @Test

@@ -6,10 +6,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
-/**
- * Mappe automatiquement les erreurs du domaine vers les bonnes réponses HTTP — backend.md
- * §Gestion des erreurs. Format de réponse : `{ "message": "<messageKey>", "parameters": {} }`.
- */
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
@@ -19,8 +15,6 @@ class GlobalExceptionHandler {
     fun handle(ex: UseCaseErrorException): ResponseEntity<ErrorResponse> {
         val status = statusOf(ex.error)
         if (status.is5xxServerError) {
-            // security.md : ne jamais logger de données sensibles (tokens, PII) — messageKey et
-            // parameters sont des clés i18n et des identifiants métier, pas des secrets.
             log.error("Technical error: {}", (ex.error as? DomainError)?.messageKey ?: ex.error::class.simpleName)
         } else {
             log.warn("Domain error: {}", (ex.error as? DomainError)?.messageKey ?: ex.error::class.simpleName)

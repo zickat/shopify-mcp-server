@@ -5,7 +5,6 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.index.Index
 import org.springframework.stereotype.Component
 
-/** `schema.md` §3 : `slug` unique. */
 @Component
 class StoreChangeUnit : ChangeUnit {
     override val id = "store-001-unique-slug"

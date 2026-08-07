@@ -5,7 +5,6 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.index.Index
 import org.springframework.stereotype.Component
 
-/** `schema.md` §3 : index unique `(issuer, subject)` — le `sub` n'est unique que chez un émetteur donné. */
 @Component
 class IdentityChangeUnit : ChangeUnit {
     override val id = "identity-001-unique-issuer-subject"

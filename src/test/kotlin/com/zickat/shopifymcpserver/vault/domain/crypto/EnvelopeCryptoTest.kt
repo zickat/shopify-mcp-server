@@ -6,14 +6,6 @@ import java.security.SecureRandom
 import javax.crypto.AEADBadTagException
 import org.junit.jupiter.api.Test
 
-/**
- * `LOT0-04`, « Comment on vérifie que c'est fini » : round-trip et non-réutilisation de clé de
- * données, testés au niveau le plus bas possible — la primitive pure, sans repository ni fake.
- *
- * `ByteArray` n'a pas d'`equals` de contenu en Kotlin (référentiel, comme en Java) : chaque
- * comparaison ci-dessous passe explicitement par `contentEquals`, jamais par `shouldBe` nu sur des
- * `ByteArray`, pour ne pas écrire un test qui passerait même si le contenu différait.
- */
 class EnvelopeCryptoTest {
 
     private val random = SecureRandom()

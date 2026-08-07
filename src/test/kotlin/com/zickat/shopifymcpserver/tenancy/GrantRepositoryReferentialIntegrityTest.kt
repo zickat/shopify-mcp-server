@@ -6,19 +6,11 @@ import io.kotest.matchers.shouldBe
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Test
 
-/**
- * `schema.md` §3 — « MongoDB ne garantit pas les clés étrangères » : `grant → identity`,
- * `grant → store`, `grant → grantedBy` sont des invariants applicatifs, couverts ici. Patron
- * `testing.md` : contract interface implémentée par le fake ET le repository Mongo, les mêmes cas
- * s'exécutant sur les deux ([GrantFakeRepositoryTest], [GrantMongoRepositoryTest]).
- */
 interface GrantRepositoryReferentialIntegrityTest {
     val repository: GrantRepository
 
-    /** Enregistre une identité existante, utilisable comme `identityId`/`grantedBy`. */
     fun registerExistingIdentity(): String
 
-    /** Enregistre une boutique, existante et éventuellement archivée. */
     fun registerStore(archived: Boolean): StoreId
 
     @Test

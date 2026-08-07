@@ -15,14 +15,6 @@ import org.bson.types.ObjectId
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Repository
 
-/**
- * `schema.md` §3 — intégrité référentielle (« invariant applicatif, donc un test ») :
- * `grant → identity` et `grant → grantedBy` sont vérifiés via l'`exposed_interface` du module
- * `identity` (jamais un import direct de son repository/entité — frontière Modulith).
- * `grant → store` est intra-module (`Store` vit dans `tenancy` aussi) : accès direct au
- * repository, ce n'est pas une frontière. Une boutique **archivée** est refusée, pas seulement
- * une boutique inexistante — c'est le cas explicitement nommé par la tâche.
- */
 @Repository
 class GrantMongoRepository(
     private val springDataRepository: GrantSpringDataMongoRepository,

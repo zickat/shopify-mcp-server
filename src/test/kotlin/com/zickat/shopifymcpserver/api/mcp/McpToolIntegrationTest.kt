@@ -28,7 +28,6 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.resttestclient.TestRestTemplate
@@ -44,18 +43,6 @@ import org.springframework.test.context.DynamicPropertySource
 import java.time.Instant
 import java.util.Date
 
-/**
- * `LOT0-08` — le câblage bout en bout, vérifié en conditions réelles : vrai transport HTTP
- * (`TestRestTemplate`), vrai `SecurityFilterChain` (`LOT0-05`), vrai Mongo (`WithMongoDBContainer`,
- * `LOT0-03`), vraie résolution `TenantContext`/`UserContext` (`LOT0-06`), vrai audit fail-closed
- * (`LOT0-07`). Aucun fake dans cette classe — c'est exactement ce que
- * `AuthenticatedToolPipelineTest` NE couvre PAS (elle isole le pipeline des trois autres modules).
- *
- * JWKS auto-émis servi en HTTP local (`MockWebServer`, `testing.md`) — même patron que
- * `ResourceServerSecurityTest`, dupliqué ici plutôt que partagé : chaque suite `@SpringBootTest`
- * a ses propres `@DynamicPropertySource`, un JWKS partagé entre classes de test créerait un
- * couplage sur l'ordre d'exécution.
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestRestTemplate
 class McpToolIntegrationTest : WithMongoDBContainer() {
@@ -134,15 +121,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         }
     }
 
-    @BeforeEach
-    fun cleanAuditLog() {
-        // pas de collection.drop() direct : AuditLogRepository est append-only par construction
-        // (LOT0-07) — on lit ce qui a été écrit pendant CE test via storeId, jamais toute la
-        // collection, pour ne pas dépendre d'un ordre d'exécution entre tests.
-    }
-
-    /** Envoie une requête JSON-RPC et retourne son unique message JSON, qu'il soit servi en JSON pur ou en SSE. */
-    private fun rpc(body: String, token: String? = null, sessionId: String? = null): Pair<org.springframework.http.ResponseEntity<String>, Map<String, Any?>?> {
+    private fun sendJsonRpcRequestAndParseJsonPayload(body: String, token: String? = null, sessionId: String? = null): Pair<org.springframework.http.ResponseEntity<String>, Map<String, Any?>?> {
         val response = restTemplate.exchange(
             "/mcp",
             HttpMethod.POST,
@@ -168,7 +147,6 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         return objectMapper.readValue(jsonText, Map::class.java) as Map<String, Any?>
     }
 
-    /** `initialize` + `notifications/initialized` — préalable obligé de tout `tools/list`/`tools/call` (spec MCP). */
     private fun handshake(token: String): String {
         val initResponse = restTemplate.exchange(
             "/mcp",
@@ -195,10 +173,10 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     private fun toolsList(token: String, sessionId: String) =
-        rpc("""{"jsonrpc":"2.0","id":2,"method":"tools/list"}""", token, sessionId)
+        sendJsonRpcRequestAndParseJsonPayload("""{"jsonrpc":"2.0","id":2,"method":"tools/list"}""", token, sessionId)
 
     private fun toolsCall(token: String, sessionId: String, toolName: String, storeId: String) =
-        rpc(
+        sendJsonRpcRequestAndParseJsonPayload(
             """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"$toolName","arguments":{"storeId":"$storeId"}}}""",
             token,
             sessionId,
@@ -224,8 +202,6 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         ).fold({ error("grant setup failed: $it") }, { it })
     }
 
-    // --- Le handshake complet, avec jeton, reproduit sur le service câblé ----------------------
-
     @Test
     fun `full handshake with a token — initialize, notifications initialized, tools list, tools call whoami`() {
         val storeId = registerStore()
@@ -248,8 +224,6 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         result["isError"] shouldBe false
     }
 
-    // --- Échec propre en 401 sans jeton ---------------------------------------------------------
-
     @Test
     fun `initialize without any token is rejected with 401, before any tool wiring even runs`() {
         val response = restTemplate.exchange(
@@ -265,19 +239,17 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         response.statusCode shouldBe HttpStatus.UNAUTHORIZED
     }
 
-    // --- Sans grant actif : refusé, et audité ---------------------------------------------------
-
     @Test
-    fun `an authenticated identity with no grant is refused on tools call, and the refusal is journaled`() {
+    fun `an authenticated identity with no grant is refused on tools call as a 200 CallToolResult with isError, not an HTTP error status, and the refusal is journaled`() {
         val storeId = registerStore()
         val subject = "operator-no-grant"
-        resolveIdentity(subject) // identité connue, mais AUCUN grant
+        resolveIdentity(subject)
         val token = jwt(subject)
 
         val sessionId = handshake(token)
         val (callResponse, callPayload) = toolsCall(token, sessionId, "whoami", storeId)
 
-        callResponse.statusCode shouldBe HttpStatus.OK // MCP : le refus est un CallToolResult, pas un code HTTP
+        callResponse.statusCode shouldBe HttpStatus.OK
         val result = callPayload?.get("result") as? Map<*, *>
         checkNotNull(result) { "tools/call did not return a result: $callPayload" }
         result["isError"] shouldBe true
@@ -292,10 +264,8 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         deniedEntry.denialReason shouldBe "access.denied"
     }
 
-    // --- Un viewer appelant DIRECTEMENT un outil mutant est refusé côté serveur, et audité -----
-
     @Test
-    fun `a viewer calling the mutation tool directly is refused server-side, regardless of tools list, and the refusal is journaled`() {
+    fun `a viewer calling the mutation tool directly is refused server-side while whoami (READ) remains callable, regardless of tools list, and the refusal is journaled`() {
         val storeId = registerStore()
         val subject = "viewer-touch-store"
         val identityId = resolveIdentity(subject)
@@ -304,13 +274,10 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
         val sessionId = handshake(token)
 
-        // whoami (READ) doit rester accessible à un viewer.
         val (whoamiResponse, whoamiPayload) = toolsCall(token, sessionId, "whoami", storeId)
         whoamiResponse.statusCode shouldBe HttpStatus.OK
         (whoamiPayload?.get("result") as? Map<*, *>)?.get("isError") shouldBe false
 
-        // touch_store (MUTATION) doit être refusé, même appelé directement — LOT0-06 : "le filtre
-        // au tools/list n'est pas le contrôle d'accès, il le double".
         val (touchResponse, touchPayload) = toolsCall(token, sessionId, "touch_store", storeId)
         touchResponse.statusCode shouldBe HttpStatus.OK
         val touchResult = touchPayload?.get("result") as? Map<*, *>
@@ -326,8 +293,6 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         deniedEntry.denialReason shouldBe "access.role.insufficient"
         deniedEntry.isMutation shouldBe true
     }
-
-    // --- Un operator peut appeler l'outil mutant, et l'appel est audité "ok" -------------------
 
     @Test
     fun `an operator can call the mutation tool, and the success is journaled`() {

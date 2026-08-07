@@ -29,30 +29,6 @@ import org.springframework.test.context.DynamicPropertySource
 import java.time.Instant
 import java.util.Date
 
-/**
- * `LOT0-05`. **Exception documentée à `testing.md`** (« pas de MockMvc, pas de SpringBootTest »
- * pour les tests de controller) : cette suite ne teste pas un controller applicatif mais le
- * filtre de sécurité Spring Security lui-même — signature, expiration, **audience**, endpoint PRM.
- * Ce comportement ne peut être vérifié qu'à travers un vrai contexte Spring et une vraie requête
- * HTTP ; le fake-service pattern des controllers ne s'applique pas à de la plomberie framework.
- *
- * Aucun IdP réel : le JWKS est auto-émis (paire RSA générée en mémoire) et servi par un
- * `MockWebServer` local (`testing.md` — « HTTP mocks : OkHttp MockWebServer »). Zéro appel réseau
- * externe, conforme à la tâche.
- *
- * **Étend [WithMongoDBContainer] depuis `LOT0-03`** — régression corrigée le 2026-08-07, voir
- * `progress.md`. Ce test démarre le contexte Spring complet (`@SpringBootTest`), qui inclut depuis
- * `LOT0-03` `MigrationRunner` (`ApplicationRunner`) : il acquiert un verrou ShedLock contre Mongo
- * de façon **synchrone et bloquante** au démarrage, avant que le contexte finisse de se lever. Sans
- * Mongo réel, cet appel échoue après le délai de sélection de serveur (30 s) et fait échouer tout
- * le contexte (`IllegalState: Failed to load ApplicationContext`) — pas seulement les tests de ce
- * fichier, **n'importe quel** `@SpringBootTest` futur qui ne fournirait pas de Mongo. C'est un
- * couplage réel et volontaire, pas un défaut à contourner : en production, le serveur ne doit pas
- * accepter de trafic avant que ses migrations aient tourné, donc `MigrationRunner` doit rester
- * bloquant. Le bon endroit pour absorber ce coût est le test, pas la production — d'où le
- * conteneur partagé plutôt qu'un `management.health.mongodb.enabled: false` ou toute autre façon de
- * neutraliser `MigrationRunner` pour ce test.
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestRestTemplate
 class ResourceServerSecurityTest : WithMongoDBContainer() {
@@ -69,17 +45,16 @@ class ResourceServerSecurityTest : WithMongoDBContainer() {
 
         private val jwksServer = MockWebServer().apply {
             dispatcher = object : Dispatcher() {
-                override fun dispatch(request: RecordedRequest): MockResponse =
-                    MockResponse()
-                        .setResponseCode(200)
-                        .setHeader("Content-Type", "application/json")
-                        // Seule la clé PUBLIQUE "correcte" est publiée : otherKey ne fait jamais
-                        // partie du JWKS servi, exactement comme une clé compromise/étrangère à
-                        // notre IdP ne le serait pas.
-                        .setBody(JWKSet(correctKey.toPublicJWK()).toString())
+                override fun dispatch(request: RecordedRequest): MockResponse = publicJwksWithOnlyTheCorrectKeyPublished()
             }
             start()
         }
+
+        private fun publicJwksWithOnlyTheCorrectKeyPublished(): MockResponse =
+            MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(JWKSet(correctKey.toPublicJWK()).toString())
 
         @JvmStatic
         @DynamicPropertySource
@@ -160,15 +135,11 @@ class ResourceServerSecurityTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `should let a valid token with the correct audience pass the security filter`() {
+    fun `should let a valid token with the correct audience pass the security filter, without asserting on downstream tenancy which LOT0-08 covers`() {
         val valid = jwt(correctKey, audience = listOf(EXPECTED_AUDIENCE))
 
         val response = restTemplate.exchange("/mcp", HttpMethod.GET, bearer(valid), String::class.java)
 
-        // Le reste de la chaîne (grants, tenancy) n'existe pas encore à ce stade du lot — voir
-        // LOT0-08 pour le test d'intégration complet. On vérifie seulement qu'on a dépassé le
-        // filtre de sécurité : ni 401 (le WWW-Authenticate posé par l'entry point est absent),
-        // ni 403.
         (response.statusCode == HttpStatus.UNAUTHORIZED) shouldBe false
         (response.statusCode == HttpStatus.FORBIDDEN) shouldBe false
         response.headers.getFirst(HttpHeaders.WWW_AUTHENTICATE) shouldBe null
@@ -202,9 +173,6 @@ class ResourceServerSecurityTest : WithMongoDBContainer() {
             String::class.java,
         )
 
-        // security.md : "pas d'endpoint public sauf ceux explicitement marqués" — anyRequest()
-        // .authenticated() doit s'appliquer avant même que Spring MVC ne cherche un mapping, donc
-        // avant qu'un éventuel 404 puisse être produit.
         response.statusCode shouldBe HttpStatus.UNAUTHORIZED
     }
 }

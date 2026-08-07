@@ -11,13 +11,6 @@ import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-/**
- * `LOT0-06.md`, « comment on vérifie que c'est fini » — exerce ensemble `AccessResolutionUseCase`
- * (résolution de l'accès) et `ToolAccessControl` (filtrage par rôle), exactement la composition
- * que `LOT0-08` câblera sur de vrais outils MCP. `ListingToolFixture`/`MutatingToolFixture` tiennent
- * lieu des futurs outils réels — aucun outil MCP réel n'est câblé ici (« ce que cette tâche ne fait
- * pas », `LOT0-06.md`).
- */
 class AccessMechanismEndToEndTest {
 
     private object ListingToolFixture : ToolUseCase {
@@ -63,9 +56,6 @@ class AccessMechanismEndToEndTest {
 
         val access = accessResolution.resolve(issuer, subject, storeId)
 
-        // Sans AccessContext, il n'y a ni rôle à filtrer ni appel à autoriser : le mécanisme
-        // s'arrête ici, avant même que ToolAccessControl entre en jeu — exactement "aucun grant
-        // actif → aucune boutique visible, aucun outil appelable".
         access.fold(
             { (it is ForbiddenError) shouldBe true },
             { error("expected the identity with zero grant to be refused, got a context") },

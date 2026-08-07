@@ -10,11 +10,6 @@ import io.kotest.matchers.shouldBe
 import kotlin.time.Clock
 import org.junit.jupiter.api.Test
 
-/**
- * `LOT0-06` — résolution de l'accès (identité + grant + boutique), en mémoire (fakes uniquement).
- * Le mécanisme de classification lecture/mutation (`ToolAccessControl`) est testé séparément
- * (`ToolAccessControlTest`) ; les deux sont exercés ensemble par `AccessMechanismEndToEndTest`.
- */
 class AccessResolutionUseCaseTest {
 
     private val identityExposedService = IdentityExposedServiceFake()
@@ -99,8 +94,6 @@ class AccessResolutionUseCaseTest {
         val firstCall = useCase.resolve(issuer, subject, storeId)
         firstCall.isRight() shouldBe true
 
-        // Révocation "entre deux appels" — pas de TTL, pas d'attente : mutation directe du grant,
-        // exactement le scénario que schema.md §5 décrit ("effet immédiat").
         val revoked = grantRepository.store.getValue(grantId.value).copy(revokedAt = Clock.System.now())
         grantRepository.store[grantId.value] = revoked
 

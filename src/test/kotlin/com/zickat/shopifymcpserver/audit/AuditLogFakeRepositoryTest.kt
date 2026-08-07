@@ -18,7 +18,7 @@ class AuditLogFakeRepositoryTest : AuditLogRepositoryReferentialIntegrityTest {
 
     override fun registerExistingStore(): String {
         val id = ObjectId().toHexString()
-        storeExposedService.existing[id] = false
+        storeExposedService.archivedByStoreId[id] = false
         return id
     }
 }

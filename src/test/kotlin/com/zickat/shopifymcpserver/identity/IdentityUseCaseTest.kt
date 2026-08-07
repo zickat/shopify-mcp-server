@@ -10,7 +10,6 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-/** `LOT0-06` — retrouver ou créer une identité `(issuer, subject)`, en mémoire (fakes uniquement). */
 class IdentityUseCaseTest {
 
     private val repository = IdentityFakeRepository()
@@ -32,7 +31,7 @@ class IdentityUseCaseTest {
     }
 
     @Test
-    fun `findOrCreate should return the existing identity on a second presentation, without creating a duplicate`() {
+    fun `findOrCreate should return the existing identity on a second presentation, keeping its original displayName instead of the new one`() {
         val first = useCase.findOrCreate("https://idp.test/", "operator-1", "Operator One")
             .fold({ error("first call failed: $it") }, { it })
 
@@ -42,18 +41,14 @@ class IdentityUseCaseTest {
             { error("expected the existing identity, got $it") },
             { identity ->
                 identity.id shouldBe first.id
-                identity.displayName shouldBe "Operator One" // pas réécrit par la reconnexion
+                identity.displayName shouldBe "Operator One"
             },
         )
         repository.store.size shouldBe 1
     }
 
     @Test
-    fun `findOrCreate should recover the existing identity when creation races into a duplicate key`() {
-        // Simule la course : deux appels sur la même paire (issuer, subject) où le second se heurte
-        // à l'unicité que IdentityFakeRepository fait respecter exactement comme
-        // IdentityMongoRepository face à l'index unique de LOT0-03 (DuplicateKeyException →
-        // "identity.duplicate.issuer.subject").
+    fun `findOrCreate should recover the existing identity when two concurrent calls race into the same duplicate key`() {
         val existing = useCase.findOrCreate("https://idp.test/", "operator-2", "Operator Two")
             .fold({ error("setup failed: $it") }, { it })
 
@@ -66,7 +61,7 @@ class IdentityUseCaseTest {
     }
 
     @Test
-    fun `findOrCreate should propagate a technical error instead of masking it as a creation failure`() {
+    fun `findOrCreate should propagate a technical error as TechnicalError specifically, not mask it as a duplicate-key creation failure`() {
         val failingRepository = object : IdentityRepository {
             override fun save(identity: Identity) = repository.save(identity)
             override fun findById(id: IdentityId) = repository.findById(id)
@@ -79,9 +74,6 @@ class IdentityUseCaseTest {
 
         result.fold(
             { error ->
-                // `TechnicalError` EST un `DomainError` (backend.md hiérarchie) : on vérifie le
-                // type précis, pas seulement "une erreur métier" — sinon ce test passerait même si
-                // le use case masquait la panne technique en "identity.duplicate.issuer.subject".
                 (error is TechnicalError) shouldBe true
                 (error as TechnicalError).messageKey shouldBe "identity.lookup.failed"
             },

@@ -13,7 +13,6 @@ import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
 
-/** Même logique référentielle que `GrantMongoRepository`, en mémoire — patron `testing.md` (contract interface). */
 class GrantFakeRepository(
     private val identityExposedService: IdentityExposedService,
     private val storeRepository: StoreRepository,

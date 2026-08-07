@@ -12,18 +12,6 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.Instant
 
-/**
- * Exécute les [ChangeUnit] de tous les modules, une fois, dans l'ordre, sous verrou distribué
- * ShedLock — utile dès qu'une deuxième instance démarre en parallèle (pas le cas au lot 0, mais le
- * coût de le poser maintenant est nul : ShedLock est déjà dans la pile et déjà prouvé sur Boot 4.1,
- * D14).
- *
- * Idempotent : la collection `migrations` retient les `id` déjà appliqués — un changeunit déjà
- * exécuté n'est jamais rejoué. Les opérations elles-mêmes (création d'index, validateur de
- * collection) sont en plus naturellement idempotentes côté MongoDB, mais ce registre documente ce
- * qui a été appliqué et évite de rejouer une future migration plus lourde (backfill de données)
- * pour rien.
- */
 @Component
 class MigrationRunner(
     private val mongoTemplate: MongoTemplate,

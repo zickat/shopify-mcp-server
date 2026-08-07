@@ -12,7 +12,6 @@ class IdentityExposedServiceFake : IdentityExposedService {
 
     override fun exists(identityId: String): Boolean = identityId in existingIds
 
-    /** Même sémantique find-or-create que la vraie implémentation, en mémoire. */
     override fun resolve(issuer: String, subject: String): Either<UseCaseError, String> {
         val id = byIssuerSubject.getOrPut(issuer to subject) {
             ObjectId().toHexString().also { existingIds.add(it) }

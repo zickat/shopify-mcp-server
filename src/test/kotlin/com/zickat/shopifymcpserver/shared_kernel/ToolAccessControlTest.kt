@@ -3,7 +3,6 @@ package com.zickat.shopifymcpserver.shared_kernel
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-/** `LOT0-06`, schema.md §6 — le mécanisme de classification lecture/mutation, avec des outils fixtures. */
 class ToolAccessControlTest {
 
     private class ReadToolFixture : ToolUseCase {
@@ -14,7 +13,6 @@ class ToolAccessControlTest {
         override val kind = UseCaseKind.MUTATION
     }
 
-    /** Aucune classification déclarée — schema.md §6 : « fermé par défaut ». */
     private class UnclassifiedToolFixture : ToolUseCase
 
     @Test

@@ -13,22 +13,11 @@ import kotlin.time.Clock
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
-/**
- * `LOT0-06`, schema.md §2 étape « identity WHERE issuer+subject » : retrouve l'identité d'un
- * principal validé par le resource server (`LOT0-05`), ou la crée si c'est sa première présentation
- * — le seul geste que cette classe fait au-delà d'une lecture, et il ne confère **aucun** accès :
- * `AccessResolutionUseCase` (module `tenancy`) refuse toujours une identité sans grant, qu'elle
- * soit neuve ou non (schema.md §5, « s'authentifier ne donne aucun accès »).
- */
 @Component
 class IdentityUseCase(
     private val identityRepository: IdentityRepository,
     private val clock: Clock = Clock.System,
 ) {
-    /**
-     * `displayName` n'est utilisé qu'à la création — une identité déjà connue garde le nom qu'elle
-     * avait, il n'est jamais réécrit par une reconnexion.
-     */
     fun findOrCreate(issuer: String, subject: String, displayName: String): Either<UseCaseError, Identity> =
         identityRepository.findByIssuerAndSubject(issuer, subject).fold(
             ifLeft = { error ->
@@ -41,17 +30,16 @@ class IdentityUseCase(
         create(issuer, subject, displayName).fold(
             ifLeft = { error ->
                 if (error is DomainError && error.messageKey == DUPLICATE_ISSUER_SUBJECT) {
-                    // Concurrence : deux requêtes simultanées ont découvert l'absence de l'identité
-                    // avant que l'une des deux ne l'ait créée — l'index unique (issuer, subject),
-                    // LOT0-03, fait échouer la seconde écriture. On relit au lieu de faire échouer
-                    // une requête par ailleurs parfaitement légitime.
-                    identityRepository.findByIssuerAndSubject(issuer, subject)
+                    recoverFromConcurrentDuplicateCreation(issuer, subject)
                 } else {
                     error.left()
                 }
             },
             ifRight = { it.right() },
         )
+
+    private fun recoverFromConcurrentDuplicateCreation(issuer: String, subject: String): Either<UseCaseError, Identity> =
+        identityRepository.findByIssuerAndSubject(issuer, subject)
 
     private fun create(issuer: String, subject: String, displayName: String): Either<UseCaseError, Identity> =
         identityRepository.save(

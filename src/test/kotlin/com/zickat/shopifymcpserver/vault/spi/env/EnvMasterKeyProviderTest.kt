@@ -7,7 +7,6 @@ import java.security.SecureRandom
 import java.util.Base64
 import org.junit.jupiter.api.Test
 
-/** `LOT0-04` — adaptateur `System.getenv()`, `env` injecté pour ne jamais toucher le vrai environnement du process. */
 class EnvMasterKeyProviderTest {
 
     private val random = SecureRandom()

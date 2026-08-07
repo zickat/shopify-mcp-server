@@ -17,21 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoTemplate
 
-/**
- * `LOT0-07.md`, « comment on vérifie que c'est fini » : « sur un scénario où l'action métier
- * réussit mais la réponse échoue ensuite (à simuler avec un point d'injection de panne), la ligne
- * d'audit existe déjà en base — elle a précédé, pas suivi. »
- *
- * **Le point d'injection de panne** : [buildResponseThatAlwaysFails] — la fonction qui, dans un
- * appelant réel, transformerait le résultat métier renvoyé par [AuditLogUseCase.execute] en
- * réponse HTTP/MCP. Elle est délibérément placée EN DEHORS de [AuditLogUseCase.execute] : c'est
- * exactement le découpage que la classe impose (KDoc `execute`, « l'écriture d'audit précède la
- * réponse ») — tout ce que l'appelant fait du résultat, y compris échouer, s'exécute après que la
- * ligne d'audit soit déjà validée en base par une vraie instance MongoDB (Testcontainers, pas de
- * fake). Ce n'est pas un contournement du test : `execute()` étant une fonction synchrone,
- * l'insertion Mongo est déjà commitée au moment où elle rend la main — rien de ce que fait
- * l'appelant ensuite ne peut plus l'annuler ou la retarder.
- */
 @SpringBootTest
 class AuditPrecedesResponseIntegrationTest : WithMongoDBContainer() {
 
@@ -61,7 +46,6 @@ class AuditPrecedesResponseIntegrationTest : WithMongoDBContainer() {
     private fun registerIdentity(): String =
         identityRepository.save(IdentityFixtures().build()).fold({ error("fixture setup failed: $it") }, { it.id.value })
 
-    /** Le point d'injection de panne décrit dans la KDoc de classe. */
     private fun buildResponseThatAlwaysFails(businessResult: Any): Nothing =
         throw IllegalStateException("simulated failure while building the response, downstream of a committed audit write")
 
@@ -78,8 +62,6 @@ class AuditPrecedesResponseIntegrationTest : WithMongoDBContainer() {
             toolInput = mapOf("query" to "shoes"),
         ) { "business result".right() }
 
-        // `execute()` a déjà rendu la main ici — l'écriture Mongo est commitée, quoi qu'il arrive
-        // ensuite.
         actionResult.isRight() shouldBe true
 
         val downstreamFailure = runCatching { buildResponseThatAlwaysFails(actionResult) }

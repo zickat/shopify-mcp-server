@@ -11,15 +11,6 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
 
-/**
- * `schema.md` §3 :
- * - validateur de schéma `enum ['viewer','operator']` sur `role`, appliqué **en base**
- *   (`$jsonSchema`, via une commande brute `create`/`collMod` — pas d'API Spring Data pour ça,
- *   volontairement écrit sans deviner une signature, testé directement).
- * - index unique **partiel** `(identityId, storeId)` avec `partialFilterExpression:
- *   { revokedAt: null }` — un seul grant actif par couple, garanti par le moteur.
- * - index de lecture chaude `(identityId, storeId, revokedAt)`.
- */
 @Component
 class GrantChangeUnit : ChangeUnit {
     override val id = "grant-001-validator-and-indexes"

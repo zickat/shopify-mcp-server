@@ -24,12 +24,6 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import java.time.Instant
 
-/**
- * `LOT0-08` — exerce la composition réelle du pipeline (résolution d'accès, autorisation par
- * rôle, exécution, audit) avec des fakes (`testing.md` §Tests unitaires) : pas de Spring, pas de
- * transport MCP, pas de Mongo. Le câblage HTTP/JSON-RPC réel est couvert séparément par
- * `WhoAmIToolIntegrationTest`/`TouchStoreToolIntegrationTest`.
- */
 class AuthenticatedToolPipelineTest {
 
     private object ReadUseCase : ToolUseCase {
@@ -46,7 +40,7 @@ class AuthenticatedToolPipelineTest {
 
     private val identityExposedService = IdentityExposedServiceFake()
     private val accessExposedService = AccessExposedServiceFake()
-    private val storeExposedService = StoreExposedServiceFake().apply { existing[storeId] = false }
+    private val storeExposedService = StoreExposedServiceFake().apply { archivedByStoreId[storeId] = false }
     private val auditRepository = AuditLogFakeRepository(identityExposedService, storeExposedService)
     private val auditExposedService = AuditExposedServiceImpl(AuditLogUseCase(auditRepository))
     private val pipeline = AuthenticatedToolPipeline(identityExposedService, accessExposedService, auditExposedService)
@@ -69,8 +63,6 @@ class AuthenticatedToolPipelineTest {
 
     @Test
     fun `should deny closed and journal with a null identityId when there is no authenticated principal at all`() {
-        // Pas de SecurityContextHolder.getContext().authentication du tout — régression de config
-        // hypothétique, jamais censée arriver derrière anyRequest().authenticated() (LOT0-05).
         val exception = shouldThrow<UseCaseErrorException> {
             pipeline.run("whoami", ReadUseCase, storeId, mapOf("storeId" to storeId)) { _, _ -> "unreachable" }
         }

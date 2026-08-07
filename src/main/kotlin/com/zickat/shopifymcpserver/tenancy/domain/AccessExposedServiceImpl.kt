@@ -7,10 +7,6 @@ import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import org.springframework.stereotype.Service
 
-/**
- * Implémentation de [AccessExposedService] — délègue à [AccessResolutionUseCase] sans rien y
- * ajouter. Voir la KDoc de [AccessExposedService] pour la raison d'être de cette classe.
- */
 @Service
 class AccessExposedServiceImpl(
     private val accessResolutionUseCase: AccessResolutionUseCase,

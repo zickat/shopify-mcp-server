@@ -10,7 +10,7 @@ class StoreCredentialFakeRepositoryTest : StoreCredentialRepositoryReferentialIn
 
     override fun registerStore(archived: Boolean): String {
         val id = ObjectId().toHexString()
-        storeExposedService.existing[id] = archived
+        storeExposedService.archivedByStoreId[id] = archived
         return id
     }
 }

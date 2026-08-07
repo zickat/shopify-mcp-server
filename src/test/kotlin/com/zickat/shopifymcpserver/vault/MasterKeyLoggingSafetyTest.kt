@@ -13,20 +13,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
-/**
- * `LOT0-04` point 3 — le critère de vérification qui compte le plus, et sa forme est prescrite :
- * pas un test qui vérifie l'absence d'un `println`, mais un test qui **provoque un échec réel**
- * (clé absente, déchiffrement qui échoue), **capture ce qui a réellement été écrit dans les logs**,
- * et asserte que la clé maîtresse n'y apparaît nulle part.
- *
- * `security.md`, incident du 2026-08-06 : le risque n'est pas hypothétique sur ce projet — un mode
- * verbeux d'un outil tiers a déjà exposé un secret en clair dans un journal, pendant un diagnostic.
- * Ici l'enjeu est pire : pas un jeton Shopify de 24 h à scope limité, la clé qui protège tout le
- * coffre.
- */
 class MasterKeyLoggingSafetyTest {
 
-    private val storeExposedService = StoreExposedServiceFake().apply { existing["store-1"] = false }
+    private val storeExposedService = StoreExposedServiceFake().apply { archivedByStoreId["store-1"] = false }
     private val repository = StoreCredentialFakeRepository(storeExposedService)
 
     private lateinit var appender: ListAppender<ILoggingEvent>
@@ -46,7 +35,6 @@ class MasterKeyLoggingSafetyTest {
         appender.stop()
     }
 
-    /** Scénario « clé absente » : rien à trouver, mais couvre le chemin d'échec que la tâche nomme explicitement. */
     @Test
     fun `should not leak anything when the master key is missing`() {
         val masterKeyProvider = MasterKeyProviderFake().remove(ACTIVE_MASTER_KEY_REF)
@@ -57,13 +45,6 @@ class MasterKeyLoggingSafetyTest {
         result.isLeft() shouldBe true
     }
 
-    /**
-     * Scénario « déchiffrement qui échoue », le plus significatif : la clé maîtresse **est**
-     * présente et résolue avec succès (elle a réellement existé en mémoire pendant l'appel), le
-     * `wrappedDek` stocké est corrompu après coup pour forcer un vrai échec `AEADBadTagException`
-     * au moment de `reveal`. On capture réellement ce que Logback a écrit et on y cherche la valeur
-     * de la clé — pas une supposition sur ce que le code est censé faire.
-     */
     @Test
     fun `should not leak the master key value when decryption fails with the key actually present`() {
         val masterKeyProvider = MasterKeyProviderFake()
@@ -82,7 +63,7 @@ class MasterKeyLoggingSafetyTest {
 
         val result = useCase.reveal(id)
 
-        result.isLeft() shouldBe true // l'échec doit être réel, sinon ce test ne prouve rien
+        result.isLeft() shouldBe true
 
         val loggedText = appender.list.joinToString("\n") { event ->
             val throwableText = event.throwableProxy?.let { proxy ->
@@ -91,7 +72,7 @@ class MasterKeyLoggingSafetyTest {
             "${event.formattedMessage}\n$throwableText"
         }
 
-        appender.list.isEmpty() shouldBe false // le scénario doit avoir réellement produit une trace à inspecter
+        appender.list.isEmpty() shouldBe false
         loggedText.contains(masterKeyBase64) shouldBe false
     }
 }

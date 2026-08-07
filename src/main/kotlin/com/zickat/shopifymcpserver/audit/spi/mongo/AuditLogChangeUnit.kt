@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.index.Index
 import org.springframework.stereotype.Component
 
-/** `schema.md` §3 : index `(storeId, occurredAt desc)` et `(identityId, occurredAt desc)`. */
 @Component
 class AuditLogChangeUnit : ChangeUnit {
     override val id = "audit-log-001-read-indexes"

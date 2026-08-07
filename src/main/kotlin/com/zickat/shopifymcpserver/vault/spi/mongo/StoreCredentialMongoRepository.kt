@@ -13,7 +13,6 @@ import org.bson.types.ObjectId
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Repository
 
-/** `schema.md` §3 — `storeCredential → store` : intégrité référentielle inter-modules via l'`exposed_interface` de `tenancy`, jamais un import direct. */
 @Repository
 class StoreCredentialMongoRepository(
     private val springDataRepository: StoreCredentialSpringDataMongoRepository,

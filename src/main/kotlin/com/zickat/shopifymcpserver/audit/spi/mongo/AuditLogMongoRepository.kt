@@ -17,19 +17,6 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Repository
 
-/**
- * **Append-only par construction, pas seulement par convention** : cette classe n'appelle jamais
- * `MongoTemplate.save()` (upsert), `.remove()` ni `.updateFirst()` — uniquement `.insert()`
- * (échoue sur un `_id` déjà présent, ne met jamais à jour) et `.find()`. Pas de repository Spring
- * Data ici : `MongoRepository<T,ID>` synthétiserait `delete`/`deleteById`, exactement ce que
- * l'invariant append-only interdit.
- *
- * `schema.md` §3 — `auditLog → identity` (si non nul) et `auditLog → store` : vérifiés via les
- * `exposed_interface` de `identity`/`tenancy`. **Existence seule, jamais « actif »/« non
- * archivé »** : une identité révoquée ou une boutique archivée doivent pouvoir être journalisées
- * (ex. « accès refusé sur boutique archivée ») — le journal ne doit pas refuser d'écrire ce
- * qu'il existe justement pour tracer.
- */
 @Repository
 class AuditLogMongoRepository(
     private val mongoTemplate: MongoTemplate,
@@ -61,7 +48,6 @@ class AuditLogMongoRepository(
     }
 }
 
-/** Séquence une liste d'`Either` en `Either<Erreur, Liste>` — petit utilitaire local. */
 private fun <T> List<Either<UseCaseError, T>>.sequenceEither(): Either<UseCaseError, List<T>> {
     val result = mutableListOf<T>()
     for (either in this) {

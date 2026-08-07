@@ -7,12 +7,11 @@ import com.zickat.shopifymcpserver.vault.domain.repositories.ACTIVE_MASTER_KEY_R
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-/** `LOT0-04` — round-trip et rotation du coffre, orchestrés au niveau du use case (fakes uniquement). */
 class StoreCredentialUseCaseTest {
 
     private val storeExposedService = StoreExposedServiceFake().apply {
-        existing["store-1"] = false // existe, pas archivée
-        existing["store-2"] = false
+        archivedByStoreId["store-1"] = false
+        archivedByStoreId["store-2"] = false
     }
     private val repository = StoreCredentialFakeRepository(storeExposedService)
     private val masterKeyProvider = MasterKeyProviderFake()
