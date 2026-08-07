@@ -1,0 +1,112 @@
+{
+  "tool": "search_resources",
+  "toolInput": {
+    "resource_type": "collection",
+    "status_filter": "blocked"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Aucun(e) collection(s) trouvé(e) pour ce filtre."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query SearchResources($query: String, $cursor: String) {\n            collections(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                  summary: metafield(namespace: \"custom\", key: \"summary\") { value }\n                  secondarySignal: metafield(namespace: \"custom\", key: \"intro_text\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "query": null,
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collections": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjo2OTMyMzU5NzQ0NjksImxhc3RfdmFsdWUiOiI2OTMyMzU5NzQ0NjkifQ=="
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/692391772485",
+                  "title": "Page d’accueil",
+                  "handle": "frontpage",
+                  "contentStatus": null,
+                  "summary": null,
+                  "secondarySignal": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/693232075077",
+                  "title": "Outils et réparation vélo",
+                  "handle": "outils-et-reparation-velo",
+                  "contentStatus": {
+                    "value": "to_review"
+                  },
+                  "summary": {
+                    "value": "Le kit minimal pour réparer, entretenir et sécuriser son vélo en autonomie sur route : démonte-pneus PP, outil multifonction 11-en-1, huile de chaîne cire sèche et antivol chaîne pour les arrêts en cours de route."
+                  },
+                  "secondarySignal": {
+                    "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Une crevaison, une vis desserrée ou une pause ravitaillement sans possibilité de garder l'œil sur son vélo : ces cinq références couvrent les imprévus les plus fréquents en voyage à vélo sans alourdir le chargement.\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Pneu : lot de 4 démonte-pneus plastique PP — ne raye pas les jantes alu, ne pince pas la chambre.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Mécanique : outil multifonction 11-en-1 avec clés Allen, coupe-chaîne intégré et clé Torx T25.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Transmission : huile de chaîne cire sèche 60ml — la chaîne reste propre plus longtemps entre deux entretiens.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Crevaison tubeless : kit gonfleur CO2 et réparation tubeless — mèches et cartouche pour boucher et regonfler sans démonter la roue.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Sécurité : antivol chaîne 0,6 m acier allié, gaine anti-rayure — sécurise le vélo le temps d'un arrêt en village ou d'un ravitaillement, pas un stationnement prolongé en ville dense.\"}]}]}]}"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/693232206149",
+                  "title": "Vêtements cyclisme",
+                  "handle": "vetements-cyclisme",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Tenues techniques pour rouler confortablement par tout temps : maillot + cuissard gel, coupe-vent ultraléger et softshell imperméable pour toutes les conditions du cycliste itinérant."
+                  },
+                  "secondarySignal": {
+                    "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"S'habiller juste pour une sortie à vélo, c'est éviter la surchauffe en montée et le refroidissement dans les descentes. Cette sélection couvre les trois couches essentielles du cycliste itinérant : la base respirante, la protection légère contre le vent et le froid, et la couche imperméable pour les mauvais jours.\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Base technique : ensemble maillot manches courtes + cuissard gel 19D, respirant et séchage rapide, disponible jusqu'au 5XL.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Protection légère : coupe-vent ultraléger à capuche et protection UV, se glisse dans une poche de maillot.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Couche imperméable : veste softshell à capuche avec traitement déperlant, manchettes velcro et bandes réfléchissantes.\"}]}]}]}"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/693235941701",
+                  "title": "Couchage et Bivouac",
+                  "handle": "couchage-et-bivouac",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Tout ce qu'il faut pour dormir léger en autonomie : tente, sac de couchage, matelas, éclairage et préparation des repas pour le bivouac à vélo."
+                  },
+                  "secondarySignal": {
+                    "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Le bivouac à vélo impose de ne rien emporter en double — chaque gramme compte, mais renoncer au confort d'une nuit réparatrice coûte cher le lendemain. Cette sélection couvre les cinq fonctions clés du campement nomade : abri, couchage, éclairage, eau et alimentation, choisies pour leur rapport poids/performance et leur compatibilité avec un chargement de vélo.\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Abri et couchage : tente dôme 1,5 kg, sac de couchage 3 saisons couplable, matelas gonflable avec oreiller intégré.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Éclairage et hydratation : lampe frontale 2000 lm USB-C avec capteur de mouvement, filtre à paille 4 étapes sans batterie.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Cuisine : kit inox 8 pièces + réchaud piézo 110 g.\"}]}]}]}"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/693235974469",
+                  "title": "Sacoches et rangements",
+                  "handle": "sacoches-et-rangements",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Sacoches de guidon, sacs étanches et accessoires de fixation pour organiser le chargement d'un vélo de bikepacking, gravel ou touring."
+                  },
+                  "secondarySignal": {
+                    "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Bien répartir le poids sur un vélo en voyage, c'est autant une question de confort que de maniabilité. Cette sélection couvre les postes de rangement les plus utiles au quotidien : le guidon pour les accès rapides, la tige de selle pour le volume principal et la fixation d'appoint pour tout le reste.\"}]},{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"Avant de choisir ces sacoches, on a d'abord écrit les guides qui répondent aux questions qu'on se pose tous en préparant un premier voyage à vélo — comment les fixer sans qu'elles ballottent, ce que veut vraiment dire « étanche » sur une fiche produit, laquelle installer en premier entre guidon et cadre. Cette sélection en découle, pas l'inverse.\"}]},{\"type\":\"list\",\"listType\":\"unordered\",\"children\":[{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Sacoche de guidon : 1,7L convertible en bandoulière, ou isolante pour gourde.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Volume principal : sac étanche roll-top 3–75L, adaptable à toutes les configurations de porte-bagage.\"}]},{\"type\":\"list-item\",\"children\":[{\"type\":\"text\",\"value\":\"Fixation et accès : support téléphone click anti-vibrations, sandow élastique avec crochets résistants.\"}]}]}]}"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

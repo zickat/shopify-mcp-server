@@ -1,0 +1,13 @@
+{
+  "tool": "list_stores",
+  "toolInput": {},
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutiques configurées sur ce poste :\n  - velotrip\n  - lurelab\n\nAucune boutique sélectionnée — les outils refuseront d'agir tant que ce n'est pas fait."
+      }
+    ]
+  },
+  "calls": []
+}

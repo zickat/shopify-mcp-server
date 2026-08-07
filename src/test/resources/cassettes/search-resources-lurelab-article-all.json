@@ -1,0 +1,96 @@
+{
+  "tool": "search_resources",
+  "toolInput": {
+    "resource_type": "article",
+    "status_filter": "all"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "4 guide(s) trouvé(e)(s).\n\n- Guides (guides) — statut pipeline : untreated — id: gid://shopify/Article/1002291200385\n- Quel leurre choisir quand on débute la pêche aux carnassiers ? (quel-leurre-choisir-quand-on-debute-la-peche-aux-carnassiers) — statut pipeline : published — id: gid://shopify/Article/1002291331457\n- Où pêcher le carnassier près de chez soi quand on débute ? (ou-pecher-le-carnassier-pres-de-chez-soi-quand-on-debute) — statut pipeline : published — id: gid://shopify/Article/1002291396993\n- Réglementation de la pêche aux carnassiers : ce qu'il faut savoir avant sa première sortie (reglementation-de-la-peche-aux-carnassiers-ce-quil-faut-savoir-avant-sa-premiere-sortie) — statut pipeline : published — id: gid://shopify/Article/1002291462529"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query SearchResources($query: String, $cursor: String) {\n            articles(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                  summary: metafield(namespace: \"custom\", key: \"summary\") { value }\n                  secondarySignal: metafield(namespace: \"custom\", key: \"sections\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "query": null,
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "articles": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjoxMDAyMjkxNDYyNTI5LCJsYXN0X3ZhbHVlIjoiMTAwMjI5MTQ2MjUyOSJ9"
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Article/1002291200385",
+                  "title": "Guides",
+                  "handle": "guides",
+                  "contentStatus": null,
+                  "summary": null,
+                  "secondarySignal": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/1002291331457",
+                  "title": "Quel leurre choisir quand on débute la pêche aux carnassiers ?",
+                  "handle": "quel-leurre-choisir-quand-on-debute-la-peche-aux-carnassiers",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Ce guide fait le tour des grandes familles de leurres utilisées pour la pêche aux carnassiers en France — leurre souple, leurre dur, leurre de surface, cuiller, spinnerbait — et explique à quoi sert chacune. Il ne classe pas de \"meilleur\" leurre : il donne les repères pour comprendre ce qu'on achète et pourquoi, avant un premier choix."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/488034894209\",\"gid://shopify/Metaobject/488034926977\",\"gid://shopify/Metaobject/488034959745\",\"gid://shopify/Metaobject/488034992513\",\"gid://shopify/Metaobject/488035025281\",\"gid://shopify/Metaobject/488035058049\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/1002291396993",
+                  "title": "Où pêcher le carnassier près de chez soi quand on débute ?",
+                  "handle": "ou-pecher-le-carnassier-pres-de-chez-soi-quand-on-debute",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Ce guide présente les grands types de plans d'eau où l'on trouve des carnassiers en France — rivière, lac, étang, retenue ou barrage — et ce qui différencie chacun pour un débutant qui cherche son premier poste de pêche. Il ne traite pas des saisons (couvertes par un autre guide) ni de la réglementation propre à chaque site."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/488035680641\",\"gid://shopify/Metaobject/488035713409\",\"gid://shopify/Metaobject/488035746177\",\"gid://shopify/Metaobject/488035778945\",\"gid://shopify/Metaobject/488035811713\",\"gid://shopify/Metaobject/488035844481\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/1002291462529",
+                  "title": "Réglementation de la pêche aux carnassiers : ce qu'il faut savoir avant sa première sortie",
+                  "handle": "reglementation-de-la-peche-aux-carnassiers-ce-quil-faut-savoir-avant-sa-premiere-sortie",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Ce guide explique les grandes règles à connaître avant une première sortie de pêche au carnassier en France : la carte de pêche, les tailles légales de capture, les périodes de fermeture et les zones où la pêche est restreinte. Les valeurs exactes — dates, tailles, tarifs — varient selon les départements et les années : ce guide donne le cadre général, pas les chiffres à jour, à vérifier auprès de sa fédération de pêche avant de partir."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/488037745025\",\"gid://shopify/Metaobject/488037777793\",\"gid://shopify/Metaobject/488037810561\",\"gid://shopify/Metaobject/488037876097\",\"gid://shopify/Metaobject/488037908865\",\"gid://shopify/Metaobject/488037941633\"]"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

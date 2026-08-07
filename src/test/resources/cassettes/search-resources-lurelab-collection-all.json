@@ -1,0 +1,54 @@
+{
+  "tool": "search_resources",
+  "toolInput": {
+    "resource_type": "collection",
+    "status_filter": "all"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "1 collection(s) trouvé(e)(s).\n\n- Home page (frontpage) — statut pipeline : untreated — id: gid://shopify/Collection/689847599489"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query SearchResources($query: String, $cursor: String) {\n            collections(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                  summary: metafield(namespace: \"custom\", key: \"summary\") { value }\n                  secondarySignal: metafield(namespace: \"custom\", key: \"intro_text\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "query": null,
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collections": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjo2ODk4NDc1OTk0ODksImxhc3RfdmFsdWUiOiI2ODk4NDc1OTk0ODkifQ=="
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/689847599489",
+                  "title": "Home page",
+                  "handle": "frontpage",
+                  "contentStatus": null,
+                  "summary": null,
+                  "secondarySignal": null
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

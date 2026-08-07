@@ -1,0 +1,893 @@
+{
+  "tool": "search_resources",
+  "toolInput": {
+    "resource_type": "article",
+    "status_filter": "all"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "59 guide(s) trouvé(e)(s).\n\n- Kit de réparation vélo : l'essentiel pour partir en autonomie (kit-de-reparation-velo-lessentiel-pour-partir-en-autonomie) — statut pipeline : published — id: gid://shopify/Article/751345107269\n- Comment choisir ses sacoches de bikepacking (comment-choisir-ses-sacoches-de-bikepacking) — statut pipeline : published — id: gid://shopify/Article/751345140037\n- Partir en bivouac à vélo : la check-list complète (partir-en-bivouac-a-velo-la-check-list-complete) — statut pipeline : published — id: gid://shopify/Article/751345172805\n- S'habiller pour le cyclotourisme longue distance (shabiller-pour-le-cyclotourisme-longue-distance) — statut pipeline : published — id: gid://shopify/Article/751345205573\n- Comment bien préparer mon premier voyage en bikepacking ? (comment-bien-preparer-mon-premier-voyage-en-bikepacking) — statut pipeline : published — id: gid://shopify/Article/751345336645\n- Premier week-end en bikepacking : le kit complet pour partir léger (premier-week-end-en-bikepacking-le-kit-complet-pour-partir-leger) — statut pipeline : published — id: gid://shopify/Article/751345369413\n- Traverser les Vosges du Nord à vélo : forêts et châteaux de grès rose, loin des foules (traverser-les-vosges-du-nord-a-velo-forets-et-chateaux-de-gres-rose-loin-des-foules) — statut pipeline : published — id: gid://shopify/Article/751471100229\n- À vélo sur les routes de contrebandiers du Jura : le plateau horloger loin de la Grande Traversée (a-velo-sur-les-routes-de-contrebandiers-du-jura-le-plateau-horloger-loin-de-la-grande-traversee) — statut pipeline : published — id: gid://shopify/Article/751471132997\n- Le tour du Causse Méjean à vélo : la Mongolie du bikepacking français (le-tour-du-causse-mejean-a-velo-la-mongolie-du-bikepacking-francais) — statut pipeline : published — id: gid://shopify/Article/751471165765\n- La traversée du Volvestre à vélo : l'Ariège sans les cols mythiques (la-traversee-du-volvestre-a-velo-lariege-sans-les-cols-mythiques) — statut pipeline : published — id: gid://shopify/Article/751471198533\n- La traversée du Vercors à vélo par le Royans, la Drôme et le Trièves, loin de la Via Vercors (la-traversee-des-hauts-plateaux-du-vercors-a-velo-sept-cols-loin-de-la-via-vercors) — statut pipeline : published — id: gid://shopify/Article/751471231301\n- Alta Rocca et plateau du Coscione à vélo : la Corse loin du Cap Corse et de la Gravel20 (alta-rocca-et-plateau-du-coscione-a-velo-la-corse-loin-du-cap-corse-et-de-la-gravel20) — statut pipeline : published — id: gid://shopify/Article/751471264069\n- Sacoche de guidon ou sacoche de cadre : laquelle installer en premier ? (sacoche-de-guidon-ou-sacoche-de-cadre-laquelle-installer-en-premier) — statut pipeline : published — id: gid://shopify/Article/751588901189\n- Étanche, déperlant ou \"waterproof\" annoncé : ce que dit vraiment chaque sacoche (etanche-deperlant-ou-waterproof-annonce-ce-que-dit-vraiment-chaque-sacoche) — statut pipeline : published — id: gid://shopify/Article/751588933957\n- Sacoches de bikepacking ou porte-bagages rigide : quel système de rangement choisir selon son vélo (sacoches-de-bikepacking-ou-porte-bagages-rigide-quel-systeme-de-rangement-choisir-selon-son-velo) — statut pipeline : published — id: gid://shopify/Article/751588966725\n- Que ranger dans chaque sacoche : la check-list par volume pour un voyage de plusieurs jours (que-ranger-dans-chaque-sacoche-la-check-list-par-volume-pour-un-voyage-de-plusieurs-jours) — statut pipeline : published — id: gid://shopify/Article/751588999493\n- Bien fixer sa sacoche de vélo pour éviter le ballottement et les frottements (bien-fixer-sa-sacoche-de-velo-pour-eviter-le-ballottement-et-les-frottements) — statut pipeline : published — id: gid://shopify/Article/751589032261\n- Choisir sa tente de bikepacking : poids, montage et étanchéité (choisir-sa-tente-de-bikepacking-poids-montage-et-etancheite) — statut pipeline : published — id: gid://shopify/Article/751589130565\n- Sac de couchage 3 saisons : quelle température et quel format pour le bikepacking (sac-de-couchage-3-saisons-quelle-temperature-et-quel-format-pour-le-bikepacking) — statut pipeline : published — id: gid://shopify/Article/751589163333\n- Cuisine de bivouac : réchaud et popote, ce qu'il faut vraiment emporter selon le nombre de personnes (cuisine-de-bivouac-rechaud-et-popote-ce-quil-faut-vraiment-emporter-selon-le-nombre-de-personnes) — statut pipeline : published — id: gid://shopify/Article/751589196101\n- Bien dormir en bivouac à vélo : matelas, isolation et qualité de sommeil (bien-dormir-en-bivouac-a-velo-matelas-isolation-et-qualite-de-sommeil) — statut pipeline : published — id: gid://shopify/Article/751589228869\n- Réparer son matériel de bivouac sur le terrain : les pannes les plus fréquentes (reparer-son-materiel-de-bivouac-sur-le-terrain-les-pannes-les-plus-frequentes) — statut pipeline : published — id: gid://shopify/Article/751589261637\n- Bien choisir son maillot de vélo (bien-choisir-son-maillot-de-velo) — statut pipeline : published — id: gid://shopify/Article/751643722053\n- Cuissard vélo : coupe, peau, tailles (guide homme & femme) (cuissard-velo-coupe-peau-tailles-guide-homme-femme) — statut pipeline : published — id: gid://shopify/Article/751643754821\n- Bien choisir ses chaussettes de vélo (bien-choisir-ses-chaussettes-de-velo) — statut pipeline : published — id: gid://shopify/Article/751643787589\n- Coupe-vent vélo : quand et lequel (coupe-vent-velo-quand-et-lequel) — statut pipeline : published — id: gid://shopify/Article/751643820357\n- Veste de pluie vélo : imperméabilité réelle (veste-de-pluie-velo-impermeabilite-reelle) — statut pipeline : published — id: gid://shopify/Article/751643853125\n- S'habiller à vélo en hiver / mi-saison (shabiller-a-velo-en-hiver-mi-saison) — statut pipeline : published — id: gid://shopify/Article/751643885893\n- Nettoyer et entretenir sa chaîne de vélo (nettoyer-et-entretenir-sa-chaine-de-velo) — statut pipeline : published — id: gid://shopify/Article/751643918661\n- Entretien vélo : le calendrier avant/pendant/après un voyage (entretien-velo-le-calendrier-avant-pendant-apres-un-voyage) — statut pipeline : published — id: gid://shopify/Article/751643951429\n- Bien lubrifier sa chaîne (cire sèche vs huile mouillée) (bien-lubrifier-sa-chaine-cire-seche-vs-huile-mouillee) — statut pipeline : published — id: gid://shopify/Article/751643984197\n- Réparer une crevaison tubeless sur le terrain (reparer-une-crevaison-tubeless-sur-le-terrain) — statut pipeline : published — id: gid://shopify/Article/751644016965\n- Changer une chambre à air à vélo (pas à pas) (changer-une-chambre-a-air-a-velo-pas-a-pas) — statut pipeline : published — id: gid://shopify/Article/751644049733\n- GPS vélo vs application téléphone : que choisir en bikepacking (gps-velo-vs-application-telephone-que-choisir-en-bikepacking) — statut pipeline : published — id: gid://shopify/Article/751644082501\n- Choisir un support téléphone pour vélo (choisir-un-support-telephone-pour-velo) — statut pipeline : published — id: gid://shopify/Article/751644115269\n- Bien s'éclairer à vélo la nuit et en bivouac (bien-seclairer-a-velo-la-nuit-et-en-bivouac) — statut pipeline : published — id: gid://shopify/Article/751644148037\n- Garder ses appareils chargés en autonomie (batterie & gestion d'énergie) (garder-ses-appareils-charges-en-autonomie-batterie-gestion-denergie) — statut pipeline : published — id: gid://shopify/Article/751644180805\n- Gourde ou poche à eau : comment s'hydrater à vélo (gourde-ou-poche-a-eau-comment-shydrater-a-velo) — statut pipeline : published — id: gid://shopify/Article/751644213573\n- Filtrer et traiter l'eau en bikepacking (filtrer-et-traiter-leau-en-bikepacking) — statut pipeline : published — id: gid://shopify/Article/751644246341\n- Poche à eau vélo : contenance et entretien (poche-a-eau-velo-contenance-et-entretien) — statut pipeline : published — id: gid://shopify/Article/751644279109\n- Sacoche de cadre : la choisir et la remplir (sacoche-de-cadre-la-choisir-et-la-remplir) — statut pipeline : published — id: gid://shopify/Article/751644311877\n- Sacoche vélo étanche : ce que « étanche » veut vraiment dire (sacoche-velo-etanche-ce-que-etanche-veut-vraiment-dire) — statut pipeline : published — id: gid://shopify/Article/751644344645\n- Quelle sacoche pour le gravel (quelle-sacoche-pour-le-gravel) — statut pipeline : published — id: gid://shopify/Article/751644377413\n- Tente 1 place ou 2 places pour le bikepacking (tente-1-place-ou-2-places-pour-le-bikepacking) — statut pipeline : published — id: gid://shopify/Article/751644410181\n- Où partir en bikepacking en France (ou-partir-en-bikepacking-en-france) — statut pipeline : published — id: gid://shopify/Article/751644475717\n- Vélo de randonnée : quel vélo pour voyager (velo-de-randonnee-quel-velo-pour-voyager) — statut pipeline : published — id: gid://shopify/Article/751644508485\n- Construire son itinéraire vélo (outils et méthode) (construire-son-itineraire-velo-outils-et-methode) — statut pipeline : published — id: gid://shopify/Article/751644541253\n- Budget d'un premier bikepacking : combien coûte l'équipement de base (budget-dun-premier-bikepacking-combien-coute-lequipement-de-base) — statut pipeline : published — id: gid://shopify/Article/751696773445\n- Les erreurs classiques du premier bikepacking — et comment les éviter (les-erreurs-classiques-du-premier-bikepacking-et-comment-les-eviter) — statut pipeline : published — id: gid://shopify/Article/751697068357\n- 10 astuces pour alléger son chargement sans sacrifier le confort (10-astuces-pour-alleger-son-chargement-sans-sacrifier-le-confort) — statut pipeline : published — id: gid://shopify/Article/751851438405\n- Partir plusieurs semaines à vélo : ravitaillement, linge et budget sur la durée (partir-plusieurs-semaines-a-velo-ravitaillement-linge-et-budget-sur-la-duree) — statut pipeline : published — id: gid://shopify/Article/751851536709\n- La Loire à vélo — châteaux et voie verte (la-loire-a-velo-chateaux-et-voie-verte) — statut pipeline : published — id: gid://shopify/Article/751851602245\n- Astuces anti-crevaison : réduire les risques avant qu'ils arrivent (astuces-anti-crevaison-reduire-les-risques-avant-quils-arrivent) — statut pipeline : published — id: gid://shopify/Article/751851635013\n- Le Luberon à vélo — Provence (le-luberon-a-velo-provence) — statut pipeline : published — id: gid://shopify/Article/751851667781\n- Astuces pour économiser sa batterie et rester connecté en voyage (astuces-pour-economiser-sa-batterie-et-rester-connecte-en-voyage) — statut pipeline : published — id: gid://shopify/Article/751851700549\n- Bivouac discret : les bonnes pratiques pour un bivouac respectueux (bivouac-discret-les-bonnes-pratiques-pour-un-bivouac-respectueux) — statut pipeline : published — id: gid://shopify/Article/751851766085\n- Les gorges du Verdon à vélo — Alpes du Sud (les-gorges-du-verdon-a-velo-alpes-du-sud) — statut pipeline : published — id: gid://shopify/Article/751851831621\n- Traverser un pays à vélo : combien de temps prévoir et comment découper son itinéraire (traverser-un-pays-a-velo-combien-de-temps-prevoir-et-comment-decouper-son-itineraire) — statut pipeline : published — id: gid://shopify/Article/751851864389\n- Voyage au long cours : tenir la distance mentalement et physiquement (voyage-au-long-cours-tenir-la-distance-mentalement-et-physiquement) — statut pipeline : published — id: gid://shopify/Article/751851929925"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query SearchResources($query: String, $cursor: String) {\n            articles(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                  summary: metafield(namespace: \"custom\", key: \"summary\") { value }\n                  secondarySignal: metafield(namespace: \"custom\", key: \"sections\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "query": null,
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "articles": {
+            "pageInfo": {
+              "hasNextPage": true,
+              "endCursor": "eyJsYXN0X2lkIjo3NTE4NTE0Mzg0MDUsImxhc3RfdmFsdWUiOiI3NTE4NTE0Mzg0MDUifQ=="
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751345107269",
+                  "title": "Kit de réparation vélo : l'essentiel pour partir en autonomie",
+                  "handle": "kit-de-reparation-velo-lessentiel-pour-partir-en-autonomie",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les 4 outils indispensables pour réparer une crevaison, régler un dérailleur ou lubrifier la chaîne en autonomie complète — que ce soit en gravel, en cyclotourisme ou en bikepacking multi-jours."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/604771647813\",\"gid://shopify/Metaobject/604771680581\",\"gid://shopify/Metaobject/604771713349\",\"gid://shopify/Metaobject/604771746117\",\"gid://shopify/Metaobject/604771778885\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751345140037",
+                  "title": "Comment choisir ses sacoches de bikepacking",
+                  "handle": "comment-choisir-ses-sacoches-de-bikepacking",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les critères concrets pour sélectionner sacoches de guidon, sac étanche et fixations en fonction du type de sortie, du volume nécessaire et de la compatibilité avec son vélo."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/604771942725\",\"gid://shopify/Metaobject/604772041029\",\"gid://shopify/Metaobject/604772073797\",\"gid://shopify/Metaobject/604772106565\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751345172805",
+                  "title": "Partir en bivouac à vélo : la check-list complète",
+                  "handle": "partir-en-bivouac-a-velo-la-check-list-complete",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les équipements essentiels pour organiser un bivouac à vélo confortable et autonome : couchage, cuisine, eau potable et bons réflexes pour la première nuit comme pour la dixième."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/604772401477\",\"gid://shopify/Metaobject/604772434245\",\"gid://shopify/Metaobject/604772467013\",\"gid://shopify/Metaobject/604772499781\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751345205573",
+                  "title": "S'habiller pour le cyclotourisme longue distance",
+                  "handle": "shabiller-pour-le-cyclotourisme-longue-distance",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Choisir ses vêtements de vélo pour les sorties d'une journée entière et le bikepacking multi-jours : les critères qui font la différence entre confort et souffrance sur la durée."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/604772860229\",\"gid://shopify/Metaobject/604772958533\",\"gid://shopify/Metaobject/604773056837\",\"gid://shopify/Metaobject/604773089605\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751345336645",
+                  "title": "Comment bien préparer mon premier voyage en bikepacking ?",
+                  "handle": "comment-bien-preparer-mon-premier-voyage-en-bikepacking",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Un guide pratique pour les néophytes qui veulent se lancer dans leur premier trip bikepacking — de la planification de l'itinéraire au choix du matériel essentiel, sans oublier la mécanique de base."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/604774039877\",\"gid://shopify/Metaobject/604774072645\",\"gid://shopify/Metaobject/604774105413\",\"gid://shopify/Metaobject/604774138181\",\"gid://shopify/Metaobject/604774170949\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751345369413",
+                  "title": "Premier week-end en bikepacking : le kit complet pour partir léger",
+                  "handle": "premier-week-end-en-bikepacking-le-kit-complet-pour-partir-leger",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La liste d'équipement concrète pour un premier week-end en bikepacking — ce qu'on emporte, ce qu'on laisse, et comment choisir dans chaque catégorie sans se surcharger."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/604774498629\",\"gid://shopify/Metaobject/604774596933\",\"gid://shopify/Metaobject/604774629701\",\"gid://shopify/Metaobject/604774662469\",\"gid://shopify/Metaobject/604774695237\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751471100229",
+                  "title": "Traverser les Vosges du Nord à vélo : forêts et châteaux de grès rose, loin des foules",
+                  "handle": "traverser-les-vosges-du-nord-a-velo-forets-et-chateaux-de-gres-rose-loin-des-foules",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment aborder la partie nord du massif vosgien à vélo sur plusieurs jours : pourquoi ce tronçon officiel de la Traversée du Massif Vosgien, entre Wissembourg et le sud du Parc naturel régional des Vosges du Nord, reste bien moins fréquenté que les Hautes Vosges, ce que signifie son classement en réserve de biosphère UNESCO, à quoi ressemble le terrain, et comment s'équiper pour rouler en autonomie sur plusieurs jours de forêt."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/610294497605\",\"gid://shopify/Metaobject/610294530373\",\"gid://shopify/Metaobject/610294563141\",\"gid://shopify/Metaobject/610294595909\",\"gid://shopify/Metaobject/610294628677\",\"gid://shopify/Metaobject/610294661445\",\"gid://shopify/Metaobject/610294694213\",\"gid://shopify/Metaobject/610294726981\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751471132997",
+                  "title": "À vélo sur les routes de contrebandiers du Jura : le plateau horloger loin de la Grande Traversée",
+                  "handle": "a-velo-sur-les-routes-de-contrebandiers-du-jura-le-plateau-horloger-loin-de-la-grande-traversee",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Une approche du Jura à vélo différente de la GTJ Gravel qui capte l'essentiel de l'attention : les anciens chemins de contrebande du Doubs Horloger, à la frontière suisse, leur histoire, le terrain, et comment s'équiper pour rouler en autonomie sur ce plateau rural."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/610297577797\",\"gid://shopify/Metaobject/610297610565\",\"gid://shopify/Metaobject/610297643333\",\"gid://shopify/Metaobject/610297676101\",\"gid://shopify/Metaobject/610297708869\",\"gid://shopify/Metaobject/610297741637\",\"gid://shopify/Metaobject/610297774405\",\"gid://shopify/Metaobject/610297807173\",\"gid://shopify/Metaobject/610297839941\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751471165765",
+                  "title": "Le tour du Causse Méjean à vélo : la Mongolie du bikepacking français",
+                  "handle": "le-tour-du-causse-mejean-a-velo-la-mongolie-du-bikepacking-francais",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Une boucle de 118 km documentée par Lozère Tourisme sur un plateau isolé, entre les gorges du Tarn et de la Jonte, à l'écart de la Grande Traversée du Massif Central : pourquoi le Causse Méjean se distingue par son horizontalité inattendue, ses curiosités en chemin, et comment s'équiper et bivouaquer dans le respect du Parc national des Cévennes."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/610298528069\",\"gid://shopify/Metaobject/610298560837\",\"gid://shopify/Metaobject/610298626373\",\"gid://shopify/Metaobject/610298659141\",\"gid://shopify/Metaobject/610298691909\",\"gid://shopify/Metaobject/610298724677\",\"gid://shopify/Metaobject/610298757445\",\"gid://shopify/Metaobject/610298790213\",\"gid://shopify/Metaobject/610298822981\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751471198533",
+                  "title": "La traversée du Volvestre à vélo : l'Ariège sans les cols mythiques",
+                  "handle": "la-traversee-du-volvestre-a-velo-lariege-sans-les-cols-mythiques",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Une alternative aux grands cols pyrénéens (Pailhères, Agnès) déjà largement documentés : le territoire du Volvestre, dans le vaste Parc naturel régional des Pyrénées ariégeoises, entre forêts, prairies et une curiosité géologique unique à Mas-d'Azil, pour un profil plus accessible en cyclotourisme."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/610298954053\",\"gid://shopify/Metaobject/610298986821\",\"gid://shopify/Metaobject/610299019589\",\"gid://shopify/Metaobject/610299052357\",\"gid://shopify/Metaobject/610299085125\",\"gid://shopify/Metaobject/610299117893\",\"gid://shopify/Metaobject/610299150661\",\"gid://shopify/Metaobject/610299183429\",\"gid://shopify/Metaobject/610299216197\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751471231301",
+                  "title": "La traversée du Vercors à vélo par le Royans, la Drôme et le Trièves, loin de la Via Vercors",
+                  "handle": "la-traversee-des-hauts-plateaux-du-vercors-a-velo-sept-cols-loin-de-la-via-vercors",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Un itinéraire plus sauvage que la Via Vercors, bien référencée : la traversée du massif par le Royans, la vallée de la Drôme et le Trièves, en bordure de la Réserve naturelle des Hauts-Plateaux — la plus grande réserve naturelle terrestre de France métropolitaine, avec une réglementation précise sur le vélo et le bivouac à connaître avant de tracer son itinéraire."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/610307178821\",\"gid://shopify/Metaobject/610307211589\",\"gid://shopify/Metaobject/610307244357\",\"gid://shopify/Metaobject/610307277125\",\"gid://shopify/Metaobject/610307309893\",\"gid://shopify/Metaobject/610307342661\",\"gid://shopify/Metaobject/610307375429\",\"gid://shopify/Metaobject/610307408197\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751471264069",
+                  "title": "Alta Rocca et plateau du Coscione à vélo : la Corse loin du Cap Corse et de la Gravel20",
+                  "handle": "alta-rocca-et-plateau-du-coscione-a-velo-la-corse-loin-du-cap-corse-et-de-la-gravel20",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Une immersion dans le Sartenais et l'Alta Rocca, entre maquis, vignobles AOP et montagnes de Bavella, jusqu'aux pozzines du plateau du Coscione : une Corse plus confidentielle que le tour du Cap Corse ou la traversée Gravel20, avec ses villages, son vignoble et sa réglementation estivale sur le feu."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/610299609413\",\"gid://shopify/Metaobject/610299642181\",\"gid://shopify/Metaobject/610299674949\",\"gid://shopify/Metaobject/610299707717\",\"gid://shopify/Metaobject/610299740485\",\"gid://shopify/Metaobject/610299773253\",\"gid://shopify/Metaobject/610299806021\",\"gid://shopify/Metaobject/610299871557\",\"gid://shopify/Metaobject/610299904325\",\"gid://shopify/Metaobject/610299937093\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751588901189",
+                  "title": "Sacoche de guidon ou sacoche de cadre : laquelle installer en premier ?",
+                  "handle": "sacoche-de-guidon-ou-sacoche-de-cadre-laquelle-installer-en-premier",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Sacoche de guidon et sacoche de cadre ne remplissent pas le même rôle : laquelle acheter en premier selon votre usage, et pourquoi les deux finissent presque toujours par se compléter."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617290727749\",\"gid://shopify/Metaobject/617290760517\",\"gid://shopify/Metaobject/617290793285\",\"gid://shopify/Metaobject/617290826053\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751588933957",
+                  "title": "Étanche, déperlant ou \"waterproof\" annoncé : ce que dit vraiment chaque sacoche",
+                  "handle": "etanche-deperlant-ou-waterproof-annonce-ce-que-dit-vraiment-chaque-sacoche",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Toutes les sacoches de vélo affichent une forme de résistance à l'eau, mais le mot recouvre des réalités très différentes — de la simple résistance aux éclaboussures à l'immersion complète certifiée. Le point produit par produit sur ce que garantit vraiment chaque fiche technique."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617290924357\",\"gid://shopify/Metaobject/617290957125\",\"gid://shopify/Metaobject/617290989893\",\"gid://shopify/Metaobject/617291022661\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751588966725",
+                  "title": "Sacoches de bikepacking ou porte-bagages rigide : quel système de rangement choisir selon son vélo",
+                  "handle": "sacoches-de-bikepacking-ou-porte-bagages-rigide-quel-systeme-de-rangement-choisir-selon-son-velo",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Sacoches souples fixées directement au cadre ou porte-bagages rigide avec sacoches latérales : les deux systèmes ne se valent pas selon le vélo, le terrain et le volume à transporter. Le point sur les critères qui doivent vraiment orienter le choix."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617291120965\",\"gid://shopify/Metaobject/617291153733\",\"gid://shopify/Metaobject/617291186501\",\"gid://shopify/Metaobject/617291219269\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751588999493",
+                  "title": "Que ranger dans chaque sacoche : la check-list par volume pour un voyage de plusieurs jours",
+                  "handle": "que-ranger-dans-chaque-sacoche-la-check-list-par-volume-pour-un-voyage-de-plusieurs-jours",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Guidon, cadre, selle, sac étanche : chaque sacoche a un volume et une accessibilité différents. Comment répartir concrètement son équipement entre elles pour un voyage de plusieurs jours, sans tout re-fouiller à chaque pause."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617291317573\",\"gid://shopify/Metaobject/617291350341\",\"gid://shopify/Metaobject/617291383109\",\"gid://shopify/Metaobject/617291415877\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751589032261",
+                  "title": "Bien fixer sa sacoche de vélo pour éviter le ballottement et les frottements",
+                  "handle": "bien-fixer-sa-sacoche-de-velo-pour-eviter-le-ballottement-et-les-frottements",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Une sacoche mal fixée s'use plus vite, ballotte sur les irrégularités du terrain et peut même frotter contre les manettes ou le pneu. La méthode pour bien la régler dès l'installation, quel que soit le modèle."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617291514181\",\"gid://shopify/Metaobject/617291546949\",\"gid://shopify/Metaobject/617291579717\",\"gid://shopify/Metaobject/617291612485\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751589130565",
+                  "title": "Choisir sa tente de bikepacking : poids, montage et étanchéité",
+                  "handle": "choisir-sa-tente-de-bikepacking-poids-montage-et-etancheite",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Une tente de bikepacking se choisit sur trois critères concrets — poids et encombrement une fois pliée, imperméabilité réelle, facilité de montage en solo. Le point sur ce qui fait vraiment la différence, au-delà de l'argument marketing."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617516499269\",\"gid://shopify/Metaobject/617516761413\",\"gid://shopify/Metaobject/617516990789\",\"gid://shopify/Metaobject/617517220165\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751589163333",
+                  "title": "Sac de couchage 3 saisons : quelle température et quel format pour le bikepacking",
+                  "handle": "sac-de-couchage-3-saisons-quelle-temperature-et-quel-format-pour-le-bikepacking",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Confort thermique, encombrement une fois comprimé, garnissage coton ou synthétique : comment choisir un sac de couchage qui tient dans une sacoche de bikepacking sans sacrifier les nuits de sommeil."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617526985029\",\"gid://shopify/Metaobject/617527050565\",\"gid://shopify/Metaobject/617527083333\",\"gid://shopify/Metaobject/617527116101\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751589196101",
+                  "title": "Cuisine de bivouac : réchaud et popote, ce qu'il faut vraiment emporter selon le nombre de personnes",
+                  "handle": "cuisine-de-bivouac-rechaud-et-popote-ce-quil-faut-vraiment-emporter-selon-le-nombre-de-personnes",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Réchaud ultra-compact et kit de cuisine inox ne se dimensionnent pas pareil en solo ou à plusieurs. Comment calibrer son setup cuisine de bivouac sans emporter du poids inutile ni se retrouver à court de matériel."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617529737541\",\"gid://shopify/Metaobject/617529770309\",\"gid://shopify/Metaobject/617529835845\",\"gid://shopify/Metaobject/617529868613\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751589228869",
+                  "title": "Bien dormir en bivouac à vélo : matelas, isolation et qualité de sommeil",
+                  "handle": "bien-dormir-en-bivouac-a-velo-matelas-isolation-et-qualite-de-sommeil",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Le matelas est souvent l'équipement le plus sous-estimé d'un kit de bivouac, alors qu'il conditionne directement la récupération du lendemain. Ce qui distingue un bon matelas d'un simple tapis de sol confortable."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617539633477\",\"gid://shopify/Metaobject/617539666245\",\"gid://shopify/Metaobject/617539731781\",\"gid://shopify/Metaobject/617539961157\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751589261637",
+                  "title": "Réparer son matériel de bivouac sur le terrain : les pannes les plus fréquentes",
+                  "handle": "reparer-son-materiel-de-bivouac-sur-le-terrain-les-pannes-les-plus-frequentes",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Matelas perforé, cartouche de gaz qui perd en pression, sac de couchage trempé : les incidents les plus courants en bivouac à vélo, et comment les gérer sans écourter le voyage."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/617550610757\",\"gid://shopify/Metaobject/617550643525\",\"gid://shopify/Metaobject/617550676293\",\"gid://shopify/Metaobject/617550709061\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643722053",
+                  "title": "Bien choisir son maillot de vélo",
+                  "handle": "bien-choisir-son-maillot-de-velo",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les critères concrets pour choisir un maillot de vélo : matière et ventilation, taille au tour de poitrine, tenue des coloris dans le temps, et ce qu'il faut prévoir en complément pour une tenue complète."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619360485701\",\"gid://shopify/Metaobject/619360518469\",\"gid://shopify/Metaobject/619360551237\",\"gid://shopify/Metaobject/619360584005\",\"gid://shopify/Metaobject/619360616773\",\"gid://shopify/Metaobject/619360649541\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643754821",
+                  "title": "Cuissard vélo : coupe, peau, tailles (guide homme & femme)",
+                  "handle": "cuissard-velo-coupe-peau-tailles-guide-homme-femme",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment juger la qualité d'un cuissard de vélo (le pad avant tout), choisir entre bretelles et sans bretelles selon l'usage, bien l'entretenir, et trouver sa taille au tour de taille plutôt qu'à la lettre."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619360747845\",\"gid://shopify/Metaobject/619360780613\",\"gid://shopify/Metaobject/619360813381\",\"gid://shopify/Metaobject/619360846149\",\"gid://shopify/Metaobject/619360878917\",\"gid://shopify/Metaobject/619360911685\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643787589",
+                  "title": "Bien choisir ses chaussettes de vélo",
+                  "handle": "bien-choisir-ses-chaussettes-de-velo",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La hauteur, la matière et le nombre de paires à prévoir pour des chaussettes de vélo adaptées aux longues sorties et au bikepacking sur plusieurs jours."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619361173829\",\"gid://shopify/Metaobject/619361206597\",\"gid://shopify/Metaobject/619361239365\",\"gid://shopify/Metaobject/619361272133\",\"gid://shopify/Metaobject/619361304901\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643820357",
+                  "title": "Coupe-vent vélo : quand et lequel",
+                  "handle": "coupe-vent-velo-quand-et-lequel",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Dans quelles situations sortir un coupe-vent à vélo, ce qui distingue un bon modèle (compressibilité, coupe, capuche), et ses limites face à une vraie pluie soutenue."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619361435973\",\"gid://shopify/Metaobject/619361468741\",\"gid://shopify/Metaobject/619361501509\",\"gid://shopify/Metaobject/619361534277\",\"gid://shopify/Metaobject/619361567045\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643853125",
+                  "title": "Veste de pluie vélo : imperméabilité réelle",
+                  "handle": "veste-de-pluie-velo-impermeabilite-reelle",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Ce que veut vraiment dire \"imperméable\" sur une veste de vélo, les détails qui évitent les entrées d'eau (poignets, capuche), la visibilité, et comment entretenir un traitement déperlant dans la durée."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619361599813\",\"gid://shopify/Metaobject/619361632581\",\"gid://shopify/Metaobject/619361665349\",\"gid://shopify/Metaobject/619361698117\",\"gid://shopify/Metaobject/619361730885\",\"gid://shopify/Metaobject/619361763653\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643885893",
+                  "title": "S'habiller à vélo en hiver / mi-saison",
+                  "handle": "shabiller-a-velo-en-hiver-mi-saison",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Le principe des couches superposées appliqué au vélo, comment trancher entre coupe-vent et veste softshell selon la météo, et pourquoi les extrémités (mains, cou, pieds) sont souvent le vrai point faible en hiver."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619361829189\",\"gid://shopify/Metaobject/619361861957\",\"gid://shopify/Metaobject/619361894725\",\"gid://shopify/Metaobject/619361927493\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643918661",
+                  "title": "Nettoyer et entretenir sa chaîne de vélo",
+                  "handle": "nettoyer-et-entretenir-sa-chaine-de-velo",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Pourquoi une chaîne encrassée use toute la transmission, comment la nettoyer étape par étape, et à quel rythme répéter l'opération selon les conditions de roulage."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619362091333\",\"gid://shopify/Metaobject/619362124101\",\"gid://shopify/Metaobject/619362156869\",\"gid://shopify/Metaobject/619362189637\",\"gid://shopify/Metaobject/619362222405\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643951429",
+                  "title": "Entretien vélo : le calendrier avant/pendant/après un voyage",
+                  "handle": "entretien-velo-le-calendrier-avant-pendant-apres-un-voyage",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les vérifications à faire avant le départ, les gestes d'entretien courant à prendre pendant un voyage à vélo de plusieurs jours, et le contrôle à faire au retour."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619362320709\",\"gid://shopify/Metaobject/619362353477\",\"gid://shopify/Metaobject/619362386245\",\"gid://shopify/Metaobject/619362419013\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751643984197",
+                  "title": "Bien lubrifier sa chaîne (cire sèche vs huile mouillée)",
+                  "handle": "bien-lubrifier-sa-chaine-cire-seche-vs-huile-mouillee",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La différence entre cire sèche et huile mouillée pour la chaîne, et dans quelles conditions de roulage privilégier l'une ou l'autre."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619362517317\",\"gid://shopify/Metaobject/619362550085\",\"gid://shopify/Metaobject/619362582853\",\"gid://shopify/Metaobject/619362615621\",\"gid://shopify/Metaobject/619362648389\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644016965",
+                  "title": "Réparer une crevaison tubeless sur le terrain",
+                  "handle": "reparer-une-crevaison-tubeless-sur-le-terrain",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment localiser une crevaison tubeless, la colmater avec une mèche sans démonter la roue, puis regonfler avec une cartouche CO2."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619362713925\",\"gid://shopify/Metaobject/619362746693\",\"gid://shopify/Metaobject/619362779461\",\"gid://shopify/Metaobject/619362812229\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644049733",
+                  "title": "Changer une chambre à air à vélo (pas à pas)",
+                  "handle": "changer-une-chambre-a-air-a-velo-pas-a-pas",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les étapes pour démonter un pneu sans abîmer la jante, vérifier l'intérieur avant de remonter, installer une nouvelle chambre à air et regonfler correctement."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619363107141\",\"gid://shopify/Metaobject/619363139909\",\"gid://shopify/Metaobject/619363172677\",\"gid://shopify/Metaobject/619363205445\",\"gid://shopify/Metaobject/619363238213\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644082501",
+                  "title": "GPS vélo vs application téléphone : que choisir en bikepacking",
+                  "handle": "gps-velo-vs-application-telephone-que-choisir-en-bikepacking",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les avantages et limites d'un GPS vélo dédié face à une application de navigation sur téléphone, et comment sécuriser le choix téléphone (support, autonomie) si vous partez sur cette option."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619363631429\",\"gid://shopify/Metaobject/619363664197\",\"gid://shopify/Metaobject/619363696965\",\"gid://shopify/Metaobject/619363729733\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644115269",
+                  "title": "Choisir un support téléphone pour vélo",
+                  "handle": "choisir-un-support-telephone-pour-velo",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Fixation click ou vissage, module anti-vibrations, et compatibilité téléphone/guidon : les critères pour choisir un support de téléphone fiable à vélo."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619363828037\",\"gid://shopify/Metaobject/619363860805\",\"gid://shopify/Metaobject/619363893573\",\"gid://shopify/Metaobject/619363926341\",\"gid://shopify/Metaobject/619363959109\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644148037",
+                  "title": "Bien s'éclairer à vélo la nuit et en bivouac",
+                  "handle": "bien-seclairer-a-velo-la-nuit-et-en-bivouac",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment adapter la puissance et les modes d'une lampe frontale à l'usage vélo et bivouac, l'intérêt d'un capteur de mouvement mains occupées, et ce que couvre vraiment une certification d'étanchéité."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619363991877\",\"gid://shopify/Metaobject/619364024645\",\"gid://shopify/Metaobject/619364057413\",\"gid://shopify/Metaobject/619364090181\",\"gid://shopify/Metaobject/619364122949\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644180805",
+                  "title": "Garder ses appareils chargés en autonomie (batterie & gestion d'énergie)",
+                  "handle": "garder-ses-appareils-charges-en-autonomie-batterie-gestion-denergie",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment estimer ses besoins de charge avant un voyage à vélo, simplifier le nombre de câbles à emporter, et recharger plusieurs appareils sans y passer la soirée."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619364155717\",\"gid://shopify/Metaobject/619364188485\",\"gid://shopify/Metaobject/619364221253\",\"gid://shopify/Metaobject/619364254021\",\"gid://shopify/Metaobject/619364286789\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644213573",
+                  "title": "Gourde ou poche à eau : comment s'hydrater à vélo",
+                  "handle": "gourde-ou-poche-a-eau-comment-shydrater-a-velo",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les différences pratiques entre une gourde rigide et une poche à eau souple, ce qui distingue une bonne poche à eau, et quelle contenance choisir selon le type de sortie."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619364319557\",\"gid://shopify/Metaobject/619364352325\",\"gid://shopify/Metaobject/619364385093\",\"gid://shopify/Metaobject/619364417861\",\"gid://shopify/Metaobject/619364450629\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644246341",
+                  "title": "Filtrer et traiter l'eau en bikepacking",
+                  "handle": "filtrer-et-traiter-leau-en-bikepacking",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Pourquoi prévoir une solution de filtration en bikepacking, ce qu'une paille filtrante élimine réellement, et comment l'entretenir pour qu'elle reste efficace sur toute la durée d'un voyage."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619364516165\",\"gid://shopify/Metaobject/619364548933\",\"gid://shopify/Metaobject/619364581701\",\"gid://shopify/Metaobject/619364614469\",\"gid://shopify/Metaobject/619364647237\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644279109",
+                  "title": "Poche à eau vélo : contenance et entretien",
+                  "handle": "poche-a-eau-velo-contenance-et-entretien",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment choisir la contenance d'une poche à eau selon la durée de sortie, ce qui garantit son étanchéité dans la durée, et les bons gestes de nettoyage pour éviter les mauvaises odeurs."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619364712773\",\"gid://shopify/Metaobject/619364745541\",\"gid://shopify/Metaobject/619364778309\",\"gid://shopify/Metaobject/619364811077\",\"gid://shopify/Metaobject/619364843845\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644311877",
+                  "title": "Sacoche de cadre : la choisir et la remplir",
+                  "handle": "sacoche-de-cadre-la-choisir-et-la-remplir",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Pourquoi une sacoche de cadre facilite l'accès à l'essentiel en roulant, comment vérifier sa compatibilité avec son cadre, et comment bien la remplir selon la logique d'accès rapide qui la distingue des autres sacoches."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619364909381\",\"gid://shopify/Metaobject/619364942149\",\"gid://shopify/Metaobject/619364974917\",\"gid://shopify/Metaobject/619365007685\",\"gid://shopify/Metaobject/619365040453\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644344645",
+                  "title": "Sacoche vélo étanche : ce que « étanche » veut vraiment dire",
+                  "handle": "sacoche-velo-etanche-ce-que-etanche-veut-vraiment-dire",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La différence entre déperlant, résistant à la pluie et réellement étanche, comment repérer une vraie construction étanche sur une fiche produit, et pourquoi un sac étanche additionnel reste utile même avec une bonne sacoche."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619365073221\",\"gid://shopify/Metaobject/619365105989\",\"gid://shopify/Metaobject/619365138757\",\"gid://shopify/Metaobject/619365171525\",\"gid://shopify/Metaobject/619365204293\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644377413",
+                  "title": "Quelle sacoche pour le gravel",
+                  "handle": "quelle-sacoche-pour-le-gravel",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Pourquoi le terrain gravel impose des contraintes de fixation différentes de la route, et comment répartir sacoche de cadre, de guidon et de porte-bagage selon leur résistance aux vibrations et aux chocs."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619365368133\",\"gid://shopify/Metaobject/619365400901\",\"gid://shopify/Metaobject/619365433669\",\"gid://shopify/Metaobject/619365466437\",\"gid://shopify/Metaobject/619365499205\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644410181",
+                  "title": "Tente 1 place ou 2 places pour le bikepacking",
+                  "handle": "tente-1-place-ou-2-places-pour-le-bikepacking",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Le compromis poids/espace entre une tente 1 place et 2 places, ce qui compte vraiment pour un usage bikepacking (poids et transport sur porte-bagage), et comment juger l'imperméabilité et la ventilation au-delà du seul poids annoncé."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619365630277\",\"gid://shopify/Metaobject/619365663045\",\"gid://shopify/Metaobject/619365695813\",\"gid://shopify/Metaobject/619365728581\",\"gid://shopify/Metaobject/619365761349\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644475717",
+                  "title": "Où partir en bikepacking en France",
+                  "handle": "ou-partir-en-bikepacking-en-france",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment choisir son terrain de bikepacking en France selon son niveau et la saison, et l'équipement de base à vérifier avant de partir, quel que soit l'itinéraire choisi."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619365859653\",\"gid://shopify/Metaobject/619365892421\",\"gid://shopify/Metaobject/619365925189\",\"gid://shopify/Metaobject/619365957957\",\"gid://shopify/Metaobject/619365990725\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644508485",
+                  "title": "Vélo de randonnée : quel vélo pour voyager",
+                  "handle": "velo-de-randonnee-quel-velo-pour-voyager",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les critères de géométrie et de matériau pour un vélo de voyage, la compatibilité porte-bagage et sacoches à vérifier avant l'achat, et l'intérêt du tubeless pour un usage chargé sur chemin."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619366056261\",\"gid://shopify/Metaobject/619366089029\",\"gid://shopify/Metaobject/619366121797\",\"gid://shopify/Metaobject/619366154565\",\"gid://shopify/Metaobject/619366187333\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751644541253",
+                  "title": "Construire son itinéraire vélo (outils et méthode)",
+                  "handle": "construire-son-itineraire-velo-outils-et-methode",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment choisir sa source de tracé, vérifier le profil altimétrique et le revêtement avant de partir, et emporter son itinéraire de façon fiable sur le terrain, y compris hors connexion."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/619366220101\",\"gid://shopify/Metaobject/619366252869\",\"gid://shopify/Metaobject/619366285637\",\"gid://shopify/Metaobject/619366318405\",\"gid://shopify/Metaobject/619366351173\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751696773445",
+                  "title": "Budget d'un premier bikepacking : combien coûte l'équipement de base",
+                  "handle": "budget-dun-premier-bikepacking-combien-coute-lequipement-de-base",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Le détail poste par poste du prix réel d'un équipement de base pour partir en bikepacking — réparation, rangement, couchage, cuisine — pour savoir où va l'argent avant d'acheter."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/622145798469\",\"gid://shopify/Metaobject/622145831237\",\"gid://shopify/Metaobject/622145864005\",\"gid://shopify/Metaobject/622145896773\",\"gid://shopify/Metaobject/622145929541\",\"gid://shopify/Metaobject/622145962309\",\"gid://shopify/Metaobject/622145995077\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751697068357",
+                  "title": "Les erreurs classiques du premier bikepacking — et comment les éviter",
+                  "handle": "les-erreurs-classiques-du-premier-bikepacking-et-comment-les-eviter",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les erreurs les plus fréquentes d'un premier voyage en bikepacking — poids, matériel jamais testé, répartition des sacoches, réparation, météo, rythme — et comment les éviter avant de partir."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/622407713093\",\"gid://shopify/Metaobject/622407745861\",\"gid://shopify/Metaobject/622407778629\",\"gid://shopify/Metaobject/622407811397\",\"gid://shopify/Metaobject/622407844165\",\"gid://shopify/Metaobject/622407876933\",\"gid://shopify/Metaobject/622407909701\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851438405",
+                  "title": "10 astuces pour alléger son chargement sans sacrifier le confort",
+                  "handle": "10-astuces-pour-alleger-son-chargement-sans-sacrifier-le-confort",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Dix astuces concrètes pour réduire le poids et le volume d'un chargement de bikepacking sans renoncer au confort de base — dormir au chaud, manger correctement, rouler sans douleur."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626958991685\",\"gid://shopify/Metaobject/626959024453\",\"gid://shopify/Metaobject/626959057221\",\"gid://shopify/Metaobject/626959089989\",\"gid://shopify/Metaobject/626959122757\",\"gid://shopify/Metaobject/626959155525\"]"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query SearchResources($query: String, $cursor: String) {\n            articles(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                  summary: metafield(namespace: \"custom\", key: \"summary\") { value }\n                  secondarySignal: metafield(namespace: \"custom\", key: \"sections\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "query": null,
+          "cursor": "eyJsYXN0X2lkIjo3NTE4NTE0Mzg0MDUsImxhc3RfdmFsdWUiOiI3NTE4NTE0Mzg0MDUifQ=="
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "articles": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjo3NTE4NTE5Mjk5MjUsImxhc3RfdmFsdWUiOiI3NTE4NTE5Mjk5MjUifQ=="
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851536709",
+                  "title": "Partir plusieurs semaines à vélo : ravitaillement, linge et budget sur la durée",
+                  "handle": "partir-plusieurs-semaines-a-velo-ravitaillement-linge-et-budget-sur-la-duree",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La logistique du quotidien sur un voyage à vélo de plusieurs semaines : se ravitailler en nourriture et en eau, laver son linge en route, et estimer un budget journalier réaliste."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626959450437\",\"gid://shopify/Metaobject/626959483205\",\"gid://shopify/Metaobject/626959515973\",\"gid://shopify/Metaobject/626959548741\",\"gid://shopify/Metaobject/626959581509\",\"gid://shopify/Metaobject/626959614277\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851602245",
+                  "title": "La Loire à vélo — châteaux et voie verte",
+                  "handle": "la-loire-a-velo-chateaux-et-voie-verte",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La Loire à vélo comme option de premier voyage à vélo : pourquoi ce tracé est réputé accessible, ce qu'on y voit, et quel matériel il demande."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626959810885\",\"gid://shopify/Metaobject/626959843653\",\"gid://shopify/Metaobject/626959876421\",\"gid://shopify/Metaobject/626959909189\",\"gid://shopify/Metaobject/626959941957\",\"gid://shopify/Metaobject/626959974725\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851635013",
+                  "title": "Astuces anti-crevaison : réduire les risques avant qu'ils arrivent",
+                  "handle": "astuces-anti-crevaison-reduire-les-risques-avant-quils-arrivent",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La prévention de la crevaison — ce qui réduit le risque avant qu'elle survienne : pression de gonflage, inspection des pneus, choix de trajectoire, usure et entretien de base."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626960204101\",\"gid://shopify/Metaobject/626960236869\",\"gid://shopify/Metaobject/626960269637\",\"gid://shopify/Metaobject/626960302405\",\"gid://shopify/Metaobject/626960335173\",\"gid://shopify/Metaobject/626960367941\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851667781",
+                  "title": "Le Luberon à vélo — Provence",
+                  "handle": "le-luberon-a-velo-provence",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Le Luberon comme destination à vélo pour un cycliste qui cherche un terrain plus exigeant qu'un itinéraire de plaine : relief, chaleur, gestion de l'eau, et matériel à adapter."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626960597317\",\"gid://shopify/Metaobject/626960630085\",\"gid://shopify/Metaobject/626960662853\",\"gid://shopify/Metaobject/626960695621\",\"gid://shopify/Metaobject/626960728389\",\"gid://shopify/Metaobject/626960761157\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851700549",
+                  "title": "Astuces pour économiser sa batterie et rester connecté en voyage",
+                  "handle": "astuces-pour-economiser-sa-batterie-et-rester-connecte-en-voyage",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La gestion pratique de l'autonomie électronique en voyage à vélo — réduire la consommation du téléphone, recharger en route, anticiper les zones sans réseau."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626961056069\",\"gid://shopify/Metaobject/626961088837\",\"gid://shopify/Metaobject/626961121605\",\"gid://shopify/Metaobject/626961154373\",\"gid://shopify/Metaobject/626961187141\",\"gid://shopify/Metaobject/626961219909\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851766085",
+                  "title": "Bivouac discret : les bonnes pratiques pour un bivouac respectueux",
+                  "handle": "bivouac-discret-les-bonnes-pratiques-pour-un-bivouac-respectueux",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "L'éthique et les bonnes pratiques du bivouac discret : choisir un emplacement, rester peu visible, ne rien laisser derrière soi, respecter les lieux et les personnes qui y vivent."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626961645893\",\"gid://shopify/Metaobject/626961678661\",\"gid://shopify/Metaobject/626961711429\",\"gid://shopify/Metaobject/626961744197\",\"gid://shopify/Metaobject/626961776965\",\"gid://shopify/Metaobject/626961809733\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851831621",
+                  "title": "Les gorges du Verdon à vélo — Alpes du Sud",
+                  "handle": "les-gorges-du-verdon-a-velo-alpes-du-sud",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Les gorges du Verdon comme terrain de bikepacking : ce qui rend le secteur exigeant, à qui il convient, et le matériel à prévoir spécifiquement pour ce relief."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626962104645\",\"gid://shopify/Metaobject/626962137413\",\"gid://shopify/Metaobject/626962170181\",\"gid://shopify/Metaobject/626962202949\",\"gid://shopify/Metaobject/626962235717\",\"gid://shopify/Metaobject/626962268485\",\"gid://shopify/Metaobject/626962301253\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851864389",
+                  "title": "Traverser un pays à vélo : combien de temps prévoir et comment découper son itinéraire",
+                  "handle": "traverser-un-pays-a-velo-combien-de-temps-prevoir-et-comment-decouper-son-itineraire",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "Comment estimer la durée d'une traversée à vélo et découper un itinéraire long en étapes tenables — une méthode plutôt qu'un chiffre générique par pays."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626962530629\",\"gid://shopify/Metaobject/626962563397\",\"gid://shopify/Metaobject/626962596165\",\"gid://shopify/Metaobject/626962628933\",\"gid://shopify/Metaobject/626962661701\",\"gid://shopify/Metaobject/626962694469\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Article/751851929925",
+                  "title": "Voyage au long cours : tenir la distance mentalement et physiquement",
+                  "handle": "voyage-au-long-cours-tenir-la-distance-mentalement-et-physiquement",
+                  "contentStatus": null,
+                  "summary": {
+                    "value": "La dimension endurance d'un voyage à vélo long — plusieurs semaines à plusieurs mois : gestion de la fatigue cumulée, rythme soutenable, coups de mou, et comment repartir après une mauvaise journée."
+                  },
+                  "secondarySignal": {
+                    "value": "[\"gid://shopify/Metaobject/626963644741\",\"gid://shopify/Metaobject/626963677509\",\"gid://shopify/Metaobject/626963710277\",\"gid://shopify/Metaobject/626963743045\",\"gid://shopify/Metaobject/626963775813\",\"gid://shopify/Metaobject/626963808581\"]"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

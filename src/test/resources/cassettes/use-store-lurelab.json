@@ -1,0 +1,19 @@
+{
+  "tool": "use_store",
+  "toolInput": {
+    "store_id": "lurelab"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "Boutique active : lurelab. Tout ce qui avait été mémorisé pour la boutique précédente a été vidé — jeton d'accès, configuration, profil de marque et prompts d'image seront rechargés au prochain appel."
+      }
+    ]
+  },
+  "calls": []
+}
