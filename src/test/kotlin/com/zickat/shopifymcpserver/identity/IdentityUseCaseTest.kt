@@ -7,7 +7,10 @@ import com.zickat.shopifymcpserver.identity.domain.models.IdentityId
 import com.zickat.shopifymcpserver.identity.domain.repositories.IdentityRepository
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
 
 class IdentityUseCaseTest {
@@ -19,45 +22,32 @@ class IdentityUseCaseTest {
     fun `findOrCreate should create a new identity the first time it presents itself`() {
         val result = useCase.findOrCreate("https://idp.test/", "operator-1", "Operator One")
 
-        result.fold(
-            { error("expected creation, got $it") },
-            { identity ->
-                identity.issuer shouldBe "https://idp.test/"
-                identity.subject shouldBe "operator-1"
-                identity.displayName shouldBe "Operator One"
-                repository.store shouldBe mapOf(identity.id.value to identity)
-            },
-        )
+        val identity = result.shouldBeRight()
+        identity.issuer shouldBe "https://idp.test/"
+        identity.subject shouldBe "operator-1"
+        identity.displayName shouldBe "Operator One"
+        repository.store shouldBe mapOf(identity.id.value to identity)
     }
 
     @Test
     fun `findOrCreate should return the existing identity on a second presentation, keeping its original displayName instead of the new one`() {
-        val first = useCase.findOrCreate("https://idp.test/", "operator-1", "Operator One")
-            .fold({ error("first call failed: $it") }, { it })
+        val first = useCase.findOrCreate("https://idp.test/", "operator-1", "Operator One").shouldBeRight()
 
         val second = useCase.findOrCreate("https://idp.test/", "operator-1", "Ignored On Reconnect")
 
-        second.fold(
-            { error("expected the existing identity, got $it") },
-            { identity ->
-                identity.id shouldBe first.id
-                identity.displayName shouldBe "Operator One"
-            },
-        )
+        val identity = second.shouldBeRight()
+        identity.id shouldBe first.id
+        identity.displayName shouldBe "Operator One"
         repository.store.size shouldBe 1
     }
 
     @Test
     fun `findOrCreate should recover the existing identity when two concurrent calls race into the same duplicate key`() {
-        val existing = useCase.findOrCreate("https://idp.test/", "operator-2", "Operator Two")
-            .fold({ error("setup failed: $it") }, { it })
+        val existing = useCase.findOrCreate("https://idp.test/", "operator-2", "Operator Two").shouldBeRight()
 
         val recovered = useCase.findOrCreate("https://idp.test/", "operator-2", "Ignored")
 
-        recovered.fold(
-            { error("expected recovery from the race, got $it") },
-            { identity -> identity.id shouldBe existing.id },
-        )
+        recovered.shouldBeRight().id shouldBe existing.id
     }
 
     @Test
@@ -72,12 +62,6 @@ class IdentityUseCaseTest {
 
         val result = useCaseWithFailingRepository.findOrCreate("https://idp.test/", "operator-3", "Operator Three")
 
-        result.fold(
-            { error ->
-                (error is TechnicalError) shouldBe true
-                (error as TechnicalError).messageKey shouldBe "identity.lookup.failed"
-            },
-            { error("expected the technical error to propagate, got a success") },
-        )
+        result.shouldBeLeft().shouldBeInstanceOf<TechnicalError>().messageKey shouldBe "identity.lookup.failed"
     }
 }

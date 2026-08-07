@@ -2,6 +2,7 @@ package com.zickat.shopifymcpserver.vault.spi.env
 
 import com.zickat.shopifymcpserver.vault.domain.crypto.EnvelopeCrypto
 import com.zickat.shopifymcpserver.vault.domain.repositories.ACTIVE_MASTER_KEY_REF
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import java.security.SecureRandom
 import java.util.Base64
@@ -19,7 +20,7 @@ class EnvMasterKeyProviderTest {
             env = { name -> if (name == EnvMasterKeyProvider.DEFAULT_ENV_VAR) Base64.getEncoder().encodeToString(keyBytes) else null },
         )
 
-        val resolved = provider.resolve(ACTIVE_MASTER_KEY_REF).fold({ error("expected right, got $it") }, { it })
+        val resolved = provider.resolve(ACTIVE_MASTER_KEY_REF).shouldBeRight()
 
         resolved.contentEquals(keyBytes) shouldBe true
     }
@@ -68,8 +69,8 @@ class EnvMasterKeyProviderTest {
             },
         )
 
-        val resolvedCurrent = provider.resolve(ACTIVE_MASTER_KEY_REF).fold({ error("expected right, got $it") }, { it })
-        val resolvedNext = provider.resolve("v2").fold({ error("expected right, got $it") }, { it })
+        val resolvedCurrent = provider.resolve(ACTIVE_MASTER_KEY_REF).shouldBeRight()
+        val resolvedNext = provider.resolve("v2").shouldBeRight()
 
         resolvedCurrent.contentEquals(currentKey) shouldBe true
         resolvedNext.contentEquals(nextKey) shouldBe true

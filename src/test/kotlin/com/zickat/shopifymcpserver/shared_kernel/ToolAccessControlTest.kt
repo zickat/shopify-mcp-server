@@ -1,6 +1,8 @@
 package com.zickat.shopifymcpserver.shared_kernel
 
+import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
 
 class ToolAccessControlTest {
@@ -38,10 +40,7 @@ class ToolAccessControlTest {
     fun `a viewer calling a mutation tool directly is refused server-side — this is the barrier, not the list`() {
         val result = ToolAccessControl.authorizeCall(AccessRole.VIEWER, MutatingToolFixture())
 
-        result.fold(
-            { (it is ForbiddenError) shouldBe true },
-            { error("expected a viewer to be refused on a mutation tool, got a success") },
-        )
+        result.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>()
     }
 
     @Test

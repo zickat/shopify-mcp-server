@@ -4,6 +4,7 @@ import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake
 import com.zickat.shopifymcpserver.vault.domain.StoreCredentialUseCase
 import com.zickat.shopifymcpserver.vault.domain.models.StoreCredentialId
 import com.zickat.shopifymcpserver.vault.domain.repositories.ACTIVE_MASTER_KEY_REF
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
@@ -18,10 +19,10 @@ class StoreCredentialUseCaseTest {
     private val useCase = StoreCredentialUseCase(repository, masterKeyProvider)
 
     private fun StoreCredentialUseCase.storeOrFail(storeId: String, plaintext: ByteArray, scopesGranted: String = "read_products"): StoreCredentialId =
-        store(storeId, plaintext, scopesGranted).fold({ error("store failed: $it") }, { it })
+        store(storeId, plaintext, scopesGranted).shouldBeRight()
 
     private fun StoreCredentialUseCase.revealOrFail(id: StoreCredentialId): ByteArray =
-        reveal(id).fold({ error("reveal failed: $it") }, { it })
+        reveal(id).shouldBeRight()
 
     @Test
     fun `store then reveal should return the original plaintext`() {
@@ -73,7 +74,7 @@ class StoreCredentialUseCaseTest {
         val before = repository.store.getValue(originalId.value)
 
         val rotatedId = useCase.rotate(originalId, "shpat_rotated".toByteArray())
-            .fold({ error("rotate failed: $it") }, { it })
+            .shouldBeRight()
         val after = repository.store.getValue(rotatedId.value)
 
         rotatedId shouldBe originalId

@@ -8,7 +8,10 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.tenancy.domain.AccessResolutionUseCase
 import com.zickat.shopifymcpserver.tenancy.domain.models.GrantRole
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
 
 class AccessMechanismEndToEndTest {
@@ -38,7 +41,7 @@ class AccessMechanismEndToEndTest {
     }
 
     private fun grant(storeId: String, role: GrantRole): String {
-        val identityId = identityExposedService.resolve(issuer, subject).fold({ error("resolve failed: $it") }, { it })
+        val identityId = identityExposedService.resolve(issuer, subject).shouldBeRight()
         grantRepository.save(
             GrantFixtures()
                 .withIdentityId(identityId)
@@ -56,10 +59,7 @@ class AccessMechanismEndToEndTest {
 
         val access = accessResolution.resolve(issuer, subject, storeId)
 
-        access.fold(
-            { (it is ForbiddenError) shouldBe true },
-            { error("expected the identity with zero grant to be refused, got a context") },
-        )
+        access.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>()
     }
 
     @Test
@@ -67,16 +67,13 @@ class AccessMechanismEndToEndTest {
         val storeId = registerStore()
         grant(storeId, GrantRole.VIEWER)
 
-        val access = accessResolution.resolve(issuer, subject, storeId).fold({ error("expected access, got $it") }, { it })
+        val access = accessResolution.resolve(issuer, subject, storeId).shouldBeRight()
 
         val visible = ToolAccessControl.filterForList(access.user.role, allTools)
         visible shouldBe listOf(ListingToolFixture)
 
         val directCallOnHiddenTool = ToolAccessControl.authorizeCall(access.user.role, MutatingToolFixture)
-        directCallOnHiddenTool.fold(
-            { (it is ForbiddenError) shouldBe true },
-            { error("a viewer calling a mutation tool directly must be refused — list filtering is not enough") },
-        )
+        directCallOnHiddenTool.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>()
 
         ToolAccessControl.authorizeCall(access.user.role, ListingToolFixture).isRight() shouldBe true
     }
@@ -86,7 +83,7 @@ class AccessMechanismEndToEndTest {
         val storeId = registerStore()
         grant(storeId, GrantRole.OPERATOR)
 
-        val access = accessResolution.resolve(issuer, subject, storeId).fold({ error("expected access, got $it") }, { it })
+        val access = accessResolution.resolve(issuer, subject, storeId).shouldBeRight()
 
         ToolAccessControl.filterForList(access.user.role, allTools) shouldBe allTools
         ToolAccessControl.authorizeCall(access.user.role, ListingToolFixture).isRight() shouldBe true

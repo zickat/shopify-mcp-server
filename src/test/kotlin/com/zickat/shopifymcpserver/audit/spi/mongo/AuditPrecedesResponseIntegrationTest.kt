@@ -8,6 +8,7 @@ import com.zickat.shopifymcpserver.identity.domain.repositories.IdentityReposito
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
 import com.zickat.shopifymcpserver.tenancy.StoreFixtures
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.bson.Document
@@ -41,10 +42,10 @@ class AuditPrecedesResponseIntegrationTest : WithMongoDBContainer() {
     }
 
     private fun registerStore(): String =
-        storeRepository.save(StoreFixtures().build()).fold({ error("fixture setup failed: $it") }, { it.id.value })
+        storeRepository.save(StoreFixtures().build()).shouldBeRight().id.value
 
     private fun registerIdentity(): String =
-        identityRepository.save(IdentityFixtures().build()).fold({ error("fixture setup failed: $it") }, { it.id.value })
+        identityRepository.save(IdentityFixtures().build()).shouldBeRight().id.value
 
     private fun buildResponseThatAlwaysFails(businessResult: Any): Nothing =
         throw IllegalStateException("simulated failure while building the response, downstream of a committed audit write")
@@ -67,7 +68,7 @@ class AuditPrecedesResponseIntegrationTest : WithMongoDBContainer() {
         val downstreamFailure = runCatching { buildResponseThatAlwaysFails(actionResult) }
         downstreamFailure.isFailure shouldBe true
 
-        val entries = auditLogRepository.findByStore(storeId).fold({ error("unexpected left: $it") }, { it })
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
         entries shouldHaveSize 1
         entries.first().outcome shouldBe "ok"
         entries.first().toolName shouldBe "list_products"

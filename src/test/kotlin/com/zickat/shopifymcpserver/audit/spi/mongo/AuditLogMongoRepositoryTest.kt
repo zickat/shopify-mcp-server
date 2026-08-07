@@ -8,6 +8,7 @@ import com.zickat.shopifymcpserver.identity.domain.repositories.IdentityReposito
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
 import com.zickat.shopifymcpserver.tenancy.StoreFixtures
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import org.bson.Document
 import org.junit.jupiter.api.BeforeEach
@@ -37,10 +38,10 @@ class AuditLogMongoRepositoryTest : AuditLogRepositoryReferentialIntegrityTest, 
     }
 
     override fun registerExistingIdentity(): String =
-        identityRepository.save(IdentityFixtures().build()).fold({ error("fixture setup failed: $it") }, { it.id.value })
+        identityRepository.save(IdentityFixtures().build()).shouldBeRight().id.value
 
     override fun registerExistingStore(): String =
-        storeRepository.save(StoreFixtures().build()).fold({ error("fixture setup failed: $it") }, { it.id.value })
+        storeRepository.save(StoreFixtures().build()).shouldBeRight().id.value
 
     @Test
     fun `should have real indexes on (storeId, occurredAt desc) and (identityId, occurredAt desc)`() {
@@ -60,7 +61,7 @@ class AuditLogMongoRepositoryTest : AuditLogRepositoryReferentialIntegrityTest, 
         repository.append(older)
         repository.append(newer)
 
-        val result = repository.findByStore(storeId).fold({ error("unexpected left: $it") }, { it })
+        val result = repository.findByStore(storeId).shouldBeRight()
         result.first().id shouldBe newer.id
     }
 }

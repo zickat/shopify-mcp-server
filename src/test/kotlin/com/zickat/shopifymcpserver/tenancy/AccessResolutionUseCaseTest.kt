@@ -6,7 +6,10 @@ import com.zickat.shopifymcpserver.shared_kernel.ForbiddenError
 import com.zickat.shopifymcpserver.tenancy.domain.AccessResolutionUseCase
 import com.zickat.shopifymcpserver.tenancy.domain.models.GrantRole
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.time.Clock
 import org.junit.jupiter.api.Test
 
@@ -27,7 +30,7 @@ class AccessResolutionUseCaseTest {
     }
 
     private fun resolveIdentity(): String =
-        identityExposedService.resolve(issuer, subject).fold({ error("resolve failed: $it") }, { it })
+        identityExposedService.resolve(issuer, subject).shouldBeRight()
 
     private fun grantOn(storeId: String, role: GrantRole, identityId: String) {
         grantRepository.save(
@@ -46,10 +49,7 @@ class AccessResolutionUseCaseTest {
 
         val result = useCase.resolve(issuer, subject, storeId)
 
-        result.fold(
-            { (it is ForbiddenError) shouldBe true },
-            { error("expected a refusal, got a context") },
-        )
+        result.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>()
     }
 
     @Test
@@ -60,14 +60,10 @@ class AccessResolutionUseCaseTest {
 
         val result = useCase.resolve(issuer, subject, storeId)
 
-        result.fold(
-            { error("expected access, got $it") },
-            { context ->
-                context.tenant.storeId shouldBe storeId
-                context.user.identityId shouldBe identityId
-                context.user.role shouldBe AccessRole.VIEWER
-            },
-        )
+        val context = result.shouldBeRight()
+        context.tenant.storeId shouldBe storeId
+        context.user.identityId shouldBe identityId
+        context.user.role shouldBe AccessRole.VIEWER
     }
 
     @Test
@@ -78,10 +74,7 @@ class AccessResolutionUseCaseTest {
 
         val result = useCase.resolve(issuer, subject, storeId)
 
-        result.fold(
-            { error("expected access, got $it") },
-            { context -> context.user.role shouldBe AccessRole.OPERATOR },
-        )
+        result.shouldBeRight().user.role shouldBe AccessRole.OPERATOR
     }
 
     @Test
@@ -98,10 +91,7 @@ class AccessResolutionUseCaseTest {
         grantRepository.store[grantId.value] = revoked
 
         val secondCall = useCase.resolve(issuer, subject, storeId)
-        secondCall.fold(
-            { (it is ForbiddenError) shouldBe true },
-            { error("expected the revoked grant to be refused immediately, got a context") },
-        )
+        secondCall.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>()
     }
 
     @Test
@@ -117,10 +107,7 @@ class AccessResolutionUseCaseTest {
         storeRepository.store[storeId] = archivedStore
 
         val afterArchiving = useCase.resolve(issuer, subject, storeId)
-        afterArchiving.fold(
-            { (it is ForbiddenError) shouldBe true },
-            { error("expected the archived store to be refused, got a context") },
-        )
+        afterArchiving.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>()
     }
 
     @Test
@@ -131,12 +118,6 @@ class AccessResolutionUseCaseTest {
 
         val onMissingGrant = useCase.resolve(issuer, subject, realStoreId + "-does-not-exist")
 
-        onMissingGrant.fold(
-            { error ->
-                (error is ForbiddenError) shouldBe true
-                (error as ForbiddenError).messageKey shouldBe "access.denied"
-            },
-            { error("expected a refusal for an unknown store, got a context") },
-        )
+        onMissingGrant.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>().messageKey shouldBe "access.denied"
     }
 }

@@ -9,6 +9,7 @@ import com.zickat.shopifymcpserver.tenancy.StoreFixtures
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,11 +38,11 @@ class GrantMongoRepositoryTest : GrantRepositoryReferentialIntegrityTest, WithMo
     }
 
     override fun registerExistingIdentity(): String =
-        identityRepository.save(IdentityFixtures().build()).fold({ error("fixture setup failed: $it") }, { it.id.value })
+        identityRepository.save(IdentityFixtures().build()).shouldBeRight().id.value
 
     override fun registerStore(archived: Boolean): StoreId {
         val fixtures = StoreFixtures().let { if (archived) it.archived() else it }
-        return storeRepository.save(fixtures.build()).fold({ error("fixture setup failed: $it") }, { it.id })
+        return storeRepository.save(fixtures.build()).shouldBeRight().id
     }
 
     @Test

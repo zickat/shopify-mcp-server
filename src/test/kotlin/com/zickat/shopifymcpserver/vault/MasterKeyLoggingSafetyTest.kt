@@ -6,6 +6,7 @@ import ch.qos.logback.core.read.ListAppender
 import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake
 import com.zickat.shopifymcpserver.vault.domain.StoreCredentialUseCase
 import com.zickat.shopifymcpserver.vault.domain.repositories.ACTIVE_MASTER_KEY_REF
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import java.util.Base64
 import org.junit.jupiter.api.AfterEach
@@ -53,7 +54,7 @@ class MasterKeyLoggingSafetyTest {
         val useCase = StoreCredentialUseCase(repository, masterKeyProvider)
 
         val id = useCase.store("store-1", "shpat_super-secret-admin-token".toByteArray(), "read_products")
-            .fold({ error("setup failed: $it") }, { it })
+            .shouldBeRight()
 
         val stored = repository.store.getValue(id.value)
         val tamperedWrappedDek = stored.wrappedDek.copyOf()

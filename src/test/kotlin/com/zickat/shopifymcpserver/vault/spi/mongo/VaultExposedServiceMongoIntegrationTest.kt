@@ -7,6 +7,7 @@ import com.zickat.shopifymcpserver.vault.MasterKeyProviderFake
 import com.zickat.shopifymcpserver.vault.domain.StoreCredentialUseCase
 import com.zickat.shopifymcpserver.vault.domain.repositories.MasterKeyProvider
 import com.zickat.shopifymcpserver.vault.exposed_interface.VaultExposedService
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import org.bson.Document
 import org.junit.jupiter.api.BeforeEach
@@ -48,11 +49,11 @@ class VaultExposedServiceMongoIntegrationTest : WithMongoDBContainer() {
     @Test
     fun `a real encrypted credential is never surfaced in clear through VaultExposedService`() {
         val storeId = storeRepository.save(StoreFixtures().build())
-            .fold({ error("fixture setup failed: $it") }, { it.id.value })
+            .shouldBeRight().id.value
         val plaintext = "shpat_super-secret-admin-token".toByteArray()
 
         storeCredentialUseCase.store(storeId, plaintext, "read_products")
-            .fold({ error("store failed: $it") }, { it })
+            .shouldBeRight()
 
         val rawDocument = mongoTemplate.getCollection(StoreCredentialEntity.COLLECTION_NAME).find().first()!!
         val storedCiphertext = (rawDocument["ciphertext"] as org.bson.types.Binary).data

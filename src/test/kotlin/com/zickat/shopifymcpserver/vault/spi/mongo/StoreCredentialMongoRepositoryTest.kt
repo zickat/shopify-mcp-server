@@ -6,6 +6,7 @@ import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
 import com.zickat.shopifymcpserver.vault.StoreCredentialFixtures
 import com.zickat.shopifymcpserver.vault.StoreCredentialRepositoryReferentialIntegrityTest
 import com.zickat.shopifymcpserver.vault.domain.repositories.StoreCredentialRepository
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import org.bson.Document
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +34,7 @@ class StoreCredentialMongoRepositoryTest : StoreCredentialRepositoryReferentialI
 
     override fun registerStore(archived: Boolean): String {
         val fixtures = StoreFixtures().let { if (archived) it.archived() else it }
-        return storeRepository.save(fixtures.build()).fold({ error("fixture setup failed: $it") }, { it.id.value })
+        return storeRepository.save(fixtures.build()).shouldBeRight().id.value
     }
 
     @Test

@@ -19,6 +19,7 @@ import com.zickat.shopifymcpserver.tenancy.domain.models.GrantRole
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import kotlin.time.Clock
@@ -183,10 +184,10 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         )
 
     private fun registerStore(): String =
-        storeRepository.save(StoreFixtures().build()).fold({ error("fixture setup failed: $it") }, { it.id.value })
+        storeRepository.save(StoreFixtures().build()).shouldBeRight().id.value
 
     private fun resolveIdentity(subject: String): String =
-        identityExposedService.resolve(ISSUER_URI, subject).fold({ error("identity resolution failed: $it") }, { it })
+        identityExposedService.resolve(ISSUER_URI, subject).shouldBeRight()
 
     private fun grant(identityId: String, storeId: String, role: GrantRole) {
         grantRepository.save(
@@ -199,7 +200,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
                 createdAt = Clock.System.now(),
                 revokedAt = null,
             ),
-        ).fold({ error("grant setup failed: $it") }, { it })
+        ).shouldBeRight()
     }
 
     @Test
@@ -257,7 +258,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         text.orEmpty() shouldContain "access.denied"
 
         val identityId = resolveIdentity(subject)
-        val entries = auditLogRepository.findByStore(storeId).fold({ error("audit read failed: $it") }, { it })
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
         val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "whoami" }
         checkNotNull(deniedEntry) { "no audit entry written for the denied call — audit-before-response is broken" }
         deniedEntry.outcome shouldBe "denied"
@@ -286,7 +287,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         val text = ((touchResult["content"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("text") as? String
         text.orEmpty() shouldContain "access.role.insufficient"
 
-        val entries = auditLogRepository.findByStore(storeId).fold({ error("audit read failed: $it") }, { it })
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
         val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "touch_store" }
         checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal" }
         deniedEntry.outcome shouldBe "denied"
@@ -310,7 +311,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         checkNotNull(touchResult) { "tools/call did not return a result: $touchPayload" }
         touchResult["isError"] shouldBe false
 
-        val entries = auditLogRepository.findByStore(storeId).fold({ error("audit read failed: $it") }, { it })
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
         val okEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "touch_store" }
         checkNotNull(okEntry) { "no audit entry written for the successful mutation call" }
         okEntry.outcome shouldBe "ok"

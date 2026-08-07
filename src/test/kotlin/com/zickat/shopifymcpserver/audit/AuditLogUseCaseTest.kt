@@ -9,9 +9,11 @@ import com.zickat.shopifymcpserver.shared_kernel.NotAuthorizedError
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake
+import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.time.Clock
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Nested
@@ -146,10 +148,7 @@ class AuditLogUseCaseTest {
             }
 
             actionRan shouldBe true
-            result.fold(
-                { (it is TechnicalError) shouldBe true },
-                { error("expected a TechnicalError, got a success: $it") },
-            )
+            result.shouldBeLeft().shouldBeInstanceOf<TechnicalError>()
             repository.entries.shouldBeEmpty()
         }
 
@@ -162,10 +161,7 @@ class AuditLogUseCaseTest {
                 ForbiddenError("access.denied", mapOf("storeId" to storeId)).left()
             }
 
-            result.fold(
-                { (it is TechnicalError) shouldBe true },
-                { error("expected a TechnicalError, got a success: $it") },
-            )
+            result.shouldBeLeft().shouldBeInstanceOf<TechnicalError>()
             repository.entries.shouldBeEmpty()
         }
     }
