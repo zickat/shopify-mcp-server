@@ -122,6 +122,18 @@
             <version>${arrow.version}</version>
         </dependency>
 
+        <!-- Client HTTP sortant — LOT2-01 (module shopify, seul point de couture vers l'API Admin
+             Shopify). Boot 4.1 a extrait RestClient.Builder et RestTemplateBuilder de
+             spring-boot-autoconfigure vers ce module dédié ; jusqu'ici déclaré en scope test
+             uniquement (pour spring-boot-resttestclient, LOT0-05). Repassé en scope par défaut :
+             c'est ce module qui fournit le bean RestClient.Builder auto-configuré, injecté dans
+             ShopifyRestClientHttpClient — sans lui, aucun RestClient.Builder au démarrage réel de
+             l'application, seulement dans les tests. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-restclient</artifactId>
+        </dependency>
+
         <!-- Modulith -->
         <dependency>
             <groupId>org.springframework.modulith</groupId>
@@ -159,14 +171,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-resttestclient</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- spring-boot-resttestclient a besoin de RestTemplateBuilder (org.springframework.boot.
-             restclient), extrait dans son propre module en Boot 4.1 — constaté à l'exécution
-             (ClassNotFoundException sans lui, pas à la compilation). -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-restclient</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

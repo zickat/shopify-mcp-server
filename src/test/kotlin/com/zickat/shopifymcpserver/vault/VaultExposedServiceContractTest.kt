@@ -12,11 +12,24 @@ import org.junit.jupiter.api.Test
 
 class VaultExposedServiceContractTest {
 
+    private val theOneMethodAllowedToCarryDecryptedBytesOutOfVault = "resolveCredential"
+
     @Test
-    fun `no method of VaultExposedService returns StoreCredential or a byte array, even wrapped in a generic type`() {
-        val offending = VaultExposedService::class.java.declaredMethods.filter { method -> isSensitive(method) }
+    fun `no method of VaultExposedService other than resolveCredential returns StoreCredential or a byte array, even wrapped in a generic type`() {
+        val offending = VaultExposedService::class.java.declaredMethods
+            .filterNot { method -> method.name == theOneMethodAllowedToCarryDecryptedBytesOutOfVault }
+            .filter { method -> isSensitive(method) }
 
         offending shouldBe emptyList<Method>()
+    }
+
+    @Test
+    fun `resolveCredential is the only door through which a decrypted secret is allowed to leave the vault module`() {
+        val methodsCarryingDecryptedBytes = VaultExposedService::class.java.declaredMethods
+            .filter { method -> isSensitive(method) }
+            .map { method -> method.name }
+
+        methodsCarryingDecryptedBytes shouldBe listOf(theOneMethodAllowedToCarryDecryptedBytesOutOfVault)
     }
 
     private fun isSensitive(method: Method): Boolean = containsSensitiveType(method.genericReturnType)
