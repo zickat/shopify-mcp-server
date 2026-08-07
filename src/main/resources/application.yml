@@ -41,6 +41,21 @@ mcp:
   security:
     expected-audience: ${MCP_EXPECTED_AUDIENCE:http://localhost:8080/mcp}
 
+# relay : LOT2-03, échafaudage transitoire (architecture.md D23, §2.4 — module `relay`, détruit au
+# lot 8). `ts.base-url` est la boucle locale du processus TypeScript relayé (127.0.0.1 uniquement,
+# jamais de route publique) — le mode HTTP loopback côté TS reste à construire (dépôt B, hors
+# périmètre d'écriture de LOT2-03). `manifest` est la table de routage NATIF/RELAIS des 79 outils
+# (architecture.md §4.2) : LOT2-03 construit le mécanisme et ne peuple qu'une entrée de
+# vérification (`check_shopify_connection`, le tour d'horloge décrit dans le lot) ; LOT2-07 peuple
+# les 79 noms réels. Un outil absent d'ici est refusé, jamais relayé — échec fermé (schema.md §6).
+relay:
+  ts:
+    base-url: ${RELAY_TS_BASE_URL:http://127.0.0.1:8765}
+  manifest:
+    - tool-name: check_shopify_connection
+      route: RELAIS
+      kind: READ
+
 # security.md : "pas d'endpoint public sauf ceux explicitement marqués comme tels". Actuator
 # health (LOT0-02) et l'endpoint PRM RFC 9728 (LOT0-05, voir
 # identity/ResourceServerSecurityConfiguration.kt) sont les deux seuls endpoints publics du

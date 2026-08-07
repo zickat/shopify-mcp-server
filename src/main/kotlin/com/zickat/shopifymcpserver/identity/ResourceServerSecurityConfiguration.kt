@@ -48,6 +48,7 @@ class ResourceServerSecurityConfiguration {
                         "/.well-known/oauth-protected-resource",
                         "/.well-known/oauth-protected-resource/**",
                     ).permitAll()
+                    .requestMatchers("/relay/**").access(LoopbackOnlyAuthorizationManager())
                     .anyRequest().authenticated()
             }
 
