@@ -13,7 +13,6 @@ import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
-import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.bson.types.ObjectId
@@ -40,8 +39,7 @@ class AuthenticatedToolPipelineTest {
 
     private val identityExposedService = IdentityExposedServiceFake()
     private val accessExposedService = AccessExposedServiceFake()
-    private val storeExposedService = StoreExposedServiceFake().apply { archivedByStoreId[storeId] = false }
-    private val auditRepository = AuditLogFakeRepository(identityExposedService, storeExposedService)
+    private val auditRepository = AuditLogFakeRepository(identityExposedService)
     private val auditExposedService = AuditExposedServiceImpl(AuditLogUseCase(auditRepository))
     private val pipeline = AuthenticatedToolPipeline(identityExposedService, accessExposedService, auditExposedService)
 

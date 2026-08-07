@@ -8,7 +8,6 @@ import com.zickat.shopifymcpserver.shared_kernel.ForbiddenError
 import com.zickat.shopifymcpserver.shared_kernel.NotAuthorizedError
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
-import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -22,15 +21,10 @@ import org.junit.jupiter.api.Test
 class AuditLogUseCaseTest {
 
     private val identityExposedService = IdentityExposedServiceFake()
-    private val storeExposedService = StoreExposedServiceFake()
-    private val repository = AuditLogFakeRepository(identityExposedService, storeExposedService)
+    private val repository = AuditLogFakeRepository(identityExposedService)
     private val useCase = AuditLogUseCase(repository, Clock.System)
 
-    private fun registerStore(): String {
-        val id = ObjectId().toHexString()
-        storeExposedService.archivedByStoreId[id] = false
-        return id
-    }
+    private fun registerStore(): String = ObjectId().toHexString()
 
     private fun registerIdentity(): String {
         val id = ObjectId().toHexString()
@@ -163,6 +157,25 @@ class AuditLogUseCaseTest {
 
             result.shouldBeLeft().shouldBeInstanceOf<TechnicalError>()
             repository.entries.shouldBeEmpty()
+        }
+    }
+
+    @Nested
+    inner class ProbeOnAnUnknownStoreId {
+
+        @Test
+        fun `should journal a denial with the invented storeId as raw value, without requiring the store to exist`() {
+            val unknownStoreId = ObjectId().toHexString()
+
+            val result = useCase.execute(identityId = null, storeId = unknownStoreId, toolName = "whoami", isMutation = false, toolInput = mapOf()) {
+                ForbiddenError("access.denied", mapOf("storeId" to unknownStoreId)).left()
+            }
+
+            result.isLeft() shouldBe true
+            val entry = repository.entries.single()
+            entry.storeId shouldBe unknownStoreId
+            entry.outcome shouldBe "denied"
+            entry.denialReason shouldBe "access.denied"
         }
     }
 }

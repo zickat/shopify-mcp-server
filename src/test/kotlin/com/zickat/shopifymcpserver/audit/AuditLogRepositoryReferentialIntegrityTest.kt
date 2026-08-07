@@ -21,12 +21,12 @@ interface AuditLogRepositoryReferentialIntegrityTest {
     }
 
     @Test
-    fun `should reject an entry whose storeId does not exist`() {
+    fun `should accept an entry whose storeId does not exist — a probe on an invented identifier is exactly what the log must capture`() {
         val identityId = registerExistingIdentity()
         val orphanStoreId = ObjectId().toHexString()
         val entry = AuditLogFixtures().withIdentityId(identityId).withStoreId(orphanStoreId).build()
 
-        repository.append(entry).isLeft() shouldBe true
+        repository.append(entry).isRight() shouldBe true
     }
 
     @Test

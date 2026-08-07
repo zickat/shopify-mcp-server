@@ -8,7 +8,6 @@ import com.zickat.shopifymcpserver.audit.domain.repositories.AuditLogRepository
 import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
-import com.zickat.shopifymcpserver.tenancy.exposed_interface.StoreExposedService
 import org.bson.types.ObjectId
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
@@ -21,15 +20,11 @@ import org.springframework.stereotype.Repository
 class AuditLogMongoRepository(
     private val mongoTemplate: MongoTemplate,
     private val identityExposedService: IdentityExposedService,
-    private val storeExposedService: StoreExposedService,
 ) : AuditLogRepository {
 
     override fun append(entry: AuditLog): Either<UseCaseError, AuditLog> {
         entry.identityId?.let {
             if (!identityExposedService.exists(it)) return NotFoundError("auditLog.identity.not.found").left()
-        }
-        if (!storeExposedService.exists(entry.storeId)) {
-            return NotFoundError("auditLog.store.not.found").left()
         }
         val inserted = mongoTemplate.insert(AuditLogEntity.fromDomain(entry))
         return inserted.toDomain()

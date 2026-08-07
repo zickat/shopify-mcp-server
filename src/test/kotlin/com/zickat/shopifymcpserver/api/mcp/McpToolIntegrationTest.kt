@@ -296,6 +296,30 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
+    fun `a tools call against a storeId that does not exist is refused as access denied, not a technical error, and the probe is journaled`() {
+        val subject = "prober-unknown-store"
+        resolveIdentity(subject)
+        val token = jwt(subject)
+        val unknownStoreId = ObjectId().toHexString()
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "whoami", unknownStoreId)
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val result = callPayload?.get("result") as? Map<*, *>
+        checkNotNull(result) { "tools/call did not return a result: $callPayload" }
+        result["isError"] shouldBe true
+        val text = ((result["content"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("text") as? String
+        text.orEmpty() shouldContain "access.denied"
+
+        val entries = auditLogRepository.findByStore(unknownStoreId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.toolName == "whoami" }
+        checkNotNull(deniedEntry) { "no audit entry written for a probe on an unknown storeId — this is exactly what the log must capture" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.denied"
+    }
+
+    @Test
     fun `an operator can call the mutation tool, and the success is journaled`() {
         val storeId = registerStore()
         val subject = "operator-touch-store"

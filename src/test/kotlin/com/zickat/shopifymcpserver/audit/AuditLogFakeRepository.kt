@@ -9,11 +9,9 @@ import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedSer
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
-import com.zickat.shopifymcpserver.tenancy.exposed_interface.StoreExposedService
 
 class AuditLogFakeRepository(
     private val identityExposedService: IdentityExposedService,
-    private val storeExposedService: StoreExposedService,
 ) : AuditLogRepository {
     val entries = mutableListOf<AuditLog>()
 
@@ -25,9 +23,6 @@ class AuditLogFakeRepository(
         }
         entry.identityId?.let {
             if (!identityExposedService.exists(it)) return NotFoundError("auditLog.identity.not.found").left()
-        }
-        if (!storeExposedService.exists(entry.storeId)) {
-            return NotFoundError("auditLog.store.not.found").left()
         }
         entries.add(entry)
         return entry.right()
