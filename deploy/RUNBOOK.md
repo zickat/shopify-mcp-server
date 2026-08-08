@@ -39,6 +39,19 @@ cd deploy
 ./scripts/deploy.sh $(git -C .. rev-parse --short HEAD)
 ```
 
+## Un incident réel, trouvé et corrigé pendant cette nuit — pas dans un rapport après coup
+
+Après le premier déploiement réussi, le conteneur `shopify-mcp-server-app` s'est mis à
+redémarrer en boucle (« Port 8080 was already in use »). Cause : un `java -jar` lancé **à la main**
+lors d'une session antérieure (vérification `LOT2-08`, pointant sur `shopify_mcp_lot0_v3`) était
+encore vivant sur cette machine (`ps aux`, PID actif depuis le 07/08) et tenait le port 8080 en
+`network_mode: host` — exactement la même contrainte de loopback qui impose ce mode réseau à ce
+service (voir plus haut). Tué (`kill <pid>`, arrêt propre, pas `-9`), le conteneur est reparti sans
+autre intervention. **Aucune donnée perdue** — c'est un process orphelin de vérification, pas la
+base. À retenir : `network_mode: host` fait cohabiter TOUT ce qui écoute sur cette machine sur un
+seul espace de ports — un `java -jar` lancé à la main pour un test rapide entre en collision directe
+avec le déploiement conteneurisé s'il n'est pas arrêté après usage.
+
 ## Ce qui a été éprouvé cette nuit, pas seulement écrit
 
 - **Build → déploiement → sonde de santé** : vert de bout en bout, deux fois (`5d9220f` puis
