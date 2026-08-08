@@ -184,27 +184,26 @@ divergé (vérifié cette nuit — les deux s'accordent).
 db.grants.insertOne({
   identityId: ObjectId("<identityId de l'étape 2>"),
   storeId:    ObjectId("<_id du STORE de l'étape 3>"),
-  role:       "viewer",   // ou "operator" — voir l'avertissement ci-dessous, jamais "operator" par défaut
+  role:       "viewer",   // ou "operator" — les deux sont utilisables, voir ci-dessous
   grantedBy:  ObjectId("<identityId de Val, voir bootstrap étape 2>"),
   createdAt:  new Date(),
   revokedAt:  null,
 })
 ```
 
-**Avertissement trouvé en testant cette nuit, pas dans la doc d'architecture** : un grant `viewer`
-empêche l'opérateur d'appeler `use_store` lui-même — vérifié en direct :
-```
-access.role.insufficient {requiredRole=OPERATOR, actualRole=VIEWER}
-```
-`use_store` (la sélection de boutique active côté serveur) est aujourd'hui classée **mutante**, donc
-fermée à un `viewer` au même titre qu'une vraie écriture. Concrètement : **un rôle `viewer` ne peut
-aujourd'hui utiliser AUCUN outil relayé ni AUCUN outil natif nécessitant une boutique active**, parce
-qu'il ne peut pas franchir l'étape qui sélectionne cette boutique. Ce n'est probablement pas
-l'intention de `viewer` (lire sans écrire), mais c'est le comportement réel du serveur déployé — à
-signaler au Tech Lead/Dev Backend (voir « Défauts trouvés, non corrigés » plus bas), pas à corriger
-ici (`src/`, hors périmètre DevOps). **Conséquence pratique pour ce runbook, tant que ce n'est pas
-réglé** : accorder `operator` à quiconque doit réellement utiliser le connecteur, même pour de la
-lecture seule — `viewer` aujourd'hui n'ouvre aucun outil, pas un sous-ensemble.
+**Les deux rôles sont utilisables.** Ce paragraphe portait un avertissement — un grant `viewer`
+n'ouvrait aucun outil, parce que `use_store` était classée **mutante** et fermait donc l'étape qui
+sélectionne la boutique. **Corrigé le 2026-08-08** (commit `6604b06`, déployé) : `use_store` est
+reclassée `READ`, puisqu'elle ne touche aucun système externe et ne persiste rien — c'est l'état en
+mémoire par *(identité, session)* que `schema.md` §7 exclut délibérément du modèle.
+
+La reclassification n'ouvre aucune mutation : chaque outil que `use_store` débloque déclare son propre
+type et il est réévalué à chaque appel ; la règle fermée par défaut de `LOT0-06` continue de refuser
+tout ce qui n'est pas explicitement `READ`.
+
+**Choisis donc le rôle selon l'intention réelle** : `viewer` pour lire sans écrire, `operator` pour
+lire et écrire. Un test de bout en bout vérifie désormais qu'un `viewer` sélectionne sa boutique, lit
+à travers `search_resources`, et n'est refusé que sur la mutation.
 
 ### Étape 5 — vérifier que l'octroi a pris — et le piège inverse
 
@@ -238,10 +237,14 @@ quel que soit le nombre de boutiques accordées) :
 ```js
 db.identities.updateOne({_id: ObjectId("<identityId>")}, {$set: {revokedAt: new Date()}})
 ```
-**Vérifier avec `use_store` (ou tout outil scopé à une boutique), PAS avec `list_stores` seul** — voir
-« Défauts trouvés, non corrigés » : `list_stores` a un défaut réel qui continue de lister les
-boutiques d'une identité révoquée. La vraie barrière (`use_store`, tout outil relayé) répond bien
-`access.denied` immédiatement après révocation — vérifié cette nuit, aucune attente, aucun cache.
+**Vérifier avec n'importe quel outil** : `list_stores` rend désormais une liste vide pour une identité
+révoquée, et `use_store` répond `access.denied`, tous deux immédiatement — aucune attente, aucun cache.
+
+Ce paragraphe avertissait de ne pas se fier à `list_stores` seul, parce qu'il continuait de lister les
+boutiques d'une identité révoquée, en contradiction avec **D17**. **Corrigé le 2026-08-08** (commit
+`6604b06`, déployé). La correction a été posée au point de convergence — `listGrantedStores` — et non
+sur l'outil : un **second** appelant faisait la même faute, le message « boutiques disponibles » qui
+enrichit un refus, et personne ne l'avait identifié.
 
 Pour re-donner l'accès plus tard : `revokedAt: null` suffit (le grant sous-jacent, s'il n'a pas été
 retiré séparément, redevient actif immédiatement).
@@ -313,7 +316,18 @@ inchangées), aucun utilisateur de test restant sur le realm.
 
 ---
 
-## Défauts trouvés, **non corrigés** — hors périmètre DevOps, à remonter
+## Défauts trouvés en exécutant ce runbook — **les deux ont été corrigés depuis**
+
+> **Mise à jour du 2026-08-08.** Les deux défauts décrits ci-dessous ont été remontés au Dev Backend,
+> corrigés (commit `6604b06`) et **déployés**. Les sections sont conservées telles quelles parce
+> qu'elles racontent comment ils ont été trouvés — en **exécutant** cette procédure, pas en l'écrivant —
+> et parce que le second a révélé un chemin d'appel que personne n'avait identifié. Ce qui a changé
+> est noté sous chacune. Les avertissements correspondants ont été retirés des étapes 4 et 6 : suivre
+> ce runbook aujourd'hui n'appelle plus de précaution particulière sur ces deux points.
+>
+> - `list_stores` respecte désormais `D17` — correction posée sur `listGrantedStores`, le point de
+>   convergence, et non sur l'outil : un **second** appelant faisait la même faute.
+> - `use_store` est reclassée `READ`, donc **les deux rôles sont utilisables** conformément à `D6`.
 
 ### `list_stores` ne consulte pas `Identity.revokedAt` — une identité révoquée continue de voir ses anciennes boutiques
 
