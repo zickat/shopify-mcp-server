@@ -151,7 +151,7 @@ WireGuard, indépendant du HTTP/HTTPS vu du navigateur). Ce choix ne se transpos
 mise en service, et la découverte ci-dessus le rend plus pressant qu'un simple choix de posture :
 
 - **Si le serveur Keycloak doit rester joignable uniquement via Tailscale** (Val et Antoine sur le
-  même tailnet), HTTP pourrait suffire pour *eux* — mais alors le comportement des cookies `Secure`
+  même réseau Tailscale), HTTP pourrait suffire pour *eux* — mais alors le comportement des cookies `Secure`
   documenté ci-dessus doit être résolu autrement (drapeau serveur à trouver, ou accepter que le
   formulaire de connexion ne marche pas et se rabattre sur un mécanisme sans navigateur — aucun n'est
   disponible pour Cowork/Claude Desktop/claude.ai, qui n'ont pas d'option ROPC).

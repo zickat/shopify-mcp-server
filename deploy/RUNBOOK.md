@@ -1,7 +1,7 @@
 # RUNBOOK — déploiement `shopify-mcp-server` (LOT2-09, D20)
 
 Écrit par DevOps dans la nuit du 2026-08-07 au 2026-08-08, pendant que Val dormait. Tout ce qui suit a
-été **exécuté pour de vrai** sur cette machine (`val-server`, tailnet `tail5e0606`), pas seulement
+été **exécuté pour de vrai** sur cette machine (`val-server`, réseau Tailscale `tail5e0606`), pas seulement
 documenté comme possible — voir `progress.md` de l'initiative `catalog-plugin-oauth-tenancy` pour le
 compte rendu complet et le détail des vérifications.
 

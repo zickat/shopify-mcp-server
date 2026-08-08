@@ -1,7 +1,7 @@
 # ACCESS-RUNBOOK — octroi et révocation d'accès (`LOT2-10`, US-03/US-04/US-06)
 
 Écrit par DevOps dans la nuit du 2026-08-07 au 2026-08-08, pendant que Val dormait. **Tout ce qui suit
-a été exécuté pour de vrai** sur cette machine (`val-server`, tailnet `tail5e0606`) contre le serveur
+a été exécuté pour de vrai** sur cette machine (`val-server`, réseau Tailscale `tail5e0606`) contre le serveur
 déployé par `LOT2-09`, avec une identité de test créée, accordée, vérifiée, révoquée puis nettoyée —
 pas seulement documenté comme possible. Voir `progress.md` de l'initiative
 `catalog-plugin-oauth-tenancy` pour le compte rendu complet.
@@ -251,30 +251,47 @@ retiré séparément, redevient actif immédiatement).
 
 ---
 
-## État réseau actuel (D24) — ce qui marche aujourd'hui, ce qui ne marche pas encore
+## État réseau actuel (D24, révisée le 2026-08-08) — ce qui marche aujourd'hui, ce qui ne marche pas encore
 
-**Le service n'est joignable que par le tailnet Tailscale (`tail5e0606`) de Val.** `D24` le pose en
-connaissance de cause : Tailscale suffit tant que Claude Code (poste de Val) est le seul client, parce
-qu'il tourne sur la machine de l'opérateur et fait lui-même l'échange OAuth depuis le tailnet.
+> **Mise à jour du 2026-08-08.** La version de cette section écrite cette nuit-là disait « Antoine est
+> sur Cowork, donc sa bascule exige l'exposition publique du serveur ». **C'était faux** : Antoine est
+> passé sur l'application de bureau Claude Code le 2026-07-26 (décision CEO, `startup/decisions.md`),
+> Cowork restant installé mais gelé comme filet de secours — un fait que ce runbook ignorait en
+> l'écrivant. Le CTO a réécrit `D24` en conséquence le 2026-08-08 (`architecture.md`) : l'exposition
+> publique est désormais **différée sans échéance**, et n'était jamais requise pour Antoine. Ce qui
+> suit remplace entièrement le raisonnement précédent — pas seulement son verdict.
 
-**Antoine est sur Cowork — une surface *hébergée*.** C'est l'infrastructure d'Anthropic, pas la
-machine d'Antoine, qui doit atteindre le serveur pour faire l'échange `/token`. Un tailnet privé ne
-lui est pas accessible, quelle que soit la qualité de ce runbook. **La bascule d'Antoine — la raison
-d'être de cette initiative — n'est donc pas réalisable aujourd'hui**, indépendamment de tout ce qui
-précède : même avec un compte auto-inscrit et un grant posé correctement, l'infrastructure Cowork ne
-peut tout simplement pas ouvrir de connexion vers `val-server.tail5e0606.ts.net`.
+**Le service n'est joignable que par le réseau Tailscale (`tail5e0606`) de Val.** Ça suffit pour les
+**deux** opérateurs, pas seulement pour Val. Claude Code — CLI ou application de bureau — fait sa
+boucle OAuth **localement**, sur la machine de l'opérateur (`http://localhost:PORT/callback`), sans
+jamais transiter par l'infrastructure d'Anthropic : c'est le processus sur le poste de l'opérateur qui
+mène le flux. Un poste qui rejoint le réseau Tailscale de Val atteint donc le serveur exactement comme
+le poste de Val lui-même. Seules les surfaces réellement **hébergées** (Cowork, Claude Desktop,
+claude.ai, Claude Code *web*) feraient transiter l'échange `/token` par l'infrastructure d'Anthropic et
+exigeraient une exposition publique — Antoine n'en utilise aucune aujourd'hui.
 
-**Ce qui débloque Antoine** : la revue d'exposition réseau publique, que `D24` place explicitement
-*avant* ce lot (« se tranche avant `LOT2-10` ») — non faite. Ce runbook est écrit et vérifié pour
-qu'il soit prêt le jour où cette revue tranche, **pas parce que le blocage est levé**. Une fois le
-service exposé (avec HTTPS réel — voir aussi le point suivant), la procédure ci-dessus s'applique sans
-changement : le mécanisme de grant ne dépend pas de la topologie réseau.
+**Ce qui débloque Antoine, concrètement** : admettre son poste comme **nœud du réseau Tailscale** de
+Val — nœud partagé, plus une ACL l'autorisant à joindre l'hôte de ce déploiement (`D20`) sur les ports
+du serveur MCP et de Keycloak. Val confirme que Tailscale est déjà installé là où tournent ses
+applications. C'est un partage de nœud et une règle d'ACL — sans commune mesure avec l'ouverture d'un
+point d'entrée public à durcir, et ça ne dépend d'aucune revue d'exposition réseau. Une fois le nœud
+admis, la procédure d'octroi ci-dessus s'applique à Antoine sans changement : le mécanisme de grant ne
+dépend pas de la topologie réseau.
 
-**Le flux par navigateur ne passe pas non plus tant que le certificat HTTPS réel n'est pas posé**
-(cookie `Secure` de Keycloak, `LOT2-08`/`RUNBOOK.md` § « Décisions », point 3) — seules les
-vérifications scriptées (comme celle de cette nuit) passent en HTTP tailnet nu. C'est un blocage
-distinct de l'exposition publique : même Val, en HTTP nu, ne complèterait pas le flux depuis un
-navigateur réel aujourd'hui.
+**L'exposition publique reste différée, sans échéance.** `D24` ne la rouvrirait que si l'une de ces
+conditions se réalisait — aucune ne l'est aujourd'hui : (a) un opérateur passe sur une surface hébergée
+(Cowork dégelé, Claude Desktop, claude.ai, Claude Code web) ; (b) un troisième opérateur ou un
+prestataire doit accéder au service sans pouvoir entrer dans le réseau Tailscale ; (c) un client non
+interactif hébergé chez un tiers (CI, automatisation) doit appeler le serveur.
+
+**Ce qui ne bouge pas — le HTTPS n'est pas optionnel, même en privé.** Keycloak 26.7.1 pose `Secure`
+sur ses cookies de login quel que soit `sslRequired` (`LOT2-08`) : un navigateur ne complètera pas le
+flux sur HTTP nu — seules les vérifications scriptées (comme celle de cette nuit) passent en HTTP
+Tailscale nu. Les certificats Let's Encrypt que Tailscale délivre sur les noms `*.ts.net` restent **à
+activer** ; `LOT2-09` a établi que c'est un blocage tenant au compte Tailscale de Val
+(`sudo tailscale set --operator=val`, voir `RUNBOOK.md`), pas une question technique ouverte. Cette
+révision ne le lève pas : même Val, en HTTP nu, ne complèterait pas le flux depuis un navigateur réel
+aujourd'hui.
 
 ---
 
@@ -382,8 +399,10 @@ clarification, ci-dessus).
 
 - Elle ne construit aucune interface ni aucun outil MCP d'administration (décision explicite, voir
   « Statut assumé » en tête de fichier).
-- Elle n'accorde pas l'accès réel à Antoine — impossible aujourd'hui de toute façon (voir « État
-  réseau actuel »). L'exécuter pour de vrai sur Antoine relève de `LOT2-11`, une fois la revue
-  d'exposition réseau tranchée.
+- Elle n'accorde pas l'accès réel à Antoine — pas encore réalisable aujourd'hui, mais pour une seule
+  raison résiduelle depuis la révision de `D24` du 2026-08-08 : son poste n'est pas encore admis comme
+  nœud du réseau Tailscale de Val (voir « État réseau actuel »). Ce n'est plus un blocage d'exposition
+  publique. L'exécuter pour de vrai sur Antoine relève de `LOT2-11`, une fois cette admission faite —
+  pas d'une revue d'exposition réseau, qui n'est plus une précondition.
 - Elle ne corrige pas les deux défauts Kotlin trouvés (`list_stores`/`revokedAt`, rôle `viewer`) —
   remontés, pas traités, hors périmètre d'écriture DevOps.
