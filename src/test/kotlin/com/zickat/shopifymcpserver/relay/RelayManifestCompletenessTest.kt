@@ -30,7 +30,7 @@ class RelayManifestCompletenessTest {
     fun `the four LOT2 native tools are present in the manifest as NATIF`() {
         val expectedNatif = mapOf(
             "list_stores" to "READ",
-            "use_store" to "MUTATION",
+            "use_store" to "READ",
             "create_redirect" to "MUTATION",
             "search_resources" to "READ",
         )

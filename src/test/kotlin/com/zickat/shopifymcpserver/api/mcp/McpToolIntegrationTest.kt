@@ -10,6 +10,8 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import com.zickat.shopifymcpserver.audit.domain.repositories.AuditLogRepository
+import com.zickat.shopifymcpserver.identity.domain.models.IdentityId
+import com.zickat.shopifymcpserver.identity.domain.repositories.IdentityRepository
 import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
 import com.zickat.shopifymcpserver.tenancy.StoreFixtures
@@ -63,6 +65,9 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
     @Autowired
     private lateinit var identityExposedService: IdentityExposedService
+
+    @Autowired
+    private lateinit var identityRepository: IdentityRepository
 
     @Autowired
     private lateinit var auditLogRepository: AuditLogRepository
@@ -313,9 +318,9 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `a viewer calling use_store (MUTATION) directly is refused server-side while list_stores (READ) remains callable, and the refusal is journaled`() {
+    fun `a viewer end to end — selects its granted store via use_store (READ), reads through search_resources, and is refused only on the create_redirect mutation`() {
         val storeId = registerStore()
-        val subject = "viewer-use-store"
+        val subject = "viewer-end-to-end"
         val identityId = resolveIdentity(subject)
         grant(identityId, storeId, GrantRole.VIEWER)
         val token = jwt(subject)
@@ -328,16 +333,32 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
         val (useStoreResponse, useStorePayload) = useStore(token, sessionId, storeId)
         useStoreResponse.statusCode shouldBe HttpStatus.OK
-        val (isError, text) = toolResultText(useStorePayload)
-        isError shouldBe true
-        text shouldContain "access.role.insufficient"
+        val (useStoreIsError, _) = toolResultText(useStorePayload)
+        useStoreIsError shouldBe false
+
+        val (searchResponse, searchPayload) = toolsCall(token, sessionId, "search_resources", mapOf("resource_type" to "collection"))
+        searchResponse.statusCode shouldBe HttpStatus.OK
+        val (searchIsError, searchTexts) = toolResultTexts(searchPayload)
+        searchIsError shouldBe true
+        searchTexts.joinToString("\n") shouldNotContain "access.role.insufficient"
+
+        val (redirectResponse, redirectPayload) = toolsCall(token, sessionId, "create_redirect", mapOf("from_path" to "/a", "to_path" to "/b"))
+        redirectResponse.statusCode shouldBe HttpStatus.OK
+        val (redirectIsError, redirectText) = toolResultText(redirectPayload)
+        redirectIsError shouldBe true
+        redirectText shouldContain "access.role.insufficient"
 
         val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
-        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "use_store" }
-        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal" }
-        deniedEntry.outcome shouldBe "denied"
-        deniedEntry.denialReason shouldBe "access.role.insufficient"
-        deniedEntry.isMutation shouldBe true
+        val useStoreEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "use_store" }
+        checkNotNull(useStoreEntry) { "no audit entry written for the successful use_store call" }
+        useStoreEntry.outcome shouldBe "ok"
+        useStoreEntry.isMutation shouldBe false
+
+        val redirectDeniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "create_redirect" }
+        checkNotNull(redirectDeniedEntry) { "no audit entry written for the role-insufficient refusal on create_redirect" }
+        redirectDeniedEntry.outcome shouldBe "denied"
+        redirectDeniedEntry.denialReason shouldBe "access.role.insufficient"
+        redirectDeniedEntry.isMutation shouldBe true
     }
 
     @Test
@@ -402,9 +423,9 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
         val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
         val okEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "use_store" }
-        checkNotNull(okEntry) { "no audit entry written for the successful mutation call" }
+        checkNotNull(okEntry) { "no audit entry written for the successful call" }
         okEntry.outcome shouldBe "ok"
-        okEntry.isMutation shouldBe true
+        okEntry.isMutation shouldBe false
     }
 
     @Test
@@ -425,6 +446,37 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         val (_, afterPayload) = listStores(token, sessionId)
         val (_, afterText) = toolResultText(afterPayload)
         afterText shouldContain "active"
+    }
+
+    @Test
+    fun `a revoked identity sees nothing through list_stores, not only through use_store — D17 covers the whole surface`() {
+        val storeId = registerStore()
+        val subject = "revoked-list-stores"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (beforeResponse, beforePayload) = listStores(token, sessionId)
+        beforeResponse.statusCode shouldBe HttpStatus.OK
+        val (beforeIsError, beforeText) = toolResultText(beforePayload)
+        beforeIsError shouldBe false
+        beforeText shouldNotContain "Aucune boutique accordée"
+
+        val identity = identityRepository.findById(IdentityId(identityId)).shouldBeRight()
+        identityRepository.save(identity.copy(revokedAt = Clock.System.now())).shouldBeRight()
+
+        val (afterListResponse, afterListPayload) = listStores(token, sessionId)
+        afterListResponse.statusCode shouldBe HttpStatus.OK
+        val (afterListIsError, afterListText) = toolResultText(afterListPayload)
+        afterListIsError shouldBe false
+        afterListText shouldContain "Aucune boutique accordée à cette identité."
+
+        val (useStoreResponse, useStorePayload) = useStore(token, sessionId, storeId)
+        useStoreResponse.statusCode shouldBe HttpStatus.OK
+        val (useStoreIsError, useStoreText) = toolResultText(useStorePayload)
+        useStoreIsError shouldBe true
+        useStoreText shouldContain "access.denied"
     }
 
     @Test

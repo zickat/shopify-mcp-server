@@ -303,7 +303,7 @@ relay:
       kind: MUTATION
     - tool-name: use_store
       route: NATIF
-      kind: MUTATION
+      kind: READ
 
 # security.md : "pas d'endpoint public sauf ceux explicitement marqués comme tels". Actuator
 # health (LOT0-02) et l'endpoint PRM RFC 9728 (LOT0-05, voir

@@ -46,8 +46,12 @@ class AccessResolutionUseCase(
     }
 
     fun listGrantedStores(identityId: String): Either<UseCaseError, List<Store>> = either {
-        val grants = grantRepository.findAllActiveByIdentity(identityId).bind()
-        grants.mapNotNull { grant -> storeRepository.findById(grant.storeId).orNullIfNotFound().bind() }
+        if (!identityExposedService.isActive(identityId)) {
+            emptyList()
+        } else {
+            val grants = grantRepository.findAllActiveByIdentity(identityId).bind()
+            grants.mapNotNull { grant -> storeRepository.findById(grant.storeId).orNullIfNotFound().bind() }
+        }
     }
 
     private fun accessDenied(storeId: String) = ForbiddenError("access.denied", mapOf("storeId" to storeId))

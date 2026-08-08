@@ -18,7 +18,7 @@ class UseStoreTool(
 ) {
 
     private object UseStoreUseCase : ToolUseCase {
-        override val kind = UseCaseKind.MUTATION
+        override val kind = UseCaseKind.READ
     }
 
     @McpTool(

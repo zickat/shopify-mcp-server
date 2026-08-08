@@ -172,6 +172,21 @@ class AccessResolutionUseCaseTest {
     }
 
     @Test
+    fun `listGrantedStores should return an empty list for a revoked identity, even with an active operator grant — D17 covers the list, not only the resolve`() {
+        val storeId = registerStore()
+        val identityId = resolveIdentity()
+        grantOn(storeId, GrantRole.OPERATOR, identityId)
+
+        val beforeRevocation = useCase.listGrantedStores(identityId).shouldBeRight()
+        beforeRevocation.map { it.id.value } shouldBe listOf(storeId)
+
+        identityExposedService.revoke(identityId)
+
+        val afterRevocation = useCase.listGrantedStores(identityId).shouldBeRight()
+        afterRevocation shouldBe emptyList()
+    }
+
+    @Test
     fun `listGrantedStores should never return another identity's granted store`() {
         val identityId = resolveIdentity()
         val otherIdentityId = identityExposedService.resolve(issuer, "operator-2").shouldBeRight()
