@@ -122,6 +122,19 @@ services:
       # compris depuis un conteneur. `dist/` doit déjà être construit (`npm run build`, fait le
       # 2026-08-07 par LOT2-03) ; ce compose ne le reconstruit pas.
       - ${MCP_SHOPIFY_CATALOG_PATH:-/home/val/IA_sandbox/mcp-shopify-catalog}:/repo:ro
+      # LOT2-10 — trouvé et corrigé en écrivant le runbook d'octroi : ce conteneur tourne en `root`
+      # (image `node:22-alpine` par défaut, pas de directive `user:` ici), donc `os.homedir()` côté
+      # TypeScript (`credential-source.ts`) résout `/root`, jamais `/home/val`. SANS ce montage,
+      # `~/.config/shopify-catalog/credentials.json` de l'hôte est INVISIBLE du conteneur — pas
+      # seulement pour une boutique qu'on viendrait d'ajouter, pour TOUTES, y compris Vélotrip et
+      # LureLab déjà seedées. Conséquence vérifiée avant ce montage : `resolveStoreSelection()` rend
+      # `{mode: "none", available: []}` en permanence, donc les 76 outils RELAIS refusent tout appel
+      # avec « Boutique inconnue de ce process relayé » quel que soit le slug envoyé par Kotlin — un
+      # mode de panne qui n'a RIEN à voir avec un défaut de synchronisation slug ⇄ fichier, et que la
+      # sonde de `healthcheck.sh` ne peut pas voir (elle teste que le port répond, pas qu'un outil
+      # relayé aboutit). Monté en fichier unique (pas le dossier entier) pour ne pas exposer au
+      # conteneur d'autres fichiers que Val pourrait un jour poser dans `~/.config/shopify-catalog/`.
+      - ${SHOPIFY_CATALOG_CREDENTIALS_PATH:-/home/val/.config/shopify-catalog/credentials.json}:/root/.config/shopify-catalog/credentials.json:ro
     command: ["node", "dist/index.js"]
 
 volumes:

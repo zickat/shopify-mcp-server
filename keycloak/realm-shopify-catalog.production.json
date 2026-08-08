@@ -6,7 +6,7 @@
   "attributes": {
     "frontendUrl": "http://val-server.tail5e0606.ts.net:8081"
   },
-  "registrationAllowed": false,
+  "registrationAllowed": true,
   "registrationEmailAsUsername": false,
   "loginWithEmailAllowed": true,
   "resetPasswordAllowed": true,
@@ -90,22 +90,6 @@
           }
         }
       ]
-    }
-  ],
-  "users": [
-    {
-      "username": "val",
-      "enabled": true,
-      "emailVerified": false,
-      "requiredActions": ["UPDATE_PASSWORD"],
-      "credentials": []
-    },
-    {
-      "username": "antoine",
-      "enabled": true,
-      "emailVerified": false,
-      "requiredActions": ["UPDATE_PASSWORD"],
-      "credentials": []
     }
   ]
 }

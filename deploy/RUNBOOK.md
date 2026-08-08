@@ -5,6 +5,11 @@
 documenté comme possible — voir `progress.md` de l'initiative `catalog-plugin-oauth-tenancy` pour le
 compte rendu complet et le détail des vérifications.
 
+> **Ce fichier porte l'exploitation** (déployer, sauvegarder, revenir en arrière). Pour **accorder ou
+> révoquer un accès** à un opérateur (Val, Antoine, un futur troisième), voir
+> **[`ACCESS-RUNBOOK.md`](./ACCESS-RUNBOOK.md)** (`LOT2-10`) — un geste différent, une audience
+> différente, un rythme différent.
+
 ## Ce qui tourne, là, maintenant
 
 ```
