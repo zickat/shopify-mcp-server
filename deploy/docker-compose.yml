@@ -1,0 +1,128 @@
+# Déploiement LOT2-09 (`catalog-plugin-oauth-tenancy`, D20) — un hôte, pas d'orchestrateur, pas de
+# Terraform (architecture.md §6.2). `docker compose up -d` (depuis ce dossier) monte tout ce qui EST
+# géré ici ; `docker compose down` arrête tout (les données survivent dans les volumes nommés, jamais
+# supprimées sauf `down -v` explicite). Voir RUNBOOK.md pour la procédure complète (déployer une
+# version, sauvegarder, restaurer, revenir en arrière).
+#
+# Ce que ce fichier NE gère PAS, volontairement : MongoDB. `mongo-lot0` (LOT0-09/LOT2-08) est déjà en
+# place, déjà la cible de `MONGODB_URI` par défaut de l'application, et sa base `shopify_mcp_server`
+# était vide au moment du lot 2 — vérifié (`docker exec mongo-lot0 mongosh ... listCollections`), pas
+# supposé. Le faire cohabiter dans CE compose l'aurait recréé (perte de la garantie qu'aucune donnée
+# n'a bougé) pour un gain nul : `scripts/provision-infra.sh` se contente de lui poser une politique de
+# redémarrage (`docker update --restart unless-stopped`), non destructif. Keycloak, lui, EST recréé ici
+# — le conteneur `keycloak-lot0` (D22/LOT0-05, `start-dev`, base EN MÉMOIRE) était explicitement
+# jetable ; celui-ci le remplace avec une base Postgres qui survit à un redémarrage (keycloak/README.md,
+# point 3 « Persistance », écrit par LOT2-08 en attendant ce lot).
+#
+# network_mode: host sur les deux processus applicatifs (app, ts) — contrainte du contrat LOT2-03, pas
+# un choix de commodité : `RELAY_LOOPBACK_HOST` est câblé en dur à `127.0.0.1` côté TypeScript
+# (`mcp-shopify-catalog/src/relay-context.ts`, jamais lu depuis l'environnement — exprès, pour
+# qu'aucune valeur d'environnement mal positionnée ne puisse transformer le mode relayé en route
+# publique) et le défaut Kotlin (`relay.ts.base-url`, `application.yml`) est `127.0.0.1:8765`. Deux
+# conteneurs sur le réseau bridge par défaut auraient chacun leur PROPRE loopback : ils ne se
+# verraient jamais. `network_mode: host` les fait cohabiter sur le loopback réel de l'hôte — l'hypothèse
+# que le code des deux dépôts fait déjà, vérifiée en lisant `relay-context.ts` avant d'écrire ce
+# fichier, pas supposée.
+services:
+  postgres:
+    image: postgres:16
+    container_name: shopify-mcp-server-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD:?KC_DB_PASSWORD manquant — voir .env.example}
+    volumes:
+      - shopify-mcp-server-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.1
+    container_name: shopify-mcp-server-keycloak
+    restart: unless-stopped
+    # start-dev, pas start : choix conscient et temporaire (voir RUNBOOK.md « Ce qui reste bloqué sur
+    # Val » #1). `start` exige soit un certificat TLS valide, soit un jeu de drapeaux
+    # hostname-strict-https qui ne lèverait pas le vrai blocage (pas de certificat) — seulement son
+    # symptôme. `start-dev` reproduit exactement la posture déjà vérifiée en LOT2-08
+    # (`sslRequired: none`, HTTP toléré) tout en ajoutant ce que LOT0-05/LOT2-08 n'avaient pas : une
+    # base Postgres qui survit à un redémarrage. À rouvrir vers `start` dès que le certificat Tailscale
+    # est en place.
+    command: ["start-dev", "--import-realm"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME:?KC_BOOTSTRAP_ADMIN_USERNAME manquant — voir .env.example}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD:?KC_BOOTSTRAP_ADMIN_PASSWORD manquant — voir .env.example}
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:?KC_DB_PASSWORD manquant — voir .env.example}
+      # URL Tailscale figée (D24) — même valeur que le champ "attributes.frontendUrl" du realm importé
+      # et que les deux "included.custom.audience" (voir keycloak/realm-shopify-catalog.production.json)
+      # : piège déjà rencontré en LOT2-08 (« un jeton obtenu via un autre nom d'hôte porte un autre
+      # "iss" et se fait rejeter ») — une seule valeur, jamais recalculée depuis la requête entrante.
+      KC_HOSTNAME: http://val-server.tail5e0606.ts.net:8081
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./../keycloak/realm-shopify-catalog.production.json:/opt/keycloak/data/import/realm-shopify-catalog.json:ro
+
+  shopify-mcp-server-app:
+    image: eclipse-temurin:21-jre
+    container_name: shopify-mcp-server-app
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - keycloak
+    environment:
+      MONGODB_URI: mongodb://localhost:27017/shopify_mcp_server
+      OAUTH_ISSUER_URI: http://val-server.tail5e0606.ts.net:8081/realms/shopify-catalog
+      OAUTH_JWK_SET_URI: http://val-server.tail5e0606.ts.net:8081/realms/shopify-catalog/protocol/openid-connect/certs
+      MCP_EXPECTED_AUDIENCE: http://val-server.tail5e0606.ts.net:8080/mcp
+      # Q3/D3 — jamais une valeur de complaisance ici : EnvMasterKeyProvider refuse de démarrer si
+      # absente/mal formée (vérifié en lisant vault/spi/env/EnvMasterKeyProvider.kt). Val la génère et
+      # la pose lui-même dans deploy/.env — voir RUNBOOK.md.
+      CATALOG_MASTER_KEY: ${CATALOG_MASTER_KEY:?CATALOG_MASTER_KEY manquant — voir RUNBOOK.md, le service refuse de démarrer sans}
+      RELAY_TS_BASE_URL: http://127.0.0.1:8765
+      RELAY_KOTLIN_BASE_URL: http://127.0.0.1:8080
+    volumes:
+      # RELEASE_TAG posé par scripts/deploy.sh, jamais à la main : c'est le mécanisme de retour arrière
+      # (releases/<tag>/app.jar, un jar déjà construit par tag — pas un rebuild pendant un incident).
+      # Défaut "__unset__" (pas ${VAR:?...}) volontaire : `docker compose` interpole TOUTES les
+      # variables du fichier même pour `up postgres keycloak` (provision-infra.sh) — un ":?" ici
+      # ferait échouer le provisionnement de l'infra avant le premier déploiement applicatif. C'est
+      # deploy.sh qui garde le vrai contrôle (il écrit RELEASE_TAG dans .env avant tout `compose up`
+      # touchant ce service).
+      - ./releases/${RELEASE_TAG:-__unset__}/app.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+
+  shopify-mcp-server-ts:
+    image: node:22-alpine
+    container_name: shopify-mcp-server-ts
+    restart: unless-stopped
+    network_mode: host
+    working_dir: /repo
+    environment:
+      # RELAY_MODE=true seul suffit à faire refuser tout secret Shopify au démarrage
+      # (assertNoLocalShopifyCredentials, relay-context.ts) — ce conteneur n'en reçoit d'ailleurs
+      # aucun, il n'y a rien à retirer.
+      RELAY_MODE: "true"
+      RELAY_TS_BASE_URL: http://127.0.0.1:8765
+      RELAY_KOTLIN_BASE_URL: http://127.0.0.1:8080
+    volumes:
+      # Dépôt B (mcp-shopify-catalog) monté en LECTURE SEULE — DevOps ne touche jamais à ce dépôt, y
+      # compris depuis un conteneur. `dist/` doit déjà être construit (`npm run build`, fait le
+      # 2026-08-07 par LOT2-03) ; ce compose ne le reconstruit pas.
+      - ${MCP_SHOPIFY_CATALOG_PATH:-/home/val/IA_sandbox/mcp-shopify-catalog}:/repo:ro
+    command: ["node", "dist/index.js"]
+
+volumes:
+  shopify-mcp-server-postgres-data:

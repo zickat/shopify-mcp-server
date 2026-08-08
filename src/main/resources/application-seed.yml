@@ -1,0 +1,7 @@
+# Profil `seed` (LOT2-09) — jamais actif par défaut, jamais sur le serveur qui sert du trafic.
+# Voir com.zickat.shopifymcpserver.tooling.SeedCommandRunner pour l'usage.
+#
+# server.port: 0 — un port OS aléatoire, jamais 8080 : cette commande ne sert jamais de requête, elle
+# tourne, écrit en base, et sort. Éviter toute collision avec le vrai serveur déjà en écoute sur 8080.
+server:
+  port: 0

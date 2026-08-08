@@ -2,3 +2,9 @@ target/
 .idea/
 *.iml
 .env
+
+# LOT2-09 — déploiement : jamais de secret, jamais de dump réel, jamais de binaire versionné.
+deploy/.env
+deploy/releases/
+deploy/backups/
+deploy/certs/
