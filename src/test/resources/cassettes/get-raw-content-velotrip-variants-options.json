@@ -1,0 +1,1576 @@
+{
+  "tool": "get_raw_content",
+  "toolInput": {
+    "product_id": "gid://shopify/Product/15996117647685"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Titre : Maillot cyclisme homme manches courtes — zip intégral, résille ventilée, 7 coloris\nHandle : maillot-cyclisme-homme-manches-courtes-zip-integral-resille-ventilee-7-coloris\nStatut Shopify : ACTIVE\nPrix : 29.99 EUR\nNombre d'images : 19\n\nImages (dans l'ordre d'affichage — position 1 = image principale ; id à passer à curate_product_images/enrich_product ; « variante(s) » = couleur/taille dont cette image est la photo désignée, absent si l'image n'est liée à aucun variant — regarder réellement chaque image avant de rédiger son alt via enrich_product, cf. SKILL.md) :\n  1. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Sa807e74a02eb49089a6d3a5caad4ce51K.webp?v=1783330801 — alt : \"Maillot cyclisme homme coloris marine avec bandes teal et rouge, manches blanches\" — id : gid://shopify/MediaImage/73502088823109\n  2. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Sc377dc48d46a4514896a0771564e9451L.webp?v=1783330801 — alt : \"Maillot cyclisme homme coloris blanc avec motif illustré montagne noir, design graphique\" — id : gid://shopify/MediaImage/73502088855877\n  3. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S6a9730fe702e4bd08370adebcacacd35i.webp?v=1783330801 — alt : \"Variante Olive — maillot cyclisme homme coloris olive avec manches blanches, disponible de XXXS à XXXL\" — variante(s) : Couleur: Olive / Taille: XXXS, Couleur: Olive / Taille: XXS, Couleur: Olive / Taille: XS, Couleur: Olive / Taille: S, Couleur: Olive / Taille: M, Couleur: Olive / Taille: L, Couleur: Olive / Taille: XL, Couleur: Olive / Taille: XXL, Couleur: Olive / Taille: XXXL — id : gid://shopify/MediaImage/73502088888645\n  4. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Se5ef568b53bc4ab1b967d6d7457254efa.webp?v=1783330801 — alt : \"Variante Noir manches rouges — maillot cyclisme homme coloris noir avec manches rouge vif\" — variante(s) : Couleur: Noir manches rouges / Taille: XXXS, Couleur: Noir manches rouges / Taille: XXS, Couleur: Noir manches rouges / Taille: XS, Couleur: Noir manches rouges / Taille: S, Couleur: Noir manches rouges / Taille: M — id : gid://shopify/MediaImage/73502088921413\n  5. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S50629b55aace43ff859c646a8f9897f4F.webp?v=1783330801 — alt : \"Maillot cyclisme homme coloris orange-rouge avec bande teal et dégradé sur les manches\" — id : gid://shopify/MediaImage/73502088954181\n  6. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/See37f999a86e4052a515da4b8766d0eeB.webp?v=1783330801 — alt : \"Maillot cyclisme homme coloris noir avec manches blanches contrastées\" — id : gid://shopify/MediaImage/73502088986949\n  7. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Sfd6ae8eda59d41b093f9e512ccf1c388Z.webp?v=1783330800 — alt : \"Maillot cyclisme homme coloris noir avec manches dégradées orange vers rose\" — id : gid://shopify/MediaImage/73502089019717\n  8. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S67bd9ab836ea4316b2cf7160cbb2ee14K.webp?v=1783330801 — alt : \"Variante Noir — maillot cyclisme homme coloris noir intégral avec détails graphiques ton sur ton\" — variante(s) : Couleur: Noir / Taille: XXXS, Couleur: Noir / Taille: XXS, Couleur: Noir / Taille: XS, Couleur: Noir / Taille: S, Couleur: Noir / Taille: M, Couleur: Noir / Taille: L, Couleur: Noir / Taille: XL, Couleur: Noir / Taille: XXL, Couleur: Noir / Taille: XXXL — id : gid://shopify/MediaImage/73502089052485\n  9. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S3e206a4711cf4dffb4ba33b617a5e70cq.webp?v=1783330801 — alt : \"Variante Blanc — maillot cyclisme homme coloris blanc intégral, coupe ajustée\" — variante(s) : Couleur: Blanc / Taille: XXXS, Couleur: Blanc / Taille: XXS, Couleur: Blanc / Taille: XS, Couleur: Blanc / Taille: S, Couleur: Blanc / Taille: M, Couleur: Blanc / Taille: L, Couleur: Blanc / Taille: XL, Couleur: Blanc / Taille: XXL, Couleur: Blanc / Taille: XXXL — id : gid://shopify/MediaImage/73502089085253\n  10. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S48ea359663a24b3a93c08b1a9b19ce6bc.webp?v=1783330801 — alt : \"Maillot cyclisme homme coloris marine avec manches orange vif dégradées\" — id : gid://shopify/MediaImage/73502089118021\n  11. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S52a5e24850e945438add234a0050fa50K.webp?v=1783330801 — alt : \"Maillot cyclisme homme coloris marine avec manches jaune doré dégradées\" — id : gid://shopify/MediaImage/73502089150789\n  12. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Sc2a23a128980414093a54edebded55d7j.webp?v=1783330801 — alt : \"Variante Orange — maillot cyclisme homme coloris orange vif uni avec panneaux résille latéraux sur les manches\" — variante(s) : Couleur: Orange / Taille: XXXS, Couleur: Orange / Taille: XXS, Couleur: Orange / Taille: XS, Couleur: Orange / Taille: S, Couleur: Orange / Taille: M, Couleur: Orange / Taille: L, Couleur: Orange / Taille: XL, Couleur: Orange / Taille: XXL, Couleur: Orange / Taille: XXXL — id : gid://shopify/MediaImage/73502089183557\n  13. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S44e789ea14064a83a9bf1c04b83c63266.webp?v=1783330800 — alt : \"Variante Bleu ciel — maillot cyclisme homme coloris bleu ciel uni avec panneaux résille latéraux sur les manches\" — variante(s) : Couleur: Bleu ciel / Taille: XXXS, Couleur: Bleu ciel / Taille: XXS, Couleur: Bleu ciel / Taille: XS, Couleur: Bleu ciel / Taille: S, Couleur: Bleu ciel / Taille: M, Couleur: Bleu ciel / Taille: L, Couleur: Bleu ciel / Taille: XL, Couleur: Bleu ciel / Taille: XXL, Couleur: Bleu ciel / Taille: XXXL — id : gid://shopify/MediaImage/73502089216325\n  14. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S2fe9650216b54a13baad025b13e63c38j.webp?v=1783330800 — alt : \"Variante Marine manches menthe — maillot cyclisme homme coloris marine avec manches vert menthe, disponible en XL uniquement\" — id : gid://shopify/MediaImage/73502089249093\n  15. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S775442a71f954375a9ef6ec2576c1ca55.webp?v=1783330801 — alt : \"Maillot cyclisme homme coloris rouge vif uni avec panneaux résille latéraux sur les manches\" — id : gid://shopify/MediaImage/73502089281861\n  16. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/gid-shopify-product-15996117647685-studio.png?v=1784549089 — alt : \"Maillot cyclisme homme manches courtes coloris olive et blanc — vue studio\" — id : gid://shopify/MediaImage/73731131081029\n  17. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/gid-shopify-product-15996117647685-lifestyle-1.png?v=1784549089 — alt : \"Cycliste portant le maillot olive sur une route de campagne ensoleillée\" — id : gid://shopify/MediaImage/73731131113797\n  18. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/gid-shopify-product-15996117647685-lifestyle-2.png?v=1784549089 — alt : \"Cycliste en maillot olive buvant à la gourde lors d'une pause près de son vélo\" — id : gid://shopify/MediaImage/73731131146565\n  19. https://cdn.shopify.com/s/files/1/1074/5803/6037/files/cross-gid-shopify-product-15991738728773-gid-shopify-product-15996117647685_b7c88b87-00d9-4d01-b7b6-1424bbe4f98a.png?v=1784552470 — alt : \"Cycliste en tenue complète (maillot olive + cuissard à bretelles noir vendu séparément) roulant sur route de campagne\" — id : gid://shopify/MediaImage/73731988029765\n\nDescription source (texte brut, balises HTML retirées) :\nUn maillot pensé pour les sorties chaudes et les longues montées Ce maillot manches courtes est composé en polyester haute évacuation. Le tissu principal, léger et à séchage rapide, est complété par des panneaux latéraux en résille pour amplifier la ventilation sur les montées et les longues sorties par temps chaud. La fermeture éclair intégrale permet d'ajuster l'aération à la volée. L'impression utilise une encre italienne résistante à la décoloration, stable au lavage. Les coloris — 7 options des plus sobres aux plus graphiques — tiennent dans le temps. Conseil de taille : tailles disponibles de XXXS à XXXL. Consultez le tableau de mensurations en cm dans les caractéristiques du produit en cas de doute entre deux tailles.\n\nOptions de variante (libellé exact à copier tel quel pour rename_variant_options) :\n  - Couleur : Olive, Orange, Noir, Bleu ciel, Blanc, Noir manches rouges, Marine manches menthe, Marine bicolore corail-sarcelle, Blanc motif montagne, Noir dégradé corail, Noir manches blanches, Marine dégradé orange, Orange-rouge dégradé, Rouge, Marine dégradé doré\n  - Taille : XXXS, XXS, XS, S, M, L, XL, XXL, XXXL\n\nVariantes (gid à passer à variant_ids de link_variant_image ; combo couleur/taille pour identifier le bon variant, tous les variants du produit sont listés qu'ils aient une image désignée ou non) :\n  - Couleur: Olive / Taille: XXXS — variant_id : gid://shopify/ProductVariant/58476321702213\n  - Couleur: Olive / Taille: XXS — variant_id : gid://shopify/ProductVariant/58476321734981\n  - Couleur: Olive / Taille: XS — variant_id : gid://shopify/ProductVariant/58476321636677\n  - Couleur: Olive / Taille: S — variant_id : gid://shopify/ProductVariant/58476321669445\n  - Couleur: Olive / Taille: M — variant_id : gid://shopify/ProductVariant/58476321571141\n  - Couleur: Olive / Taille: L — variant_id : gid://shopify/ProductVariant/58476321603909\n  - Couleur: Olive / Taille: XL — variant_id : gid://shopify/ProductVariant/58476321505605\n  - Couleur: Olive / Taille: XXL — variant_id : gid://shopify/ProductVariant/58476321538373\n  - Couleur: Olive / Taille: XXXL — variant_id : gid://shopify/ProductVariant/58476322128197\n  - Couleur: Orange / Taille: XXXS — variant_id : gid://shopify/ProductVariant/58476321964357\n  - Couleur: Orange / Taille: XXS — variant_id : gid://shopify/ProductVariant/58476321997125\n  - Couleur: Orange / Taille: XS — variant_id : gid://shopify/ProductVariant/58476321898821\n  - Couleur: Orange / Taille: S — variant_id : gid://shopify/ProductVariant/58476321931589\n  - Couleur: Orange / Taille: M — variant_id : gid://shopify/ProductVariant/58476321833285\n  - Couleur: Orange / Taille: L — variant_id : gid://shopify/ProductVariant/58476321866053\n  - Couleur: Orange / Taille: XL — variant_id : gid://shopify/ProductVariant/58476321767749\n  - Couleur: Orange / Taille: XXL — variant_id : gid://shopify/ProductVariant/58476321800517\n  - Couleur: Orange / Taille: XXXL — variant_id : gid://shopify/ProductVariant/58476325437765\n  - Couleur: Noir / Taille: XXXS — variant_id : gid://shopify/ProductVariant/58476322259269\n  - Couleur: Noir / Taille: XXS — variant_id : gid://shopify/ProductVariant/58476322292037\n  - Couleur: Noir / Taille: XS — variant_id : gid://shopify/ProductVariant/58476322193733\n  - Couleur: Noir / Taille: S — variant_id : gid://shopify/ProductVariant/58476322226501\n  - Couleur: Noir / Taille: M — variant_id : gid://shopify/ProductVariant/58476322095429\n  - Couleur: Noir / Taille: L — variant_id : gid://shopify/ProductVariant/58476322160965\n  - Couleur: Noir / Taille: XL — variant_id : gid://shopify/ProductVariant/58476322029893\n  - Couleur: Noir / Taille: XXL — variant_id : gid://shopify/ProductVariant/58476322062661\n  - Couleur: Noir / Taille: XXXL — variant_id : gid://shopify/ProductVariant/58476325372229\n  - Couleur: Bleu ciel / Taille: XXXS — variant_id : gid://shopify/ProductVariant/58476322521413\n  - Couleur: Bleu ciel / Taille: XXS — variant_id : gid://shopify/ProductVariant/58476322554181\n  - Couleur: Bleu ciel / Taille: XS — variant_id : gid://shopify/ProductVariant/58476322455877\n  - Couleur: Bleu ciel / Taille: S — variant_id : gid://shopify/ProductVariant/58476322488645\n  - Couleur: Bleu ciel / Taille: M — variant_id : gid://shopify/ProductVariant/58476322390341\n  - Couleur: Bleu ciel / Taille: L — variant_id : gid://shopify/ProductVariant/58476322423109\n  - Couleur: Bleu ciel / Taille: XL — variant_id : gid://shopify/ProductVariant/58476322324805\n  - Couleur: Bleu ciel / Taille: XXL — variant_id : gid://shopify/ProductVariant/58476322357573\n  - Couleur: Bleu ciel / Taille: XXXL — variant_id : gid://shopify/ProductVariant/58476325306693\n  - Couleur: Blanc / Taille: XXXS — variant_id : gid://shopify/ProductVariant/58476322783557\n  - Couleur: Blanc / Taille: XXS — variant_id : gid://shopify/ProductVariant/58476322816325\n  - Couleur: Blanc / Taille: XS — variant_id : gid://shopify/ProductVariant/58476322718021\n  - Couleur: Blanc / Taille: S — variant_id : gid://shopify/ProductVariant/58476322750789\n  - Couleur: Blanc / Taille: M — variant_id : gid://shopify/ProductVariant/58476322652485\n  - Couleur: Blanc / Taille: L — variant_id : gid://shopify/ProductVariant/58476322685253\n  - Couleur: Blanc / Taille: XL — variant_id : gid://shopify/ProductVariant/58476322586949\n  - Couleur: Blanc / Taille: XXL — variant_id : gid://shopify/ProductVariant/58476322619717\n  - Couleur: Blanc / Taille: XXXL — variant_id : gid://shopify/ProductVariant/58476325241157\n  - Couleur: Noir manches rouges / Taille: XXXS — variant_id : gid://shopify/ProductVariant/58476323045701\n  - Couleur: Noir manches rouges / Taille: XXS — variant_id : gid://shopify/ProductVariant/58476323078469\n  - Couleur: Noir manches rouges / Taille: XS — variant_id : gid://shopify/ProductVariant/58476322980165\n  - Couleur: Noir manches rouges / Taille: S — variant_id : gid://shopify/ProductVariant/58476323012933\n  - Couleur: Noir manches rouges / Taille: M — variant_id : gid://shopify/ProductVariant/58476322914629"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetRawContent($id: ID!) {\n          product(id: $id) {\n            id\n            title\n            handle\n            status\n            descriptionHtml\n            priceRangeV2 {\n              minVariantPrice { amount currencyCode }\n              maxVariantPrice { amount currencyCode }\n            }\n            variants(first: 50) {\n              edges {\n                node {\n                  id\n                  selectedOptions { name value }\n                  media(first: 5) { edges { node { ... on MediaImage { id } } } }\n                }\n              }\n            }\n            options {\n              id\n              name\n              optionValues { id name }\n            }\n          }\n        }",
+        "variables": {
+          "id": "gid://shopify/Product/15996117647685"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "product": {
+            "id": "gid://shopify/Product/15996117647685",
+            "title": "Maillot cyclisme homme manches courtes — zip intégral, résille ventilée, 7 coloris",
+            "handle": "maillot-cyclisme-homme-manches-courtes-zip-integral-resille-ventilee-7-coloris",
+            "status": "ACTIVE",
+            "descriptionHtml": "<p><strong>Un maillot pensé pour les sorties chaudes et les longues montées</strong></p>\n<p>Ce maillot manches courtes est composé en polyester haute évacuation. Le tissu principal, léger et à séchage rapide, est complété par des panneaux latéraux en résille pour amplifier la ventilation sur les montées et les longues sorties par temps chaud. La fermeture éclair intégrale permet d'ajuster l'aération à la volée.</p>\n<p>L'impression utilise une encre italienne résistante à la décoloration, stable au lavage. Les coloris — 7 options des plus sobres aux plus graphiques — tiennent dans le temps.</p>\n<p><strong>Conseil de taille :</strong> tailles disponibles de XXXS à XXXL. Consultez le tableau de mensurations en cm dans les caractéristiques du produit en cas de doute entre deux tailles.</p>",
+            "priceRangeV2": {
+              "minVariantPrice": {
+                "amount": "29.99",
+                "currencyCode": "EUR"
+              },
+              "maxVariantPrice": {
+                "amount": "29.99",
+                "currencyCode": "EUR"
+              }
+            },
+            "variants": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321702213",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321734981",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321636677",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321669445",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "S"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321571141",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "M"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321603909",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "L"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321505605",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321538373",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322128197",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Olive"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088888645"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321964357",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321997125",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321898821",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321931589",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "S"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321833285",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "M"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321866053",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "L"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321767749",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476321800517",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476325437765",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Orange"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089183557"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322259269",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322292037",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322193733",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322226501",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "S"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322095429",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "M"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322160965",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "L"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322029893",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322062661",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476325372229",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089052485"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322521413",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322554181",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322455877",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322488645",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "S"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322390341",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "M"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322423109",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "L"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322324805",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322357573",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476325306693",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Bleu ciel"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089216325"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322783557",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322816325",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322718021",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322750789",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "S"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322652485",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "M"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322685253",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "L"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322586949",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322619717",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476325241157",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Blanc"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXL"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502089085253"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476323045701",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir manches rouges"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088921413"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476323078469",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir manches rouges"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XXS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088921413"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322980165",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir manches rouges"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "XS"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088921413"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476323012933",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir manches rouges"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "S"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088921413"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/ProductVariant/58476322914629",
+                    "selectedOptions": [
+                      {
+                        "name": "Couleur",
+                        "value": "Noir manches rouges"
+                      },
+                      {
+                        "name": "Taille",
+                        "value": "M"
+                      }
+                    ],
+                    "media": {
+                      "edges": [
+                        {
+                          "node": {
+                            "id": "gid://shopify/MediaImage/73502088921413"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "gid://shopify/ProductOption/18559732547909",
+                "name": "Couleur",
+                "optionValues": [
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224638277",
+                    "name": "Olive"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224671045",
+                    "name": "Orange"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224703813",
+                    "name": "Noir"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224736581",
+                    "name": "Bleu ciel"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224769349",
+                    "name": "Blanc"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224802117",
+                    "name": "Noir manches rouges"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224834885",
+                    "name": "Marine manches menthe"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224867653",
+                    "name": "Marine bicolore corail-sarcelle"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224900421",
+                    "name": "Blanc motif montagne"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224933189",
+                    "name": "Noir dégradé corail"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224965957",
+                    "name": "Noir manches blanches"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294224998725",
+                    "name": "Marine dégradé orange"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225031493",
+                    "name": "Orange-rouge dégradé"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225064261",
+                    "name": "Rouge"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225097029",
+                    "name": "Marine dégradé doré"
+                  }
+                ]
+              },
+              {
+                "id": "gid://shopify/ProductOption/18559732580677",
+                "name": "Taille",
+                "optionValues": [
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225326405",
+                    "name": "XXXS"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225359173",
+                    "name": "XXS"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225260869",
+                    "name": "XS"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225293637",
+                    "name": "S"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225195333",
+                    "name": "M"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225228101",
+                    "name": "L"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225129797",
+                    "name": "XL"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225162565",
+                    "name": "XXL"
+                  },
+                  {
+                    "id": "gid://shopify/ProductOptionValue/13294225391941",
+                    "name": "XXXL"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchProductMedia($id: ID!) {\n      product(id: $id) {\n        status\n        media(first: 50) {\n          edges {\n            node {\n              ... on MediaImage {\n                id\n                alt\n                image { url altText }\n              }\n            }\n          }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Product/15996117647685"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "product": {
+            "status": "ACTIVE",
+            "media": {
+              "edges": [
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502088823109",
+                    "alt": "Maillot cyclisme homme coloris marine avec bandes teal et rouge, manches blanches",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Sa807e74a02eb49089a6d3a5caad4ce51K.webp?v=1783330801",
+                      "altText": "Maillot cyclisme homme coloris marine avec bandes teal et rouge, manches blanches"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502088855877",
+                    "alt": "Maillot cyclisme homme coloris blanc avec motif illustré montagne noir, design graphique",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Sc377dc48d46a4514896a0771564e9451L.webp?v=1783330801",
+                      "altText": "Maillot cyclisme homme coloris blanc avec motif illustré montagne noir, design graphique"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502088888645",
+                    "alt": "Variante Olive — maillot cyclisme homme coloris olive avec manches blanches, disponible de XXXS à XXXL",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S6a9730fe702e4bd08370adebcacacd35i.webp?v=1783330801",
+                      "altText": "Variante Olive — maillot cyclisme homme coloris olive avec manches blanches, disponible de XXXS à XXXL"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502088921413",
+                    "alt": "Variante Noir manches rouges — maillot cyclisme homme coloris noir avec manches rouge vif",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Se5ef568b53bc4ab1b967d6d7457254efa.webp?v=1783330801",
+                      "altText": "Variante Noir manches rouges — maillot cyclisme homme coloris noir avec manches rouge vif"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502088954181",
+                    "alt": "Maillot cyclisme homme coloris orange-rouge avec bande teal et dégradé sur les manches",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S50629b55aace43ff859c646a8f9897f4F.webp?v=1783330801",
+                      "altText": "Maillot cyclisme homme coloris orange-rouge avec bande teal et dégradé sur les manches"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502088986949",
+                    "alt": "Maillot cyclisme homme coloris noir avec manches blanches contrastées",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/See37f999a86e4052a515da4b8766d0eeB.webp?v=1783330801",
+                      "altText": "Maillot cyclisme homme coloris noir avec manches blanches contrastées"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089019717",
+                    "alt": "Maillot cyclisme homme coloris noir avec manches dégradées orange vers rose",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Sfd6ae8eda59d41b093f9e512ccf1c388Z.webp?v=1783330800",
+                      "altText": "Maillot cyclisme homme coloris noir avec manches dégradées orange vers rose"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089052485",
+                    "alt": "Variante Noir — maillot cyclisme homme coloris noir intégral avec détails graphiques ton sur ton",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S67bd9ab836ea4316b2cf7160cbb2ee14K.webp?v=1783330801",
+                      "altText": "Variante Noir — maillot cyclisme homme coloris noir intégral avec détails graphiques ton sur ton"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089085253",
+                    "alt": "Variante Blanc — maillot cyclisme homme coloris blanc intégral, coupe ajustée",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S3e206a4711cf4dffb4ba33b617a5e70cq.webp?v=1783330801",
+                      "altText": "Variante Blanc — maillot cyclisme homme coloris blanc intégral, coupe ajustée"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089118021",
+                    "alt": "Maillot cyclisme homme coloris marine avec manches orange vif dégradées",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S48ea359663a24b3a93c08b1a9b19ce6bc.webp?v=1783330801",
+                      "altText": "Maillot cyclisme homme coloris marine avec manches orange vif dégradées"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089150789",
+                    "alt": "Maillot cyclisme homme coloris marine avec manches jaune doré dégradées",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S52a5e24850e945438add234a0050fa50K.webp?v=1783330801",
+                      "altText": "Maillot cyclisme homme coloris marine avec manches jaune doré dégradées"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089183557",
+                    "alt": "Variante Orange — maillot cyclisme homme coloris orange vif uni avec panneaux résille latéraux sur les manches",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/Sc2a23a128980414093a54edebded55d7j.webp?v=1783330801",
+                      "altText": "Variante Orange — maillot cyclisme homme coloris orange vif uni avec panneaux résille latéraux sur les manches"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089216325",
+                    "alt": "Variante Bleu ciel — maillot cyclisme homme coloris bleu ciel uni avec panneaux résille latéraux sur les manches",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S44e789ea14064a83a9bf1c04b83c63266.webp?v=1783330800",
+                      "altText": "Variante Bleu ciel — maillot cyclisme homme coloris bleu ciel uni avec panneaux résille latéraux sur les manches"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089249093",
+                    "alt": "Variante Marine manches menthe — maillot cyclisme homme coloris marine avec manches vert menthe, disponible en XL uniquement",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S2fe9650216b54a13baad025b13e63c38j.webp?v=1783330800",
+                      "altText": "Variante Marine manches menthe — maillot cyclisme homme coloris marine avec manches vert menthe, disponible en XL uniquement"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73502089281861",
+                    "alt": "Maillot cyclisme homme coloris rouge vif uni avec panneaux résille latéraux sur les manches",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/S775442a71f954375a9ef6ec2576c1ca55.webp?v=1783330801",
+                      "altText": "Maillot cyclisme homme coloris rouge vif uni avec panneaux résille latéraux sur les manches"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73731131081029",
+                    "alt": "Maillot cyclisme homme manches courtes coloris olive et blanc — vue studio",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/gid-shopify-product-15996117647685-studio.png?v=1784549089",
+                      "altText": "Maillot cyclisme homme manches courtes coloris olive et blanc — vue studio"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73731131113797",
+                    "alt": "Cycliste portant le maillot olive sur une route de campagne ensoleillée",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/gid-shopify-product-15996117647685-lifestyle-1.png?v=1784549089",
+                      "altText": "Cycliste portant le maillot olive sur une route de campagne ensoleillée"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73731131146565",
+                    "alt": "Cycliste en maillot olive buvant à la gourde lors d'une pause près de son vélo",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/gid-shopify-product-15996117647685-lifestyle-2.png?v=1784549089",
+                      "altText": "Cycliste en maillot olive buvant à la gourde lors d'une pause près de son vélo"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "id": "gid://shopify/MediaImage/73731988029765",
+                    "alt": "Cycliste en tenue complète (maillot olive + cuissard à bretelles noir vendu séparément) roulant sur route de campagne",
+                    "image": {
+                      "url": "https://cdn.shopify.com/s/files/1/1074/5803/6037/files/cross-gid-shopify-product-15991738728773-gid-shopify-product-15996117647685_b7c88b87-00d9-4d01-b7b6-1424bbe4f98a.png?v=1784552470",
+                      "altText": "Cycliste en tenue complète (maillot olive + cuissard à bretelles noir vendu séparément) roulant sur route de campagne"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

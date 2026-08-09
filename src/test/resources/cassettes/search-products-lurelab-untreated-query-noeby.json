@@ -1,0 +1,54 @@
+{
+  "tool": "search_products",
+  "toolInput": {
+    "query": "NOEBY",
+    "status_filter": "untreated"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "1 produit(s) trouvé(s).\n\n- NOEBY 10cm 8g 11.5cm 13.6g Soft Lure Silicone Bait Jigging Wobbler Paddle Tail Drive Shad Artificial Swimbait Pike Leurre Souple (noeby-10cm-8g-11-5cm-13-6g-soft-lure-silicone-bait-jigging-wobbler-paddle-tail-drive-shad-artificial-swimbait-pike-leurre-souple) — statut Shopify: DRAFT, pipeline: untreated — id: gid://shopify/Product/15490881945985"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query SearchProducts($query: String, $cursor: String) {\n            products(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  status\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                  summaryPoints: metafield(namespace: \"custom\", key: \"summary_points\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "query": "NOEBY",
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "products": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjoxNTQ5MDg4MTk0NTk4NSwibGFzdF92YWx1ZSI6MTU0OTA4ODE5NDU5ODV9"
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490881945985",
+                  "title": "NOEBY 10cm 8g 11.5cm 13.6g Soft Lure Silicone Bait Jigging Wobbler Paddle Tail Drive Shad Artificial Swimbait Pike Leurre Souple",
+                  "handle": "noeby-10cm-8g-11-5cm-13-6g-soft-lure-silicone-bait-jigging-wobbler-paddle-tail-drive-shad-artificial-swimbait-pike-leurre-souple",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "tool": "get_enriched_content",
+  "toolInput": {
+    "product_id": "gid://shopify/Product/99999999999999"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "Produit introuvable : gid://shopify/Product/99999999999999"
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchEnrichedContent($id: ID!) {\n      product(id: $id) {\n        id\n        title\n        handle\n        status\n        productType\n        tags\n        descriptionHtml\n        contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n        summaryPoints: metafield(namespace: \"custom\", key: \"summary_points\") { value }\n        whyRecommend: metafield(namespace: \"custom\", key: \"why_recommend\") { value }\n        howToUse: metafield(namespace: \"custom\", key: \"how_to_use\") { value }\n        specs: metafield(namespace: \"custom\", key: \"specs\") {\n          references(first: 50) {\n            edges {\n              node {\n                ... on Metaobject {\n                  label: field(key: \"label\") { value }\n                  value: field(key: \"value\") { value }\n                }\n              }\n            }\n          }\n        }\n        faq: metafield(namespace: \"custom\", key: \"faq\") {\n          references(first: 50) {\n            edges {\n              node {\n                ... on Metaobject {\n                  question: field(key: \"question\") { value }\n                  answer: field(key: \"answer\") { value }\n                }\n              }\n            }\n          }\n        }\n        complementaryProducts: metafield(namespace: \"custom\", key: \"complementary_products\") {\n          references(first: 50) {\n            edges {\n              node {\n                ... on Product { id title }\n              }\n            }\n          }\n        }\n        originalTitle: metafield(namespace: \"custom\", key: \"original_title\") { value }\n        originalDescriptionHtml: metafield(namespace: \"custom\", key: \"original_description_html\") { value }\n        relatedGuides: metafield(namespace: \"custom\", key: \"related_guides\") {\n          references(first: 50) {\n            edges {\n              node {\n                ... on Article { id handle title }\n              }\n            }\n          }\n        }\n        relatedGuidesSource: metafield(namespace: \"custom\", key: \"related_guides_source\") { value }\n        idealFor: metafield(namespace: \"custom\", key: \"ideal_for\") { value }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Product/99999999999999"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "product": null
+        }
+      }
+    }
+  ]
+}

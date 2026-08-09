@@ -1,0 +1,84 @@
+{
+  "tool": "list_to_review",
+  "toolInput": {
+    "resource_type": "collection"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "1 collection(s) à review :\n- Outils et réparation vélo (outils-et-reparation-velo) — id: gid://shopify/Collection/693232075077"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query ListToReview($cursor: String) {\n            collections(first: 50, after: $cursor) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collections": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjo2OTMyMzU5NzQ0NjksImxhc3RfdmFsdWUiOiI2OTMyMzU5NzQ0NjkifQ=="
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/692391772485",
+                  "title": "Page d’accueil",
+                  "handle": "frontpage",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/693232075077",
+                  "title": "Outils et réparation vélo",
+                  "handle": "outils-et-reparation-velo",
+                  "contentStatus": {
+                    "value": "to_review"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/693232206149",
+                  "title": "Vêtements cyclisme",
+                  "handle": "vetements-cyclisme",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/693235941701",
+                  "title": "Couchage et Bivouac",
+                  "handle": "couchage-et-bivouac",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Collection/693235974469",
+                  "title": "Sacoches et rangements",
+                  "handle": "sacoches-et-rangements",
+                  "contentStatus": null
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "tool": "search_products",
+  "toolInput": {
+    "status_filter": "to_review"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "1 produit(s) trouvé(s).\n\n- Leurre souple swimbait coulant, 15 ou 20 cm (leurre-souple-swimbait-coulant-15-ou-20-cm) — statut Shopify: DRAFT, pipeline: to_review — id: gid://shopify/Product/15488664109441"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query SearchProducts($query: String, $cursor: String) {\n            products(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  status\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                  summaryPoints: metafield(namespace: \"custom\", key: \"summary_points\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "query": null,
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "products": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjoxNTQ5MDg4MTk0NTk4NSwibGFzdF92YWx1ZSI6IjE1NDkwODgxOTQ1OTg1In0="
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15488664109441",
+                  "title": "Leurre souple swimbait coulant, 15 ou 20 cm",
+                  "handle": "leurre-souple-swimbait-coulant-15-ou-20-cm",
+                  "status": "DRAFT",
+                  "contentStatus": {
+                    "value": "to_review"
+                  },
+                  "summaryPoints": {
+                    "value": "[\"Grand format (15 ou 20 cm) pensé pour le brochet et les gros carnassiers\",\"Queue paddle à forte vibration, efficace en eau peu claire\",\"Corps PVC souple huilé, résistant et réutilisable\"]"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490878505345",
+                  "title": "10pcs/Lot Fishing Lure T Tail Worm Soft Bait Jigging Wobblers Tackle Bass Pike Artificial Silicone Swimbait 55mm 70/90mm 120mm",
+                  "handle": "10pcs-lot-fishing-lure-t-tail-worm-soft-bait-jigging-wobblers-tackle-bass-pike-artificial-silicone-swimbait-55mm-70-90mm-120mm",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490878833025",
+                  "title": "TSURINOYA Sinking Minnow Long casting Fishing Lure DW75 Jerkbait Wobbler 70mm 8.9g Freshwater Bass Trout Fishing Lure Hard Bait",
+                  "handle": "tsurinoya-sinking-minnow-long-casting-fishing-lure-dw75-jerkbait-wobbler-70mm-8-9g-freshwater-bass-trout-fishing-lure-hard-bait",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490879226241",
+                  "title": "Portable Waterproof Fishing Tool Box Lure Accessories Storage Box Large Capacity Multi-Functional Double-Sided Tackle Box",
+                  "handle": "portable-waterproof-fishing-tool-box-lure-accessories-storage-box-large-capacity-multi-functional-double-sided-tackle-box",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490879488385",
+                  "title": "5pcs Crank Jig Head Hooks 5g 7g 10g Fishing Hook Jigging Lure Hard Bait Soft Worm Fishhook Jig Hook Fishhook For Fishing",
+                  "handle": "5pcs-crank-jig-head-hooks-5g-7g-10g-fishing-hook-jigging-lure-hard-bait-soft-worm-fishhook-jig-hook-fishhook-for-fishing",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490879881601",
+                  "title": "Hunthouse Mini Slow Sinking Minnow Fishing Lure 50mm 5.7g Wobbler Hard Bait Saltwater For Sea Bass Trout Fish Tackle",
+                  "handle": "hunthouse-mini-slow-sinking-minnow-fishing-lure-50mm-5-7g-wobbler-hard-bait-saltwater-for-sea-bass-trout-fish-tackle",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490880143745",
+                  "title": "B&U Lures Vibe Craw 85mm Artificial Soft Bait Crawfish Leurre souple pike Fishing Accessories jigging lure",
+                  "handle": "b-u-lures-vibe-craw-85mm-artificial-soft-bait-crawfish-leurre-souple-pike-fishing-accessories-jigging-lure",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490880733569",
+                  "title": "KINGDOM SP Shadow Fishing Lures 6.5g 9g 14g 14.2g Suspending Minnow Wobbler Crank Baits Artificial Sea Bass Pike Fishing Tackle",
+                  "handle": "kingdom-sp-shadow-fishing-lures-6-5g-9g-14g-14-2g-suspending-minnow-wobbler-crank-baits-artificial-sea-bass-pike-fishing-tackle",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490881159553",
+                  "title": "QualyQualy 6pcs Fishing Soft Lures 8cm Shad Worm Fishing Swimbaits 2.8g Soft Silicone Artificial Bait For Bass Fishing",
+                  "handle": "qualyqualy-6pcs-fishing-soft-lures-8cm-shad-worm-fishing-swimbaits-2-8g-soft-silicone-artificial-bait-for-bass-fishing",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490881454465",
+                  "title": "HappyJack 2025 Soft Worm Lures Silicone Bait 15pcs 5cm 10pcs 7cm Sea Fish Pva Swimbait Wobblers Goods For Fishing Artificial",
+                  "handle": "happyjack-2025-soft-worm-lures-silicone-bait-15pcs-5cm-10pcs-7cm-sea-fish-pva-swimbait-wobblers-goods-for-fishing-artificial",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15490881945985",
+                  "title": "NOEBY 10cm 8g 11.5cm 13.6g Soft Lure Silicone Bait Jigging Wobbler Paddle Tail Drive Shad Artificial Swimbait Pike Leurre Souple",
+                  "handle": "noeby-10cm-8g-11-5cm-13-6g-soft-lure-silicone-bait-jigging-wobbler-paddle-tail-drive-shad-artificial-swimbait-pike-leurre-souple",
+                  "status": "DRAFT",
+                  "contentStatus": null,
+                  "summaryPoints": null
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

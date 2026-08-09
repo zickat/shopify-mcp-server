@@ -1,0 +1,290 @@
+{
+  "tool": "list_to_review",
+  "toolInput": {
+    "resource_type": "product"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Aucun(e) product à review actuellement."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query ListToReview($cursor: String) {\n            products(first: 50, after: $cursor) {\n              pageInfo { hasNextPage endCursor }\n              edges {\n                node {\n                  id\n                  title\n                  handle\n                  contentStatus: metafield(namespace: \"custom\", key: \"content_status\") { value }\n                }\n              }\n            }\n          }",
+        "variables": {
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "products": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjoxNjA1MDcyODY5ODE4MSwibGFzdF92YWx1ZSI6IjE2MDUwNzI4Njk4MTgxIn0="
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991706353989",
+                  "title": "Pompe à vélo Velotrip 160 PSI — Manomètre analogique, Presta/Schrader",
+                  "handle": "pompe-a-velo-velotrip-160-psi-manometre-analogique-presta-schrader",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991719526725",
+                  "title": "Chaussettes de sport mi-hautes course et vélo — tricot respirant, EUR 36-44",
+                  "handle": "chaussettes-de-sport-mi-hautes-course-et-velo-tricot-respirant-eur-36-44",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991731552581",
+                  "title": "Coupe-vent cycliste ultraléger à capuche — Protection UV, du M au 5XL",
+                  "handle": "coupe-vent-cycliste-ultraleger-a-capuche-protection-uv-du-m-au-5xl",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991738728773",
+                  "title": "Cuissard vélo à bretelles — Pad Elastic Interface 7h, Lycra respirant",
+                  "handle": "cuissard-velo-a-bretelles-pad-elastic-interface-7h-lycra-respirant",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991763599685",
+                  "title": "Sac de couchage Velotrip — 3 saisons, couplable en double, format enveloppe",
+                  "handle": "sac-de-couchage-velotrip-3-saisons-couplable-en-double-format-enveloppe",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991800398149",
+                  "title": "Tente dôme 2 personnes imperméable 1,5 kg — Bivouac et camping léger",
+                  "handle": "tente-dome-2-personnes-impermeable-1-5-kg-bivouac-et-camping-leger",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991818912069",
+                  "title": "Sacoche de guidon Velotrip 1,7L convertible en bandoulière",
+                  "handle": "sacoche-de-guidon-velotrip-1-7l-convertible-en-bandouliere",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991831822661",
+                  "title": "Sacoche de cadre Velotrip top tube — étanche, réfléchissante, 0,9 à 2,9L",
+                  "handle": "sacoche-de-cadre-velotrip-top-tube-etanche-reflechissante-0-9-a-2-9l",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991885037893",
+                  "title": "Lampe frontale 9 LED 2000 lumens USB-C — Capteur de mouvement, lumière rouge, IPX5",
+                  "handle": "lampe-frontale-9-led-2000-lumens-usb-c-capteur-de-mouvement-lumiere-rouge-ipx5",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991887036741",
+                  "title": "Filtre à eau à paille — Filtration 4 étapes, portable, sans batterie ni produit chimique",
+                  "handle": "filtre-a-eau-a-paille-filtration-4-etapes-portable-sans-batterie-ni-produit-chimique",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15991891460421",
+                  "title": "Sacoche de selle Velotrip pliable 10L — étanche, format ajustable",
+                  "handle": "sacoche-de-selle-velotrip-pliable-10l-etanche-format-ajustable",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15996117647685",
+                  "title": "Maillot cyclisme homme manches courtes — zip intégral, résille ventilée, 7 coloris",
+                  "handle": "maillot-cyclisme-homme-manches-courtes-zip-integral-resille-ventilee-7-coloris",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15996131180869",
+                  "title": "Sacoche de guidon isolante Velotrip — porte-gourde et rangement vélo",
+                  "handle": "sacoche-de-guidon-isolante-velotrip-porte-gourde-et-rangement-velo",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/15996141306181",
+                  "title": "Sac étanche roll-top ultra-léger — 3 à 75L, 8 coloris",
+                  "handle": "sac-etanche-roll-top-ultra-leger-3-a-75l-8-coloris",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003583672645",
+                  "title": "Kit de cuisine inox 8 pièces pour camping — 3-4 personnes",
+                  "handle": "kit-de-cuisine-inox-8-pieces-pour-camping-3-4-personnes",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003590488389",
+                  "title": "Réchaud à gaz ultra-compact 3000W avec allumage piézo — 110 g",
+                  "handle": "rechaud-a-gaz-ultra-compact-3000w-avec-allumage-piezo-110-g",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003596386629",
+                  "title": "Matelas gonflable camping avec oreiller intégré — 206 × 68 cm, pompe pied incluse",
+                  "handle": "matelas-gonflable-camping-avec-oreiller-integre-206-68-cm-pompe-pied-incluse",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003600351557",
+                  "title": "Démonte-pneus vélo plastique PP — lot de 4",
+                  "handle": "demonte-pneus-velo-plastique-pp-lot-de-4",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003606610245",
+                  "title": "Outil multifonction vélo 11-en-1",
+                  "handle": "outil-multifonction-velo-11-en-1",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003613163845",
+                  "title": "Support téléphone guidon vélo — fixation click anti-vibrations, 4,7–7,2 pouces",
+                  "handle": "support-telephone-guidon-velo-fixation-click-anti-vibrations-4-7-7-2-pouces",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003619160389",
+                  "title": "Elastique porte-bagage vélo — crochets résistants, 65 cm",
+                  "handle": "elastique-porte-bagage-velo-crochets-resistants-65-cm",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003622437189",
+                  "title": "Huile de chaîne vélo cire sèche 60ml — lot 1, 3 ou 5 flacons",
+                  "handle": "huile-de-chaine-velo-cire-seche-60ml-lot-1-3-ou-5-flacons",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16003645997381",
+                  "title": "Veste softshell imperméable à capuche homme — 4 coloris, tailles XXS à XL",
+                  "handle": "veste-softshell-impermeable-a-capuche-homme-4-coloris-tailles-xxs-a-xl",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16038164758853",
+                  "title": "Sacoche de porte-bagage rigide étanche 4L/8L Velotrip",
+                  "handle": "sacoche-de-porte-bagage-rigide-etanche-4l-8l-velotrip",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16038169706821",
+                  "title": "Batterie externe 10000mAh charge rapide USB-C Velotrip",
+                  "handle": "batterie-externe-10000mah-charge-rapide-usb-c-velotrip",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16038174785861",
+                  "title": "Poche à eau souple pliable TPU 1-3L Velotrip",
+                  "handle": "poche-a-eau-souple-pliable-tpu-1-3l-velotrip",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16038177669445",
+                  "title": "Kit gonfleur CO2 et réparation crevaison tubeless Velotrip",
+                  "handle": "kit-gonfleur-co2-et-reparation-crevaison-tubeless-velotrip",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16038182715717",
+                  "title": "Trousse de premiers secours compacte étanche Velotrip",
+                  "handle": "trousse-de-premiers-secours-compacte-etanche-velotrip",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16050711822661",
+                  "title": "Antivol chaîne vélo 0,6 m — acier allié, noyau cuivre, gaine anti-rayure",
+                  "handle": "antivol-chaine-velo-0-6-m-acier-allie-noyau-cuivre-gaine-anti-rayure",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16050713526597",
+                  "title": "Doudoune homme légère à duvet — compressible, pochette de transport incluse",
+                  "handle": "doudoune-homme-legere-a-duvet-compressible-pochette-de-transport-incluse",
+                  "contentStatus": null
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Product/16050728698181",
+                  "title": "Sacoche fourche et porte-bagage étanche 10-20L — roll-top, fixation rapide",
+                  "handle": "sacoche-fourche-et-porte-bagage-etanche-10-20l-roll-top-fixation-rapide",
+                  "contentStatus": null
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
