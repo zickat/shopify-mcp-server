@@ -3,6 +3,7 @@ package com.zickat.shopifymcpserver.api.mcp
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.MetaobjectsExposedService
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
+import com.zickat.shopifymcpserver.shared_kernel.isGidOfType
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import io.modelcontextprotocol.server.McpSyncServerExchange
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult
@@ -41,10 +42,18 @@ class GetMetaobjectTool(
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            metaobjectsExposedService.getMetaobject(tenant.storeId, metaobject_id).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { result -> McpToolResults.getMetaobjectResult(slug, result) },
-            )
+            if (!metaobject_id.isGidOfType(METAOBJECT_GID_TYPE)) {
+                McpToolResults.invalidGidType(slug, "metaobject_id", metaobject_id, METAOBJECT_GID_TYPE)
+            } else {
+                metaobjectsExposedService.getMetaobject(tenant.storeId, metaobject_id).fold(
+                    { error -> McpToolResults.errorResult(slug, error) },
+                    { result -> McpToolResults.getMetaobjectResult(slug, result) },
+                )
+            }
         }
+    }
+
+    companion object {
+        private const val METAOBJECT_GID_TYPE = "Metaobject"
     }
 }

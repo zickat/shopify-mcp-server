@@ -3,6 +3,7 @@ package com.zickat.shopifymcpserver.api.mcp
 import com.zickat.shopifymcpserver.seo.exposed_interface.SeoExposedService
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
+import com.zickat.shopifymcpserver.shared_kernel.isGidOfType
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import io.modelcontextprotocol.server.McpSyncServerExchange
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult
@@ -45,18 +46,25 @@ class GetSeoTool(
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            if (SEO_RESOURCE_TYPES.contains(resource_type)) {
-                seoExposedService.getSeo(tenant.storeId, resource_type, resource_id).fold(
+            val expectedGidType = SEO_RESOURCE_GID_TYPES[resource_type]
+            when {
+                expectedGidType == null -> McpToolResults.invalidSeoResourceType(slug, resource_type)
+                !resource_id.isGidOfType(expectedGidType) ->
+                    McpToolResults.invalidGidType(slug, "resource_id", resource_id, expectedGidType)
+                else -> seoExposedService.getSeo(tenant.storeId, resource_type, resource_id).fold(
                     { error -> McpToolResults.errorResult(slug, error) },
                     { result -> McpToolResults.getSeoResult(slug, resource_type, resource_id, result) },
                 )
-            } else {
-                McpToolResults.invalidSeoResourceType(slug, resource_type)
             }
         }
     }
 
     companion object {
-        private val SEO_RESOURCE_TYPES = setOf("product", "collection", "article", "page")
+        private val SEO_RESOURCE_GID_TYPES = mapOf(
+            "product" to "Product",
+            "collection" to "Collection",
+            "article" to "Article",
+            "page" to "Page",
+        )
     }
 }

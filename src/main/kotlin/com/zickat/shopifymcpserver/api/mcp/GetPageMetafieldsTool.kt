@@ -3,6 +3,7 @@ package com.zickat.shopifymcpserver.api.mcp
 import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
+import com.zickat.shopifymcpserver.shared_kernel.isGidOfType
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import io.modelcontextprotocol.server.McpSyncServerExchange
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult
@@ -52,10 +53,18 @@ class GetPageMetafieldsTool(
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            pagesExposedService.getPageMetafields(tenant.storeId, page_id, keys).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { result -> McpToolResults.getPageMetafieldsResult(slug, result) },
-            )
+            if (!page_id.isGidOfType(PAGE_GID_TYPE)) {
+                McpToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
+            } else {
+                pagesExposedService.getPageMetafields(tenant.storeId, page_id, keys).fold(
+                    { error -> McpToolResults.errorResult(slug, error) },
+                    { result -> McpToolResults.getPageMetafieldsResult(slug, result) },
+                )
+            }
         }
+    }
+
+    companion object {
+        private const val PAGE_GID_TYPE = "Page"
     }
 }

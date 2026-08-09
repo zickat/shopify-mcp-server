@@ -884,4 +884,119 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         text shouldContain "store.selection.missing"
         text shouldContain "lurelab-get-page-metafields"
     }
+
+    @Test
+    fun `get_seo refuses a resource_id whose gid type does not match resource_type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-get-seo-wrong-type")
+        val subject = "operator-get-seo-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_seo",
+            mapOf("resource_type" to "collection", "resource_id" to "gid://shopify/Product/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "resource_id invalide"
+        combined shouldContain "gid://shopify/Product/1"
+        combined shouldContain "Collection"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "get_seo" }
+        checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
+    }
+
+    @Test
+    fun `get_seo refuses a syntactically invalid resource_id, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-get-seo-malformed")
+        val subject = "operator-get-seo-malformed"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_seo",
+            mapOf("resource_type" to "product", "resource_id" to "not-a-gid"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "resource_id invalide"
+        combined shouldNotContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `get_metaobject refuses a metaobject_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-get-metaobject-wrong-type")
+        val subject = "operator-get-metaobject-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Product/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "metaobject_id invalide"
+        combined shouldContain "Metaobject"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `get_page_metafields refuses a page_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-get-page-metafields-wrong-type")
+        val subject = "operator-get-page-metafields-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_page_metafields",
+            mapOf("page_id" to "gid://shopify/Article/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "page_id invalide"
+        combined shouldContain "Page"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+    }
 }

@@ -112,6 +112,13 @@ object McpToolResults {
             isError = true,
         )
 
+    fun invalidGidType(storeSlug: String, label: String, value: String, expectedType: String): CallToolResult =
+        withBanner(
+            storeSlug,
+            "$label invalide : \"$value\" n'est pas un identifiant $expectedType (attendu gid://shopify/$expectedType/...).",
+            isError = true,
+        )
+
     fun getSeoResult(storeSlug: String, resourceType: String, resourceId: String, result: GetSeoResult): CallToolResult =
         when (result.outcome) {
             GetSeoOutcome.NOT_FOUND ->
