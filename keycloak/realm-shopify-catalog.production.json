@@ -2,9 +2,9 @@
   "realm": "shopify-catalog",
   "displayName": "Shopify Catalog — MCP clients (pré-enregistrés, D22)",
   "enabled": true,
-  "sslRequired": "none",
+  "sslRequired": "external",
   "attributes": {
-    "frontendUrl": "http://val-server.tail5e0606.ts.net:8081"
+    "frontendUrl": "https://val-server.tail5e0606.ts.net:8081"
   },
   "registrationAllowed": true,
   "registrationEmailAsUsername": false,
@@ -51,7 +51,7 @@
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.custom.audience": "http://val-server.tail5e0606.ts.net:8080/mcp",
+            "included.custom.audience": "https://val-server.tail5e0606.ts.net:8443/mcp",
             "access.token.claim": "true"
           }
         }
@@ -85,7 +85,7 @@
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.custom.audience": "http://val-server.tail5e0606.ts.net:8080/mcp",
+            "included.custom.audience": "https://val-server.tail5e0606.ts.net:8443/mcp",
             "access.token.claim": "true"
           }
         }
