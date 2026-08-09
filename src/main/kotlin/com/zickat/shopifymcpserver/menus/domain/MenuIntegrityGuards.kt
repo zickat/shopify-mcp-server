@@ -3,8 +3,8 @@ package com.zickat.shopifymcpserver.menus.domain
 import com.zickat.shopifymcpserver.menus.domain.models.MenuItemNode
 import kotlin.reflect.full.memberProperties
 
-private const val MAX_REEMITTABLE_DEPTH = 4
-private const val MAX_CREATABLE_DEPTH = 3
+internal const val MAX_REEMITTABLE_DEPTH = 4
+internal const val MAX_CREATABLE_DEPTH = 3
 
 object MenuIntegrityGuards {
 
