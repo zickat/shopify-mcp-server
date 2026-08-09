@@ -45,7 +45,7 @@ class ModularityTests {
         modules.getModuleByName(name).orElseThrow { AssertionError("D23 test setup: no such module '$name'") }
 
     companion object {
-        private val CATALOG_DOMAIN_MODULES = setOf("redirects", "products", "menus", "seo", "metaobjects", "pages")
+        private val CATALOG_DOMAIN_MODULES = setOf("redirects", "products", "menus", "seo", "metaobjects", "pages", "collections")
         private val CROSS_CUTTING_VIEW_MODULES = setOf("catalog_status")
 
         private val CATALOG_DOMAIN_ALLOWED = setOf("shared_kernel", "shopify")
