@@ -1,0 +1,36 @@
+{
+  "tool": "get_metaobject",
+  "toolInput": {
+    "metaobject_id": "gid://shopify/Metaobject/999999999999"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Metaobject introuvable : gid://shopify/Metaobject/999999999999"
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetMetaobject($id: ID!) {\n          metaobject(id: $id) { id type fields { key value } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/999999999999"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": null
+        }
+      }
+    }
+  ]
+}

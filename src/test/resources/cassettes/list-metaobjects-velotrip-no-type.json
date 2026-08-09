@@ -1,0 +1,93 @@
+{
+  "tool": "list_metaobjects",
+  "toolInput": {},
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "8 type(s) de metaobject trouvé(s) sur le store :\n- faq_item (FAQ Item) : 616 instance(s)\n- spec_item (Spec Item) : 691 instance(s)\n- guide_section (Guide Section) : 528 instance(s)\n- guide_theme (Guide Theme) : 4 instance(s)\n- guide_choice_item (Guide Choice Item) : 9 instance(s)\n- home_selection (Home selection) : 1 instance(s)\n- testimonial (Témoignage) : 1 instance(s)\n- home_editorial (Contenu éditorial de la home) : 1 instance(s)\n\nAppeler list_metaobjects(type: \"...\") pour lister les instances d'un type."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query ListMetaobjectDefinitions {\n            metaobjectDefinitions(first: 50) {\n              pageInfo { hasNextPage }\n              edges { node { type name metaobjectsCount } }\n            }\n          }",
+        "variables": {}
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobjectDefinitions": {
+            "pageInfo": {
+              "hasNextPage": false
+            },
+            "edges": [
+              {
+                "node": {
+                  "type": "faq_item",
+                  "name": "FAQ Item",
+                  "metaobjectsCount": 616
+                }
+              },
+              {
+                "node": {
+                  "type": "spec_item",
+                  "name": "Spec Item",
+                  "metaobjectsCount": 691
+                }
+              },
+              {
+                "node": {
+                  "type": "guide_section",
+                  "name": "Guide Section",
+                  "metaobjectsCount": 528
+                }
+              },
+              {
+                "node": {
+                  "type": "guide_theme",
+                  "name": "Guide Theme",
+                  "metaobjectsCount": 4
+                }
+              },
+              {
+                "node": {
+                  "type": "guide_choice_item",
+                  "name": "Guide Choice Item",
+                  "metaobjectsCount": 9
+                }
+              },
+              {
+                "node": {
+                  "type": "home_selection",
+                  "name": "Home selection",
+                  "metaobjectsCount": 1
+                }
+              },
+              {
+                "node": {
+                  "type": "testimonial",
+                  "name": "Témoignage",
+                  "metaobjectsCount": 1
+                }
+              },
+              {
+                "node": {
+                  "type": "home_editorial",
+                  "name": "Contenu éditorial de la home",
+                  "metaobjectsCount": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

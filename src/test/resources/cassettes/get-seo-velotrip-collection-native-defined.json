@@ -1,0 +1,43 @@
+{
+  "tool": "get_seo",
+  "toolInput": {
+    "resource_type": "collection",
+    "resource_id": "gid://shopify/Collection/692391772485"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Ressource collection \"Page d’accueil\" — SEO :\n- meta title : \"Velotrip.fr — Équipement bikepacking et cyclotourisme\"\n- meta description : \"Sacoches, bivouac, réparation, vêtements techniques : tout l'équipement pour partir en bikepacking, sélectionné avec soin. Guides pratiques inclus.\""
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetResourceSeo($id: ID!) {\n      node(id: $id) {\n        __typename\n        ... on Product    { title seo { title description } }\n        ... on Collection { title seo { title description } }\n        ... on Article {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n        ... on Page {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Collection/692391772485"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "node": {
+            "__typename": "Collection",
+            "title": "Page d’accueil",
+            "seo": {
+              "title": "Velotrip.fr — Équipement bikepacking et cyclotourisme",
+              "description": "Sacoches, bivouac, réparation, vêtements techniques : tout l'équipement pour partir en bikepacking, sélectionné avec soin. Guides pratiques inclus."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

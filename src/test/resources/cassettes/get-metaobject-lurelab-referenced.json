@@ -1,0 +1,86 @@
+{
+  "tool": "get_metaobject",
+  "toolInput": {
+    "metaobject_id": "gid://shopify/Metaobject/488033321345"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "gid://shopify/Metaobject/488033321345 — type: guide_theme — référencé par : Article \"Quel leurre choisir quand on débute la pêche aux carnassiers ?\" (gid://shopify/Article/1002291331457) via custom.guide_theme\n  - title: Leurres & techniques\n  - articles: [\"gid://shopify/Article/1002291331457\"]\n  - pillar_article: (vide)"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetMetaobject($id: ID!) {\n          metaobject(id: $id) { id type fields { key value } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/488033321345"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "id": "gid://shopify/Metaobject/488033321345",
+            "type": "guide_theme",
+            "fields": [
+              {
+                "key": "title",
+                "value": "Leurres & techniques"
+              },
+              {
+                "key": "articles",
+                "value": "[\"gid://shopify/Article/1002291331457\"]"
+              },
+              {
+                "key": "pillar_article",
+                "value": null
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMetaobjectReferences($id: ID!) {\n      metaobject(id: $id) {\n        referencedBy(first: 50) {\n          edges {\n            node {\n              key\n              namespace\n              referencer {\n                __typename\n                ... on Product { id title }\n                ... on Collection { id title }\n                ... on Article { id title }\n                ... on Metaobject { id type }\n              }\n            }\n          }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/488033321345"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "referencedBy": {
+              "edges": [
+                {
+                  "node": {
+                    "key": "guide_theme",
+                    "namespace": "custom",
+                    "referencer": {
+                      "__typename": "Article",
+                      "id": "gid://shopify/Article/1002291331457",
+                      "title": "Quel leurre choisir quand on débute la pêche aux carnassiers ?"
+                    }
+                  }
+                }
+              ],
+              "pageInfo": {
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

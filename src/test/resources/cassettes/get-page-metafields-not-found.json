@@ -1,0 +1,36 @@
+{
+  "tool": "get_page_metafields",
+  "toolInput": {
+    "page_id": "gid://shopify/Page/999999999999"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Page introuvable : gid://shopify/Page/999999999999"
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchPageMetafields($id: ID!) {\n      page(id: $id) {\n        id\n        title\n        metafields(namespace: \"custom\", first: 50) {\n          edges { node { key type value } }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Page/999999999999"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "page": null
+        }
+      }
+    }
+  ]
+}

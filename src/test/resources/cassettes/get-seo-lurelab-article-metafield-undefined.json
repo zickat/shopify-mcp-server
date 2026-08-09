@@ -1,0 +1,41 @@
+{
+  "tool": "get_seo",
+  "toolInput": {
+    "resource_type": "article",
+    "resource_id": "gid://shopify/Article/1002291200385"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "Ressource article \"Guides\" — SEO :\n- meta title : non défini\n- meta description : non défini"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetResourceSeo($id: ID!) {\n      node(id: $id) {\n        __typename\n        ... on Product    { title seo { title description } }\n        ... on Collection { title seo { title description } }\n        ... on Article {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n        ... on Page {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Article/1002291200385"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "node": {
+            "__typename": "Article",
+            "title": "Guides",
+            "titleTag": null,
+            "descriptionTag": null
+          }
+        }
+      }
+    }
+  ]
+}

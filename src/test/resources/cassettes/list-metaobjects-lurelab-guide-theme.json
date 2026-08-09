@@ -1,0 +1,243 @@
+{
+  "tool": "list_metaobjects",
+  "toolInput": {
+    "type": "guide_theme"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "4 instance(s) de type \"guide_theme\" :\n\ngid://shopify/Metaobject/488033321345 — référencé par : Article \"Quel leurre choisir quand on débute la pêche aux carnassiers ?\" (gid://shopify/Article/1002291331457) via custom.guide_theme\n  - title: Leurres & techniques\n  - articles: [\"gid://shopify/Article/1002291331457\"]\n  - pillar_article: (vide)\n\ngid://shopify/Metaobject/488033354113 — orphelin (aucune référence entrante trouvée)\n  - title: Matériel & montages\n  - articles: (vide)\n  - pillar_article: (vide)\n\ngid://shopify/Metaobject/488033386881 — référencé par : Article \"Où pêcher le carnassier près de chez soi quand on débute ?\" (gid://shopify/Article/1002291396993) via custom.guide_theme\n  - title: Spots & saisons\n  - articles: [\"gid://shopify/Article/1002291396993\"]\n  - pillar_article: (vide)\n\ngid://shopify/Metaobject/488033419649 — référencé par : Article \"Réglementation de la pêche aux carnassiers : ce qu'il faut savoir avant sa première sortie\" (gid://shopify/Article/1002291462529) via custom.guide_theme\n  - title: Réglementation & conservation\n  - articles: [\"gid://shopify/Article/1002291462529\"]\n  - pillar_article: (vide)"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query ListMetaobjectsByType($type: String!, $cursor: String) {\n            metaobjects(type: $type, first: 50, after: $cursor) {\n              pageInfo { hasNextPage endCursor }\n              edges { node { id fields { key value } } }\n            }\n          }",
+        "variables": {
+          "type": "guide_theme",
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobjects": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": "eyJsYXN0X2lkIjo0ODgwMzM0MTk2NDksImxhc3RfdmFsdWUiOiI0ODgwMzM0MTk2NDkifQ=="
+            },
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Metaobject/488033321345",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "value": "Leurres & techniques"
+                    },
+                    {
+                      "key": "articles",
+                      "value": "[\"gid://shopify/Article/1002291331457\"]"
+                    },
+                    {
+                      "key": "pillar_article",
+                      "value": null
+                    }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Metaobject/488033354113",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "value": "Matériel & montages"
+                    },
+                    {
+                      "key": "articles",
+                      "value": null
+                    },
+                    {
+                      "key": "pillar_article",
+                      "value": null
+                    }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Metaobject/488033386881",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "value": "Spots & saisons"
+                    },
+                    {
+                      "key": "articles",
+                      "value": "[\"gid://shopify/Article/1002291396993\"]"
+                    },
+                    {
+                      "key": "pillar_article",
+                      "value": null
+                    }
+                  ]
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Metaobject/488033419649",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "value": "Réglementation & conservation"
+                    },
+                    {
+                      "key": "articles",
+                      "value": "[\"gid://shopify/Article/1002291462529\"]"
+                    },
+                    {
+                      "key": "pillar_article",
+                      "value": null
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMetaobjectReferences($id: ID!) {\n      metaobject(id: $id) {\n        referencedBy(first: 50) {\n          edges {\n            node {\n              key\n              namespace\n              referencer {\n                __typename\n                ... on Product { id title }\n                ... on Collection { id title }\n                ... on Article { id title }\n                ... on Metaobject { id type }\n              }\n            }\n          }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/488033321345"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "referencedBy": {
+              "edges": [
+                {
+                  "node": {
+                    "key": "guide_theme",
+                    "namespace": "custom",
+                    "referencer": {
+                      "__typename": "Article",
+                      "id": "gid://shopify/Article/1002291331457",
+                      "title": "Quel leurre choisir quand on débute la pêche aux carnassiers ?"
+                    }
+                  }
+                }
+              ],
+              "pageInfo": {
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMetaobjectReferences($id: ID!) {\n      metaobject(id: $id) {\n        referencedBy(first: 50) {\n          edges {\n            node {\n              key\n              namespace\n              referencer {\n                __typename\n                ... on Product { id title }\n                ... on Collection { id title }\n                ... on Article { id title }\n                ... on Metaobject { id type }\n              }\n            }\n          }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/488033354113"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "referencedBy": {
+              "edges": [],
+              "pageInfo": {
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMetaobjectReferences($id: ID!) {\n      metaobject(id: $id) {\n        referencedBy(first: 50) {\n          edges {\n            node {\n              key\n              namespace\n              referencer {\n                __typename\n                ... on Product { id title }\n                ... on Collection { id title }\n                ... on Article { id title }\n                ... on Metaobject { id type }\n              }\n            }\n          }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/488033386881"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "referencedBy": {
+              "edges": [
+                {
+                  "node": {
+                    "key": "guide_theme",
+                    "namespace": "custom",
+                    "referencer": {
+                      "__typename": "Article",
+                      "id": "gid://shopify/Article/1002291396993",
+                      "title": "Où pêcher le carnassier près de chez soi quand on débute ?"
+                    }
+                  }
+                }
+              ],
+              "pageInfo": {
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMetaobjectReferences($id: ID!) {\n      metaobject(id: $id) {\n        referencedBy(first: 50) {\n          edges {\n            node {\n              key\n              namespace\n              referencer {\n                __typename\n                ... on Product { id title }\n                ... on Collection { id title }\n                ... on Article { id title }\n                ... on Metaobject { id type }\n              }\n            }\n          }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/488033419649"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "referencedBy": {
+              "edges": [
+                {
+                  "node": {
+                    "key": "guide_theme",
+                    "namespace": "custom",
+                    "referencer": {
+                      "__typename": "Article",
+                      "id": "gid://shopify/Article/1002291462529",
+                      "title": "Réglementation de la pêche aux carnassiers : ce qu'il faut savoir avant sa première sortie"
+                    }
+                  }
+                }
+              ],
+              "pageInfo": {
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

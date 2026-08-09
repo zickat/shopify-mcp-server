@@ -1,0 +1,43 @@
+{
+  "tool": "get_seo",
+  "toolInput": {
+    "resource_type": "collection",
+    "resource_id": "gid://shopify/Collection/689847599489"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "Ressource collection \"Home page\" — SEO :\n- meta title : non défini\n- meta description : non défini"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetResourceSeo($id: ID!) {\n      node(id: $id) {\n        __typename\n        ... on Product    { title seo { title description } }\n        ... on Collection { title seo { title description } }\n        ... on Article {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n        ... on Page {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Collection/689847599489"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "node": {
+            "__typename": "Collection",
+            "title": "Home page",
+            "seo": {
+              "title": null,
+              "description": null
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "tool": "get_metaobject",
+  "toolInput": {
+    "metaobject_id": "gid://shopify/Metaobject/488033354113"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : lurelab"
+      },
+      {
+        "type": "text",
+        "text": "gid://shopify/Metaobject/488033354113 — type: guide_theme — orphelin (aucune référence entrante trouvée)\n  - title: Matériel & montages\n  - articles: (vide)\n  - pillar_article: (vide)"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetMetaobject($id: ID!) {\n          metaobject(id: $id) { id type fields { key value } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/488033354113"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "id": "gid://shopify/Metaobject/488033354113",
+            "type": "guide_theme",
+            "fields": [
+              {
+                "key": "title",
+                "value": "Matériel & montages"
+              },
+              {
+                "key": "articles",
+                "value": null
+              },
+              {
+                "key": "pillar_article",
+                "value": null
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMetaobjectReferences($id: ID!) {\n      metaobject(id: $id) {\n        referencedBy(first: 50) {\n          edges {\n            node {\n              key\n              namespace\n              referencer {\n                __typename\n                ... on Product { id title }\n                ... on Collection { id title }\n                ... on Article { id title }\n                ... on Metaobject { id type }\n              }\n            }\n          }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/488033354113"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "referencedBy": {
+              "edges": [],
+              "pageInfo": {
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "tool": "get_seo",
+  "toolInput": {
+    "resource_type": "collection",
+    "resource_id": "gid://shopify/Collection/999999999999"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Ressource collection introuvable : gid://shopify/Collection/999999999999"
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetResourceSeo($id: ID!) {\n      node(id: $id) {\n        __typename\n        ... on Product    { title seo { title description } }\n        ... on Collection { title seo { title description } }\n        ... on Article {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n        ... on Page {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Collection/999999999999"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "node": null
+        }
+      }
+    }
+  ]
+}
