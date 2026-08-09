@@ -125,11 +125,97 @@ existant — les deux étaient nécessaires, pas l'un ou l'autre).
 
 ### Étape 0 — le nouvel opérateur crée son propre compte (une fois)
 
-Sur `http://val-server.tail5e0606.ts.net:8081/realms/shopify-catalog/protocol/openid-connect/registrations`
+Sur `https://val-server.tail5e0606.ts.net:8081/realms/shopify-catalog/protocol/openid-connect/registrations`
 (page « Register » accessible depuis l'écran de connexion normal une fois qu'un client OAuth
 l'atteint — pas une URL à visiter nue en pratique, voir « État réseau actuel » plus bas), l'opérateur
 choisit son propre nom d'utilisateur et son propre mot de passe. **Val n'intervient à aucun moment de
 cette étape.**
+
+### Étape 0 bis — brancher le client MCP sur ce serveur
+
+Section absente jusqu'à aujourd'hui, alors que `LOT2-08` l'exigeait déjà : *« documenter la procédure
+exacte de création d'un client, pas seulement le résultat — c'est un geste qui se répétera à chaque
+nouveau client MCP »*. Le trou s'est révélé le 2026-08-09 quand Val a branché le sien : il a fallu lui
+déduire la commande, puis diagnostiquer deux échecs successifs. Ce qui suit vient de ce branchement
+réel — deux échecs compris, pas d'une procédure supposée. Écrit pour Antoine, qui le fera seul dans une
+semaine, sans accès aux journaux du serveur.
+
+**La commande** (options vérifiées contre `claude mcp add --help`, CLI `2.1.226` — reconfirme-les si ta
+version diffère) :
+
+```
+claude mcp add --transport http \
+  --client-id mcp-claude-code \
+  -s user \
+  shopify-catalog \
+  https://val-server.tail5e0606.ts.net:8443/mcp
+```
+
+- **`--client-id mcp-claude-code` est obligatoire.** L'enregistrement dynamique de client (DCR) est
+  fermé par construction (`D22`, `LOT2-08` point 6 — la politique `Trusted Hosts` de Keycloak reste
+  verrouillée délibérément). L'omettre ne rend pas un message clair : Keycloak refuse avec
+  `KC-SERVICES0099: Operation 'before register client' rejected. Policy 'Trusted Hosts' rejected
+  request`, puis `type="CLIENT_REGISTER_ERROR", error="not_allowed"`. Ce n'est pas une panne à
+  contourner, c'est la doctrine qui fonctionne — le dire ici pour que personne ne perde de temps à la
+  déboguer.
+- **Pas de `--client-secret`** : `mcp-claude-code` est un client **public**, PKCE `S256` obligatoire.
+  En demander un ne ferait qu'ouvrir une invite inutile.
+- **`--callback-port` n'est pas nécessaire aujourd'hui** : les URIs de redirection enregistrées pour
+  `mcp-claude-code` acceptent `http://localhost:*` et `http://127.0.0.1:*`, donc n'importe quel port
+  éphémère choisi par la CLI passe. Le drapeau existe pour le jour où ces URIs seraient resserrées sur
+  un port fixe — inutile avant.
+- **`-s user`** plutôt que `local` : l'enregistrement suit l'opérateur dans tous ses projets Claude
+  Code, pas seulement le dossier courant.
+
+**Contrainte de géométrie — celle qui a coûté le plus cher aujourd'hui : le client MCP et le
+navigateur qui termine l'authentification doivent tourner sur LA MÊME machine.** Le flux OAuth revient
+sur `http://localhost:<port>/callback` : ce `localhost` est celui de la machine où tourne le client,
+pas un alias réseau qui pointerait ailleurs. Ça s'est vu aujourd'hui : `claude mcp add` avait été lancé
+sur `val-server`, l'écouteur y attendait bien (`ss -tlnp` → `LISTEN 127.0.0.1:59384
+users:(("claude",pid=…))`), mais l'authentification se faisait depuis le navigateur du Mac de Val.
+Keycloak a redirigé vers le `localhost` **du Mac**, où rien n'écoutait : le code d'autorisation est
+parti dans le vide, sans message d'erreur exploitable côté client. **Lance `claude mcp add` sur le
+poste depuis lequel tu ouvres ton navigateur — pas sur `val-server` en SSH.**
+
+**Si le callback a quand même été perdu**, pas besoin de tout recommencer. Sur la machine où
+l'écouteur `claude` tourne réellement, rejoue l'URL de callback complète que le navigateur a affichée :
+```
+ss -tlnp | grep claude          # retrouve le port en écoute
+curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:<port>/callback?state=…&code=…"
+```
+Une réponse `200`, suivie de la fermeture de l'écouteur, signe un échange terminé avec succès.
+**Fais-le tout de suite** : un code d'autorisation Keycloak expire en une minute environ. Et traite
+cette URL de callback comme un secret éphémère — elle porte un code d'autorisation à usage unique, on
+ne la colle pas dans un canal qui la conserve (Slack, un fichier versionné…).
+
+**Deux pièges d'authentification annexes, rencontrés le même jour** (utiles si le compte à utiliser
+est bloqué — pas la mécanique de branchement elle-même) :
+- **« Forgot Password? » ne fonctionne pas** sur ce realm : aucun SMTP n'est configuré (choix assumé
+  de `LOT2-09`). Réinitialiser le mot de passe d'un compte du realm passe par la console
+  d'administration Keycloak, pas par l'écran de connexion.
+- **`KC_BOOTSTRAP_ADMIN_USERNAME`/`_PASSWORD` (`deploy/.env`) sont un amorçage, pas une
+  réinitialisation.** Keycloak ne s'en sert que si la base ne contient encore aucun administrateur —
+  ce qui n'est plus le cas depuis la création de la base (2026-08-08). Modifier ces variables ou
+  recréer le conteneur n'a alors plus aucun effet ; Val l'a découvert en le tentant. La vraie
+  réinitialisation, vérifiée disponible dans le conteneur :
+  ```
+  read -rs -p "Mot de passe : " KC_TMP_PW; echo
+  docker exec -e KC_TMP_PW="$KC_TMP_PW" shopify-mcp-server-keycloak \
+    /opt/keycloak/bin/kc.sh bootstrap-admin user \
+    --username <nouveau-nom> --password:env KC_TMP_PW --no-prompt
+  unset KC_TMP_PW
+  ```
+  Le nom doit être **différent** de tout compte administrateur existant. `--password:env` évite que le
+  mot de passe transite par la ligne de commande ou par l'historique du shell — c'est la raison de
+  cette forme, pas `--password` en clair.
+
+**Vérifier que c'est branché — critère observable, pas une impression :**
+```
+/mcp
+```
+doit afficher le serveur `shopify-catalog` à l'état `connected`, avec **80 outils** proposés (le
+corpus réel câblé par `LOT2-07`). La suite — `list_stores` qui répond qu'aucune boutique n'est encore
+accordée — n'est pas un échec : c'est l'Étape 1 ci-dessous, qui explique pourquoi.
 
 ### Étape 1 — premier appel, refusé mais l'identité se crée
 
