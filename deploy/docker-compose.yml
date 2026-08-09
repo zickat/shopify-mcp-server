@@ -66,13 +66,21 @@ services:
       # et que les deux "included.custom.audience" (voir keycloak/realm-shopify-catalog.production.json)
       # : piège déjà rencontré en LOT2-08 (« un jeton obtenu via un autre nom d'hôte porte un autre
       # "iss" et se fait rejeter ») — une seule valeur, jamais recalculée depuis la requête entrante.
-      # Laissée en http:// délibérément (LOT2-12, geste 2 seul) — KC_HOSTNAME ne pilote que la
-      # résolution serveur, pas le realm importé. Le realm vivant persisté (attributes.frontendUrl,
-      # sslRequired, les deux mappers "included.custom.audience") annonce donc encore des URLs
-      # http:// pendant que la connexion, elle, sert déjà en https:// : fenêtre d'incohérence assumée
-      # et nommée par la tâche, refermée par le geste 3 (Dev Backend, kcadm sur le realm vivant) — pas
-      # par un réimport, voir le commentaire sur `command:` ci-dessus.
-      KC_HOSTNAME: http://val-server.tail5e0606.ts.net:8081
+      # CORRIGÉ (défaut trouvé en production le 2026-08-09, quelques minutes après ce lot) — cette
+      # variable était restée en http:// avec le commentaire ci-dessous (gardé barré pour la trace) :
+      # « laissée en http:// délibérément, KC_HOSTNAME ne pilote que la résolution serveur, pas le
+      # realm importé […] fenêtre d'incohérence […] refermée par le geste 3 ». C'était faux :
+      # KC_HOSTNAME ne pilote PAS que « la résolution serveur » — Keycloak l'utilise aussi pour (a) la
+      # console d'admin elle-même (les origines qu'elle charge, réponse à
+      # /admin/master/console/) et (b) tout realm qui n'a PAS reçu de patch explicite de son
+      # `frontendUrl`. Le geste 3 a patché le realm `shopify-catalog` via kcadm — jamais `master`, qui
+      # est resté sans `frontendUrl` propre et retombe donc sur KC_HOSTNAME. Deux symptômes en ont
+      # découlé : la console d'admin bloquée par du contenu mixte (elle chargeait des ressources en
+      # http:// depuis une page servie en https://), et le point de jeton du realm `master` qui
+      # refusait avec « HTTPS required ». Le realm `shopify-catalog`, lui, n'a jamais été affecté —
+      # son `frontendUrl` patché au geste 3 prime sur KC_HOSTNAME pour ce realm précis. Valeur
+      # désormais alignée sur ce que sert réellement le conteneur (TLS, geste 5) :
+      KC_HOSTNAME: https://val-server.tail5e0606.ts.net:8081
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "false"
       KC_HTTPS_CERTIFICATE_FILE: /etc/keycloak-certs/val-server.tail5e0606.ts.net.crt
