@@ -44,14 +44,13 @@ services:
     image: quay.io/keycloak/keycloak:26.7.1
     container_name: shopify-mcp-server-keycloak
     restart: unless-stopped
-    # start-dev, pas start : choix conscient et temporaire (voir RUNBOOK.md « Ce qui reste bloqué sur
-    # Val » #1). `start` exige soit un certificat TLS valide, soit un jeu de drapeaux
-    # hostname-strict-https qui ne lèverait pas le vrai blocage (pas de certificat) — seulement son
-    # symptôme. `start-dev` reproduit exactement la posture déjà vérifiée en LOT2-08
-    # (`sslRequired: none`, HTTP toléré) tout en ajoutant ce que LOT0-05/LOT2-08 n'avaient pas : une
-    # base Postgres qui survit à un redémarrage. À rouvrir vers `start` dès que le certificat Tailscale
-    # est en place.
-    command: ["start-dev", "--import-realm"]
+    # `start`, pas `start-dev` (LOT2-12, geste 2) : le certificat Tailscale/Let's Encrypt existe
+    # maintenant (deploy/certs/, valide jusqu'au 2026-11-06), le blocage qui justifiait `start-dev`
+    # (pas de certificat TLS) est levé. `--import-realm` reste posé pour un futur bootstrap à froid
+    # (Postgres vide) — sur un realm déjà persisté (le cas courant depuis LOT2-09), l'importeur
+    # Keycloak l'ignore silencieusement (IGNORE_EXISTING) ; patcher le realm vivant est le geste 3,
+    # à part, mené par le Dev Backend.
+    command: ["start", "--import-realm"]
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,13 +66,25 @@ services:
       # et que les deux "included.custom.audience" (voir keycloak/realm-shopify-catalog.production.json)
       # : piège déjà rencontré en LOT2-08 (« un jeton obtenu via un autre nom d'hôte porte un autre
       # "iss" et se fait rejeter ») — une seule valeur, jamais recalculée depuis la requête entrante.
+      # Laissée en http:// délibérément (LOT2-12, geste 2 seul) — KC_HOSTNAME ne pilote que la
+      # résolution serveur, pas le realm importé. Le realm vivant persisté (attributes.frontendUrl,
+      # sslRequired, les deux mappers "included.custom.audience") annonce donc encore des URLs
+      # http:// pendant que la connexion, elle, sert déjà en https:// : fenêtre d'incohérence assumée
+      # et nommée par la tâche, refermée par le geste 3 (Dev Backend, kcadm sur le realm vivant) — pas
+      # par un réimport, voir le commentaire sur `command:` ci-dessus.
       KC_HOSTNAME: http://val-server.tail5e0606.ts.net:8081
       KC_HOSTNAME_STRICT: "false"
-      KC_HTTP_ENABLED: "true"
+      KC_HTTP_ENABLED: "false"
+      KC_HTTPS_CERTIFICATE_FILE: /etc/keycloak-certs/val-server.tail5e0606.ts.net.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/keycloak-certs/val-server.tail5e0606.ts.net.key
     ports:
-      - "8081:8080"
+      # Port externe inchangé (8081) — mappé maintenant sur le port HTTPS interne du conteneur (8443)
+      # au lieu du port HTTP (8080). Aucun client déjà enregistré ne référence ce port externe dans
+      # ses redirectUris : rien à changer côté Claude (LOT2-12, geste 2).
+      - "8081:8443"
     volumes:
       - ./../keycloak/realm-shopify-catalog.production.json:/opt/keycloak/data/import/realm-shopify-catalog.json:ro
+      - ./certs:/etc/keycloak-certs:ro
 
   shopify-mcp-server-app:
     image: eclipse-temurin:21-jre
