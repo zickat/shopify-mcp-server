@@ -15,7 +15,7 @@ compte rendu complet et le détail des vérifications.
 ```
 mongo-lot0                   MongoDB 7.0, réutilisé tel quel (LOT0-09/LOT2-08), restart=unless-stopped
 shopify-mcp-server-postgres  Postgres 16 — persistance de Keycloak
-shopify-mcp-server-keycloak  Keycloak 26.7.1, start-dev + Postgres, realm `shopify-catalog` importé
+shopify-mcp-server-keycloak  Keycloak 26.7.1, `start` + Postgres, HTTPS réel (LOT2-12 geste 2)
 shopify-mcp-server-app       Kotlin, port 8080, jar versionné (releases/<tag>/app.jar)
 shopify-mcp-server-ts        Node, mode relayé (RELAY_MODE=true), sans aucun secret Shopify
 ```
@@ -109,13 +109,23 @@ consigne demandait aussi explicitement « quelque chose qui tourne au réveil »
   vrais credentials Shopify est bien celle que Val a générée lui-même — l'esprit de `Q3` est
   respecté, même si le service a tourné cette nuit sur une valeur intermédiaire.
 
-### 2. Keycloak en `start-dev`, pas `start` (mode production)
+### 2. Keycloak en `start-dev`, pas `start` (mode production) — **résolu par `LOT2-12` geste 2**
 
 `start` exige soit un certificat TLS valide (bloqué, voir point 3 ci-dessous), soit des drapeaux
 qui masqueraient le symptôme sans lever le vrai blocage. `start-dev` reproduit exactement la
 posture déjà vérifiée par `LOT2-08` (`sslRequired: none`) tout en ajoutant ce qui manquait :
 persistance Postgres. **À rouvrir** dès que le certificat Tailscale existe (voir point 3) — bascule
 vers `start` documentée dans `scripts/setup-tailscale-cert.sh`.
+
+**Mise à jour (`LOT2-12`, geste 2, DevOps)** : le certificat existe maintenant, la bascule est faite —
+Keycloak tourne en `start`, `KC_HTTP_ENABLED: "false"`, certs Let's Encrypt montés en lecture seule,
+port externe `8081` mappé sur le port HTTPS interne (`8443`). Vérifié par `openssl s_client` (chaîne
+Let's Encrypt, pas auto-signée) et par les logs (`Profile prod activated`,
+`Listening on: https://0.0.0.0:8443`). **Reste ouvert, volontairement, jusqu'au geste 3** (Dev
+Backend) : le realm vivant persisté (`attributes.frontendUrl`, `sslRequired`, les deux mappers
+`included.custom.audience`) annonce encore des URLs `http://` — `/.well-known/openid-configuration`
+répond déjà en HTTPS mais son champ `issuer` lit encore `http://`. Voir `LOT2-12.md` geste 3 : un
+patch `kcadm` sur le realm vivant, pas un réimport (`--import-realm` ignore un realm déjà présent).
 
 ### 3. HTTPS réel (D24) — **bloqué sur le compte/la machine de Val, testé ce soir, ne marche pas sans lui**
 
@@ -177,9 +187,11 @@ mise à jour de document.
 
 ## Ce qui reste bloqué sur Val — court, précis, actionnable en cinq minutes
 
-1. **HTTPS réel (D24)** — `sudo tailscale set --operator=val`, puis
-   `deploy/scripts/setup-tailscale-cert.sh`. Sans ça, aucune vérification par navigateur réel ne
-   passera l'écran de connexion Keycloak.
+1. **HTTPS réel (D24)** — ~~fait~~ : `sudo tailscale set --operator=val` a été passé, le certificat
+   Let's Encrypt est sur disque, Keycloak sert en HTTPS réel depuis `LOT2-12` geste 2 (voir point 2
+   ci-dessus). Ce qui reste : gestes 3 à 6 de `LOT2-12.md` (patch du realm vivant, TLS Kotlin, build/
+   déploiement, cron de renouvellement), puis la vérification par un vrai navigateur (`LOT2-11`,
+   réservée à Val).
 2. **`CATALOG_MASTER_KEY` définitive** — remplacer la valeur intermédiaire (section « Décisions »,
    point 1 ci-dessus). Trois commandes, zéro perte de données.
 3. **Les deux `STORE_CREDENTIAL` réels** — pour chaque boutique :
