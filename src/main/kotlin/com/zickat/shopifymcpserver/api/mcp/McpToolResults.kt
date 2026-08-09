@@ -6,6 +6,9 @@ import com.zickat.shopifymcpserver.menus.exposed_interface.model.ListMenusResult
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.GetMetaobjectOutcome
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.GetMetaobjectResult
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.ListMetaobjectsResult
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.GetPageMetafieldsOutcome
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.GetPageMetafieldsResult
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.ListPagesResult
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectOutcome
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectStatus
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.RequiredRedirectField
@@ -132,6 +135,17 @@ object McpToolResults {
             GetMetaobjectOutcome.NOT_FOUND ->
                 withBanner(storeSlug, "Metaobject introuvable : ${result.metaobjectId}", isError = true)
             GetMetaobjectOutcome.FOUND ->
+                withBanner(storeSlug, requireNotNull(result.text))
+        }
+
+    fun listPagesResult(storeSlug: String, result: ListPagesResult): CallToolResult =
+        withBanner(storeSlug, result.text)
+
+    fun getPageMetafieldsResult(storeSlug: String, result: GetPageMetafieldsResult): CallToolResult =
+        when (result.outcome) {
+            GetPageMetafieldsOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Page introuvable : ${result.pageId}", isError = true)
+            GetPageMetafieldsOutcome.FOUND ->
                 withBanner(storeSlug, requireNotNull(result.text))
         }
 

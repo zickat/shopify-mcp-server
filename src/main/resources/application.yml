@@ -101,6 +101,11 @@ mcp:
 # `list_menus`/`get_seo` : `ListMetaobjectsTool`/`GetMetaobjectTool` s'enregistrent sous ces deux
 # noms, même conflit de `SyncToolSpecification` au démarrage sinon. 8 en NATIF désormais, 72 en
 # RELAIS — total inchangé (80).
+#
+# LOT4-04 — `get_page_metafields`/`list_pages` basculent NATIF pour la même raison mécanique que
+# `list_menus`/`get_seo`/`list_metaobjects` : `GetPageMetafieldsTool`/`ListPagesTool` s'enregistrent
+# sous ces deux noms, même conflit de `SyncToolSpecification` au démarrage sinon. 10 en NATIF
+# désormais, 70 en RELAIS — total inchangé (80).
 relay:
   ts:
     base-url: ${RELAY_TS_BASE_URL:http://127.0.0.1:8765}
@@ -187,7 +192,7 @@ relay:
       route: NATIF
       kind: READ
     - tool-name: get_page_metafields
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: get_raw_content
       route: RELAIS
@@ -214,7 +219,7 @@ relay:
       route: RELAIS
       kind: READ
     - tool-name: list_pages
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: list_stores
       route: NATIF

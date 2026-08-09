@@ -702,6 +702,8 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "get_seo"
         names shouldContain "list_metaobjects"
         names shouldContain "get_metaobject"
+        names shouldContain "list_pages"
+        names shouldContain "get_page_metafields"
         names shouldContain "check_shopify_connection"
         names shouldContain "publish_page"
         names shouldContain "unpublish_page"
@@ -793,5 +795,93 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         isError shouldBe true
         text shouldContain "store.selection.missing"
         text shouldContain "lurelab-get-metaobject"
+    }
+
+    @Test
+    fun `list_pages (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-list-pages"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_pages", emptyMap())
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `list_pages without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-list-pages")
+        val subject = "operator-list-pages-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_pages", emptyMap())
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-list-pages"
+    }
+
+    @Test
+    fun `get_page_metafields (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-get-page-metafields"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_page_metafields",
+            mapOf("page_id" to "gid://shopify/Page/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `get_page_metafields without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-get-page-metafields")
+        val subject = "operator-get-page-metafields-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_page_metafields",
+            mapOf("page_id" to "gid://shopify/Page/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-get-page-metafields"
     }
 }
