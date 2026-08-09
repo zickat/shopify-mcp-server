@@ -677,7 +677,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `tools list exposes exactly the 80 real tools — 5 native and 75 relayed, no duplicate name`() {
+    fun `tools list exposes exactly the 80 real tools — 8 native and 72 relayed, no duplicate name`() {
         val storeId = registerStore()
         val subject = "operator-tools-list-count"
         val identityId = resolveIdentity(subject)
@@ -700,8 +700,98 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "search_resources"
         names shouldContain "list_menus"
         names shouldContain "get_seo"
+        names shouldContain "list_metaobjects"
+        names shouldContain "get_metaobject"
         names shouldContain "check_shopify_connection"
         names shouldContain "publish_page"
         names shouldContain "unpublish_page"
+    }
+
+    @Test
+    fun `list_metaobjects (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-list-metaobjects"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_metaobjects", emptyMap())
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `list_metaobjects without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-list-metaobjects")
+        val subject = "operator-list-metaobjects-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_metaobjects", emptyMap())
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-list-metaobjects"
+    }
+
+    @Test
+    fun `get_metaobject (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-get-metaobject"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Metaobject/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `get_metaobject without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-get-metaobject")
+        val subject = "operator-get-metaobject-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Metaobject/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-get-metaobject"
     }
 }

@@ -96,6 +96,11 @@ mcp:
 # LOT4-02 — `get_seo` bascule NATIF pour la même raison mécanique que `list_menus` (LOT3-03) : le
 # module `GetSeoTool` s'enregistre lui aussi comme `get_seo`, même conflit de nom au démarrage sinon.
 # 6 en NATIF désormais, 74 en RELAIS — total inchangé (80).
+#
+# LOT4-03 — `list_metaobjects`/`get_metaobject` basculent NATIF pour la même raison mécanique que
+# `list_menus`/`get_seo` : `ListMetaobjectsTool`/`GetMetaobjectTool` s'enregistrent sous ces deux
+# noms, même conflit de `SyncToolSpecification` au démarrage sinon. 8 en NATIF désormais, 72 en
+# RELAIS — total inchangé (80).
 relay:
   ts:
     base-url: ${RELAY_TS_BASE_URL:http://127.0.0.1:8765}
@@ -179,7 +184,7 @@ relay:
       route: RELAIS
       kind: READ
     - tool-name: get_metaobject
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: get_page_metafields
       route: RELAIS
@@ -203,7 +208,7 @@ relay:
       route: NATIF
       kind: READ
     - tool-name: list_metaobjects
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: list_orphan_products
       route: RELAIS

@@ -3,6 +3,9 @@ package com.zickat.shopifymcpserver.api.mcp
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourceType
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourcesResult
 import com.zickat.shopifymcpserver.menus.exposed_interface.model.ListMenusResult
+import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.GetMetaobjectOutcome
+import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.GetMetaobjectResult
+import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.ListMetaobjectsResult
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectOutcome
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectStatus
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.RequiredRedirectField
@@ -120,6 +123,17 @@ object McpToolResults {
         }
 
     private fun formatSeoValue(value: String?): String = if (value != null) "\"$value\"" else "non défini"
+
+    fun listMetaobjectsResult(storeSlug: String, result: ListMetaobjectsResult): CallToolResult =
+        withBanner(storeSlug, result.text)
+
+    fun getMetaobjectResult(storeSlug: String, result: GetMetaobjectResult): CallToolResult =
+        when (result.outcome) {
+            GetMetaobjectOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Metaobject introuvable : ${result.metaobjectId}", isError = true)
+            GetMetaobjectOutcome.FOUND ->
+                withBanner(storeSlug, requireNotNull(result.text))
+        }
 
     fun errorResult(storeSlug: String, error: UseCaseError): CallToolResult =
         withBanner(storeSlug, UseCaseErrorException(error).message ?: "technical.error", isError = true)
