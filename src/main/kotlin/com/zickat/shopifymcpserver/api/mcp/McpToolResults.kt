@@ -6,6 +6,8 @@ import com.zickat.shopifymcpserver.menus.exposed_interface.model.ListMenusResult
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectOutcome
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectStatus
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.RequiredRedirectField
+import com.zickat.shopifymcpserver.seo.exposed_interface.model.GetSeoOutcome
+import com.zickat.shopifymcpserver.seo.exposed_interface.model.GetSeoResult
 import com.zickat.shopifymcpserver.shared_kernel.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
@@ -96,6 +98,28 @@ object McpToolResults {
 
     fun invalidResourceType(storeSlug: String, value: String): CallToolResult =
         withBanner(storeSlug, "Type de ressource invalide : \"$value\" (attendu \"collection\" ou \"article\").", isError = true)
+
+    fun invalidSeoResourceType(storeSlug: String, value: String): CallToolResult =
+        withBanner(
+            storeSlug,
+            "Type de ressource invalide : \"$value\" (attendu \"product\", \"collection\", \"article\" ou \"page\").",
+            isError = true,
+        )
+
+    fun getSeoResult(storeSlug: String, resourceType: String, resourceId: String, result: GetSeoResult): CallToolResult =
+        when (result.outcome) {
+            GetSeoOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Ressource $resourceType introuvable : $resourceId", isError = true)
+            GetSeoOutcome.FOUND ->
+                withBanner(
+                    storeSlug,
+                    "Ressource $resourceType \"${result.title}\" — SEO :\n" +
+                        "- meta title : ${formatSeoValue(result.metaTitle)}\n" +
+                        "- meta description : ${formatSeoValue(result.metaDescription)}",
+                )
+        }
+
+    private fun formatSeoValue(value: String?): String = if (value != null) "\"$value\"" else "non défini"
 
     fun errorResult(storeSlug: String, error: UseCaseError): CallToolResult =
         withBanner(storeSlug, UseCaseErrorException(error).message ?: "technical.error", isError = true)

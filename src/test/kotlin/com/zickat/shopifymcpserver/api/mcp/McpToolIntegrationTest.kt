@@ -592,6 +592,55 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
+    fun `get_seo (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-get-seo"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_seo",
+            mapOf("resource_type" to "collection", "resource_id" to "gid://shopify/Collection/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `get_seo without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-get-seo")
+        val subject = "operator-get-seo-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_seo",
+            mapOf("resource_type" to "collection", "resource_id" to "gid://shopify/Collection/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-get-seo"
+    }
+
+    @Test
     fun `same authenticated session — native list_stores and relayed check_shopify_connection both succeed and are journaled with correct isMutation and storeId`() {
         val storeId = registerStore("velotrip-native-and-relayed")
         val subject = "operator-native-and-relayed"
@@ -650,6 +699,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "create_redirect"
         names shouldContain "search_resources"
         names shouldContain "list_menus"
+        names shouldContain "get_seo"
         names shouldContain "check_shopify_connection"
         names shouldContain "publish_page"
         names shouldContain "unpublish_page"

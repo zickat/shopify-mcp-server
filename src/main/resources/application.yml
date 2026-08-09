@@ -92,6 +92,10 @@ mcp:
 # Construire l'outil MCP demandé par la tâche ET laisser cette ligne à RELAIS n'étaient donc pas
 # compatibles — voir progress.md, entrée LOT3-03, pour le détail et pourquoi Val doit trancher avant
 # tout déploiement (l'équivalence avec Shopify réel n'est pas encore prouvée, c'est LOT3-04).
+#
+# LOT4-02 — `get_seo` bascule NATIF pour la même raison mécanique que `list_menus` (LOT3-03) : le
+# module `GetSeoTool` s'enregistre lui aussi comme `get_seo`, même conflit de nom au démarrage sinon.
+# 6 en NATIF désormais, 74 en RELAIS — total inchangé (80).
 relay:
   ts:
     base-url: ${RELAY_TS_BASE_URL:http://127.0.0.1:8765}
@@ -184,7 +188,7 @@ relay:
       route: RELAIS
       kind: READ
     - tool-name: get_seo
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: link_variant_image
       route: RELAIS
