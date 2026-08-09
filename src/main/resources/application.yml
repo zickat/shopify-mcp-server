@@ -1,3 +1,24 @@
+# LOT2-12 geste 4 — un seul processus, deux connecteurs Tomcat. `server.*` reste le connecteur
+# PRINCIPAL (public) : `/mcp`, `/.well-known/**`, `/actuator/health`. Il ne porte PAS TLS par défaut
+# (`server.ssl.enabled` vaut false tant que rien ne le change) — dev et tests tournent donc en clair
+# sur 8080 sans toucher à un certificat, comme avant cette tâche. En production, `SERVER_PORT=8443` et
+# `SERVER_SSL_ENABLED=true` (+ les deux chemins PEM) basculent ce connecteur en HTTPS réel (Boot 4.1
+# accepte le bundle PEM directement — `server.ssl.certificate`/`server.ssl.certificate-private-key`,
+# pas de PKCS12 à fabriquer). Le SECOND connecteur — additionnel, lié en dur à `127.0.0.1`, jamais
+# TLS — n'est ajouté QUE si `server.ssl.enabled` est vrai (voir
+# identity/RelayLoopbackConnectorCustomizer.kt) : c'est lui qui sert `/relay/**` une fois que le
+# connecteur principal a quitté le clair, pour que `RELAY_KOTLIN_BASE_URL=http://127.0.0.1:8080`
+# (dépôt B, jamais lu depuis l'environnement côté TS) continue de pointer vers quelque chose qui
+# répond. Défense en profondeur avec `LoopbackOnlyAuthorizationManager` (identity/) : celui-ci teste
+# l'adresse de connexion réelle au niveau applicatif, celui-là fait que l'OS refuse toute connexion
+# qui n'arrive pas déjà par la boucle locale — deux gardes, pas une redite.
+server:
+  port: ${SERVER_PORT:8080}
+  ssl:
+    enabled: ${SERVER_SSL_ENABLED:false}
+    certificate: ${SERVER_SSL_CERTIFICATE:}
+    certificate-private-key: ${SERVER_SSL_CERTIFICATE_PRIVATE_KEY:}
+
 spring:
   application:
     name: shopify-mcp-server
@@ -37,9 +58,12 @@ spring:
 
 # mcp.security.expected-audience : constante de configuration (jamais dérivée de la requête —
 # voir identity/AudienceValidator.kt). Doit valoir l'URL publique de CE serveur une fois déployé.
+# relay-loopback-port : port du connecteur additionnel décrit ci-dessus (server.*, LOT2-12 geste 4).
+# Défaut 8080 pour matcher `RELAY_KOTLIN_BASE_URL` sans variable d'env supplémentaire côté déploiement.
 mcp:
   security:
     expected-audience: ${MCP_EXPECTED_AUDIENCE:http://localhost:8080/mcp}
+    relay-loopback-port: ${RELAY_LOOPBACK_PORT:8080}
 
 # relay : LOT2-03, échafaudage transitoire (architecture.md D23, §2.4 — module `relay`, détruit au
 # lot 8). `ts.base-url` est la boucle locale du processus TypeScript relayé (127.0.0.1 uniquement,
