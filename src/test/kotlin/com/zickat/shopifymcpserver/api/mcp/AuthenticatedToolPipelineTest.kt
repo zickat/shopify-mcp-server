@@ -65,7 +65,7 @@ class AuthenticatedToolPipelineTest {
     @Test
     fun `runForStore should deny closed and journal with a null identityId when there is no authenticated principal at all`() {
         val exception = shouldThrow<UseCaseErrorException> {
-            pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId)) { _, _ -> "unreachable" }
+            pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId), storeId) { _, _ -> "unreachable" }
         }
 
         exception.error.let { (it is com.zickat.shopifymcpserver.shared_kernel.NotAuthorizedError) shouldBe true }
@@ -84,7 +84,7 @@ class AuthenticatedToolPipelineTest {
             listOf(GrantedStore(storeId = ObjectId().toHexString(), slug = "velotrip"))
 
         val exception = shouldThrow<UseCaseErrorException> {
-            pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId)) { _, _ -> "unreachable" }
+            pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId), storeId) { _, _ -> "unreachable" }
         }
 
         (exception.error is ForbiddenError) shouldBe true
@@ -102,7 +102,7 @@ class AuthenticatedToolPipelineTest {
         accessExposedService.result = (TenantContext(storeId) to UserContext(identityId, AccessRole.VIEWER)).right()
 
         val exception = shouldThrow<UseCaseErrorException> {
-            pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId)) { _, _ -> "unreachable" }
+            pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId), storeId) { _, _ -> "unreachable" }
         }
 
         (exception.error is ForbiddenError) shouldBe true
@@ -119,7 +119,7 @@ class AuthenticatedToolPipelineTest {
         val identityId = identityExposedService.resolve(issuer, subject).getOrNull()!!
         accessExposedService.result = (TenantContext(storeId) to UserContext(identityId, AccessRole.OPERATOR)).right()
 
-        val result = pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId)) { tenant, user ->
+        val result = pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId), storeId) { tenant, user ->
             "${tenant.storeId}:${user.identityId}:${user.role}"
         }
 
@@ -137,7 +137,7 @@ class AuthenticatedToolPipelineTest {
         accessExposedService.result = ForbiddenError("access.denied").left()
 
         shouldThrow<UseCaseErrorException> {
-            pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId)) { _, _ -> "unreachable" }
+            pipeline.runForStore("use_store", MutationUseCase, storeId, mapOf("storeId" to storeId), storeId) { _, _ -> "unreachable" }
         }
 
         accessExposedService.lastCall shouldBe Triple(issuer, subject, storeId)

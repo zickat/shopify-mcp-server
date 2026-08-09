@@ -296,18 +296,19 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
     @Test
     fun `use_store against a store the identity has no grant on is refused as a 200 CallToolResult with isError, not an HTTP error status, and the refusal is journaled`() {
-        val storeId = registerStore()
+        val storeId = registerStore("no-grant-store")
         val subject = "operator-no-grant"
         resolveIdentity(subject)
         val token = jwt(subject)
 
         val sessionId = handshake(token)
-        val (callResponse, callPayload) = useStore(token, sessionId, storeId)
+        val (callResponse, callPayload) = useStore(token, sessionId, "no-grant-store")
 
         callResponse.statusCode shouldBe HttpStatus.OK
         val (isError, text) = toolResultText(callPayload)
         isError shouldBe true
         text shouldContain "access.denied"
+        text shouldNotContain storeId
 
         val identityId = resolveIdentity(subject)
         val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
@@ -407,15 +408,15 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `an operator can call use_store, and the success is journaled`() {
-        val storeId = registerStore()
+    fun `an operator can call use_store with a slug, and the success is journaled under the canonical ObjectId`() {
+        val storeId = registerStore("operator-use-store-slug")
         val subject = "operator-use-store"
         val identityId = resolveIdentity(subject)
         grant(identityId, storeId, GrantRole.OPERATOR)
         val token = jwt(subject)
 
         val sessionId = handshake(token)
-        val (useStoreResponse, useStorePayload) = useStore(token, sessionId, storeId)
+        val (useStoreResponse, useStorePayload) = useStore(token, sessionId, "operator-use-store-slug")
 
         useStoreResponse.statusCode shouldBe HttpStatus.OK
         val (isError, _) = toolResultText(useStorePayload)
@@ -430,7 +431,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
     @Test
     fun `list_stores shows no active store until use_store is called in that same session`() {
-        val storeId = registerStore()
+        val storeId = registerStore("list-before-select")
         val subject = "operator-list-before-select"
         val identityId = resolveIdentity(subject)
         grant(identityId, storeId, GrantRole.OPERATOR)
@@ -441,7 +442,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         val (_, beforeText) = toolResultText(beforePayload)
         beforeText shouldContain "Aucune boutique sélectionnée"
 
-        useStore(token, sessionId, storeId)
+        useStore(token, sessionId, "list-before-select")
 
         val (_, afterPayload) = listStores(token, sessionId)
         val (_, afterText) = toolResultText(afterPayload)
@@ -450,7 +451,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
     @Test
     fun `a revoked identity sees nothing through list_stores, not only through use_store — D17 covers the whole surface`() {
-        val storeId = registerStore()
+        val storeId = registerStore("revoked-list-stores-slug")
         val subject = "revoked-list-stores"
         val identityId = resolveIdentity(subject)
         grant(identityId, storeId, GrantRole.OPERATOR)
@@ -472,7 +473,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         afterListIsError shouldBe false
         afterListText shouldContain "Aucune boutique accordée à cette identité."
 
-        val (useStoreResponse, useStorePayload) = useStore(token, sessionId, storeId)
+        val (useStoreResponse, useStorePayload) = useStore(token, sessionId, "revoked-list-stores-slug")
         useStoreResponse.statusCode shouldBe HttpStatus.OK
         val (useStoreIsError, useStoreText) = toolResultText(useStorePayload)
         useStoreIsError shouldBe true
@@ -493,8 +494,8 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         val sessionCode = handshake(token)
         (sessionDesktop == sessionCode) shouldBe false
 
-        useStore(token, sessionDesktop, velotripId)
-        useStore(token, sessionCode, lurelabId)
+        useStore(token, sessionDesktop, "velotrip")
+        useStore(token, sessionCode, "lurelab")
 
         val (_, desktopListing) = listStores(token, sessionDesktop)
         val (_, desktopText) = toolResultText(desktopListing)
@@ -599,7 +600,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         val token = jwt(subject)
 
         val sessionId = handshake(token)
-        useStore(token, sessionId, storeId)
+        useStore(token, sessionId, "velotrip-native-and-relayed")
 
         val (listStoresResponse, listStoresPayload) = listStores(token, sessionId)
         listStoresResponse.statusCode shouldBe HttpStatus.OK

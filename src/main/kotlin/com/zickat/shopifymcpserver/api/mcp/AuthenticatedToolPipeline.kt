@@ -31,6 +31,7 @@ class AuthenticatedToolPipeline(
         useCase: ToolUseCase,
         storeId: String,
         toolInput: Map<String, String>,
+        operatorLabel: String,
         action: (TenantContext, UserContext) -> T,
     ): T {
         val principalResult = currentJwtPrincipal()
@@ -48,7 +49,7 @@ class AuthenticatedToolPipeline(
                 val principal = principalResult.bind()
                 val identityId = identityResult.bind()
                 val (tenant, user) = accessExposedService.resolveAccess(principal.issuer, principal.subject, storeId)
-                    .mapLeft { enrichWithGrantedStores(it, identityId) }
+                    .mapLeft { enrichWithGrantedStores(it, identityId, operatorLabel) }
                     .bind()
                 ToolAccessControl.authorizeCall(user.role, useCase).bind()
                 action(tenant, user)
@@ -123,12 +124,12 @@ class AuthenticatedToolPipeline(
     private fun noActiveSelection(identityId: String): UseCaseError =
         ForbiddenError("store.selection.missing", mapOf("grantedStores" to grantedStoreNames(identityId)))
 
-    private fun enrichWithGrantedStores(error: UseCaseError, identityId: String): UseCaseError {
+    private fun enrichWithGrantedStores(error: UseCaseError, identityId: String, displayStoreId: String? = null): UseCaseError {
         if (error !is ForbiddenError || error.messageKey != "access.denied") return error
-        return ForbiddenError(
-            error.messageKey,
-            (error.parameters ?: emptyMap()) + ("grantedStores" to grantedStoreNames(identityId)),
-        )
+        val parameters = (error.parameters ?: emptyMap()) +
+            ("grantedStores" to grantedStoreNames(identityId)) +
+            (displayStoreId?.let { mapOf("storeId" to it) } ?: emptyMap())
+        return ForbiddenError(error.messageKey, parameters)
     }
 
     private fun grantedStoreNames(identityId: String): String {

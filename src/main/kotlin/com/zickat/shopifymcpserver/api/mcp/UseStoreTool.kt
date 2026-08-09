@@ -1,9 +1,11 @@
 package com.zickat.shopifymcpserver.api.mcp
 
+import arrow.core.getOrElse
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.ActiveStoreExposedService
+import com.zickat.shopifymcpserver.tenancy.exposed_interface.StoreExposedService
 import io.modelcontextprotocol.server.McpSyncServerExchange
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult
 import org.springframework.ai.mcp.annotation.McpTool
@@ -15,6 +17,7 @@ class UseStoreTool(
     private val pipeline: AuthenticatedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val activeStoreExposedService: ActiveStoreExposedService,
+    private val storeExposedService: StoreExposedService,
 ) {
 
     private object UseStoreUseCase : ToolUseCase {
@@ -28,10 +31,14 @@ class UseStoreTool(
             "same identity, and it does not survive a server restart.",
     )
     fun useStore(
-        @McpToolParam(description = "The store to select, as returned by list_stores", required = true) store_id: String,
+        @McpToolParam(
+            description = "The store name, as returned by list_stores — e.g. \"velotrip\". Not an internal id.",
+            required = true,
+        ) store_id: String,
         exchange: McpSyncServerExchange,
-    ): CallToolResult =
-        pipeline.runForStore("use_store", UseStoreUseCase, store_id, mapOf("storeId" to store_id)) { tenant, user ->
+    ): CallToolResult {
+        val resolvedStoreId = storeExposedService.resolveStoreIdBySlug(store_id).getOrElse { store_id }
+        return pipeline.runForStore("use_store", UseStoreUseCase, resolvedStoreId, mapOf("storeId" to store_id), store_id) { tenant, user ->
             activeStoreExposedService.select(user.identityId, exchange.sessionId(), tenant.storeId)
             val slug = accessExposedService.listGrantedStores(user.identityId).fold({ emptyList() }, { it })
                 .firstOrNull { it.storeId == tenant.storeId }
@@ -39,4 +46,5 @@ class UseStoreTool(
                 ?: tenant.storeId
             McpToolResults.storeActivated(slug)
         }
+    }
 }
