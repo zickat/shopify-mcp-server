@@ -27,12 +27,13 @@ class RelayManifestCompletenessTest {
     }
 
     @Test
-    fun `the four LOT2 native tools are present in the manifest as NATIF`() {
+    fun `the five native tools are present in the manifest as NATIF`() {
         val expectedNatif = mapOf(
             "list_stores" to "READ",
             "use_store" to "READ",
             "create_redirect" to "MUTATION",
             "search_resources" to "READ",
+            "list_menus" to "READ",
         )
         expectedNatif.forEach { (toolName, kind) ->
             val row = manifest.firstOrNull { it.toolName == toolName }
@@ -43,8 +44,8 @@ class RelayManifestCompletenessTest {
     }
 
     @Test
-    fun `every manifest entry not among the four NATIF tools is routed RELAIS`() {
-        val natifNames = setOf("list_stores", "use_store", "create_redirect", "search_resources")
+    fun `every manifest entry not among the five NATIF tools is routed RELAIS`() {
+        val natifNames = setOf("list_stores", "use_store", "create_redirect", "search_resources", "list_menus")
         manifest.filterNot { it.toolName in natifNames }.forEach { it.route shouldBe ToolRoute.RELAIS }
     }
 

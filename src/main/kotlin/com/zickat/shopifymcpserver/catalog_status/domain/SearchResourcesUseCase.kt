@@ -2,11 +2,11 @@ package com.zickat.shopifymcpserver.catalog_status.domain
 
 import arrow.core.Either
 import arrow.core.raise.either
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.ResourceSummary
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourceType
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourcesResult
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchStatusFilter
+import com.zickat.shopifymcpserver.shared_kernel.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shopify.exposed_interface.ShopifyAdminGateway

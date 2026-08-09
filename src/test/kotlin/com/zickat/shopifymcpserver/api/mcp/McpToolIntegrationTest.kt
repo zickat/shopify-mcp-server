@@ -628,7 +628,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `tools list exposes exactly the 80 real tools — 4 native and 76 relayed, no duplicate name`() {
+    fun `tools list exposes exactly the 80 real tools — 5 native and 75 relayed, no duplicate name`() {
         val storeId = registerStore()
         val subject = "operator-tools-list-count"
         val identityId = resolveIdentity(subject)
@@ -649,6 +649,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "use_store"
         names shouldContain "create_redirect"
         names shouldContain "search_resources"
+        names shouldContain "list_menus"
         names shouldContain "check_shopify_connection"
         names shouldContain "publish_page"
         names shouldContain "unpublish_page"

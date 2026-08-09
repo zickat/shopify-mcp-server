@@ -79,11 +79,19 @@ mcp:
 # documenté ailleurs dans cette initiative (architecture.md, schema.md, tasks.md) date d'une
 # lecture antérieure à l'ajout de `guide-cover.ts`/`home-hero.ts`/`editorial-image-generation.ts`
 # et de la paire publish/unpublish_page — voir progress.md, entrée LOT2-07, pour le détail de la
-# vérification et le script utilisé. 4 en NATIF (`list_stores`/`use_store`/`create_redirect`/
-# `search_resources`, portés lots précédents), 76 en RELAIS. La classification READ/MUTATION de
-# chaque entrée RELAIS est tirée de la description de l'outil dans le dépôt TS (effet Shopify
-# réel), pas du nom seul — détail et cas limites (outils `generate_*`/`retouch_*` sans effet
-# Shopify tant que non attachés) dans progress.md.
+# vérification et le script utilisé. 5 en NATIF (`list_stores`/`use_store`/`create_redirect`/
+# `search_resources`, portés lots précédents, + `list_menus`, LOT3-03), 75 en RELAIS. La
+# classification READ/MUTATION de chaque entrée RELAIS est tirée de la description de l'outil dans
+# le dépôt TS (effet Shopify réel), pas du nom seul — détail et cas limites (outils
+# `generate_*`/`retouch_*` sans effet Shopify tant que non attachés) dans progress.md.
+#
+# LOT3-03 — `list_menus` bascule NATIF plus tôt que prévu par sa propre tâche (« la table de routage
+# ne bascule pas cette nuit »), pas par choix produit : Spring Boot refuse de démarrer dès que deux
+# `SyncToolSpecification` portent le même nom (l'annotation-scan de `ListMenusTool` et cette entrée
+# RELAIS s'enregistraient toutes deux comme `list_menus`, `mcpSyncServer` échouait à la création).
+# Construire l'outil MCP demandé par la tâche ET laisser cette ligne à RELAIS n'étaient donc pas
+# compatibles — voir progress.md, entrée LOT3-03, pour le détail et pourquoi Val doit trancher avant
+# tout déploiement (l'équivalence avec Shopify réel n'est pas encore prouvée, c'est LOT3-04).
 relay:
   ts:
     base-url: ${RELAY_TS_BASE_URL:http://127.0.0.1:8765}
@@ -188,7 +196,7 @@ relay:
       route: RELAIS
       kind: READ
     - tool-name: list_menus
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: list_metaobjects
       route: RELAIS

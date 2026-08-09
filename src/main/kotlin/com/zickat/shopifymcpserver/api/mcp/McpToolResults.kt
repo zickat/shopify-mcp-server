@@ -1,11 +1,12 @@
 package com.zickat.shopifymcpserver.api.mcp
 
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourceType
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourcesResult
+import com.zickat.shopifymcpserver.menus.exposed_interface.model.ListMenusResult
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectOutcome
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectStatus
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.RequiredRedirectField
+import com.zickat.shopifymcpserver.shared_kernel.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.model.GrantedStore
@@ -75,6 +76,20 @@ object McpToolResults {
                 "- ${resource.title} (${resource.handle}) — statut pipeline : ${resource.contentStatus} — id: ${resource.id}"
             }
             "${result.resources.size} $label trouvé(e)(s)$truncationNote.\n\n$lines"
+        }
+        return withBanner(storeSlug, text)
+    }
+
+    fun listMenusResult(storeSlug: String, result: ListMenusResult): CallToolResult {
+        val text = if (result.blocks.isEmpty()) {
+            if (result.hadQuery) "Aucun menu trouvé pour ce filtre." else "Aucun menu trouvé sur le store."
+        } else {
+            val truncationNote = if (result.truncated) {
+                " (résultats tronqués à ${MAX_SEARCH_PAGES * 50} — affiner la requête)"
+            } else {
+                ""
+            }
+            "${result.blocks.size} menu(s) trouvé(s)$truncationNote.\n\n${result.blocks.joinToString("\n\n")}"
         }
         return withBanner(storeSlug, text)
     }
