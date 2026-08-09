@@ -8,3 +8,7 @@ deploy/.env
 deploy/releases/
 deploy/backups/
 deploy/certs/
+
+# LOT2-12 geste 6 — sortie du cron de renouvellement de certificat, jamais versionnée (état local
+# d'exécution, pas du code).
+deploy/logs/

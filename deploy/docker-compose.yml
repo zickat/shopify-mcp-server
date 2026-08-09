@@ -95,13 +95,33 @@ services:
       - keycloak
     environment:
       MONGODB_URI: mongodb://localhost:27017/shopify_mcp_server
-      OAUTH_ISSUER_URI: http://val-server.tail5e0606.ts.net:8081/realms/shopify-catalog
-      OAUTH_JWK_SET_URI: http://val-server.tail5e0606.ts.net:8081/realms/shopify-catalog/protocol/openid-connect/certs
-      MCP_EXPECTED_AUDIENCE: http://val-server.tail5e0606.ts.net:8080/mcp
+      # HTTPS réel (LOT2-12, geste 5) — le connecteur PRINCIPAL Kotlin (server.port/server.ssl.*,
+      # voir application.yml et identity/RelayLoopbackConnectorCustomizer.kt) sert désormais /mcp,
+      # /.well-known/** et /actuator/health en TLS sur 8443. Ces trois valeurs suivent le realm patché
+      # au geste 3 (frontendUrl, sslRequired, les deux mappers included.custom.audience) : un jeton émis
+      # par le realm porte un "iss" en https://, le décodeur doit pointer sur les mêmes URLs https://
+      # sous peine de rejet (piège déjà nommé LOT2-08 : "un jeton obtenu via un autre nom d'hôte porte
+      # un autre iss et se fait rejeter").
+      OAUTH_ISSUER_URI: https://val-server.tail5e0606.ts.net:8081/realms/shopify-catalog
+      OAUTH_JWK_SET_URI: https://val-server.tail5e0606.ts.net:8081/realms/shopify-catalog/protocol/openid-connect/certs
+      MCP_EXPECTED_AUDIENCE: https://val-server.tail5e0606.ts.net:8443/mcp
       # Q3/D3 — jamais une valeur de complaisance ici : EnvMasterKeyProvider refuse de démarrer si
       # absente/mal formée (vérifié en lisant vault/spi/env/EnvMasterKeyProvider.kt). Val la génère et
       # la pose lui-même dans deploy/.env — voir RUNBOOK.md.
       CATALOG_MASTER_KEY: ${CATALOG_MASTER_KEY:?CATALOG_MASTER_KEY manquant — voir RUNBOOK.md, le service refuse de démarrer sans}
+      # Connecteur PRINCIPAL (public) — bascule TLS. SERVER_SSL_CERTIFICATE(_PRIVATE_KEY) pointent
+      # dans le conteneur, pas sur l'hôte : voir le montage ./certs ci-dessous. Spring Boot 4.1 lit
+      # directement ce bundle PEM (server.ssl.certificate/certificate-private-key) — pas de PKCS12 à
+      # fabriquer.
+      SERVER_PORT: "8443"
+      SERVER_SSL_ENABLED: "true"
+      SERVER_SSL_CERTIFICATE: /etc/shopify-mcp-server-certs/val-server.tail5e0606.ts.net.crt
+      SERVER_SSL_CERTIFICATE_PRIVATE_KEY: /etc/shopify-mcp-server-certs/val-server.tail5e0606.ts.net.key
+      # Connecteur ADDITIONNEL (RelayLoopbackConnectorCustomizer) — n'existe QUE parce que
+      # SERVER_SSL_ENABLED est vrai ci-dessus (le customizer se désactive sinon), lié en dur à
+      # 127.0.0.1 par le code, jamais par une variable d'env : RELAY_LOOPBACK_PORT n'a pas besoin
+      # d'être posé (défaut 8080, déjà ce que RELAY_KOTLIN_BASE_URL attend côté TS). Rien à changer
+      # ici — le trafic /relay/** reste en clair sur la boucle locale, comme avant cette bascule.
       RELAY_TS_BASE_URL: http://127.0.0.1:8765
       RELAY_KOTLIN_BASE_URL: http://127.0.0.1:8080
     volumes:
@@ -113,6 +133,13 @@ services:
       # deploy.sh qui garde le vrai contrôle (il écrit RELEASE_TAG dans .env avant tout `compose up`
       # touchant ce service).
       - ./releases/${RELEASE_TAG:-__unset__}/app.jar:/app/app.jar:ro
+      # Même bundle Let's Encrypt que Keycloak (LOT2-12 geste 2), monté séparément — chemin dédié
+      # pour ce service, pas de dépendance implicite au montage du conteneur keycloak. L'image
+      # eclipse-temurin:21-jre tourne en root par défaut (vérifié : `docker run --rm
+      # eclipse-temurin:21-jre id` -> uid=0) donc la permission 600 de la clé privée (propriétaire
+      # `val` sur l'hôte) ne bloque rien ici, contrairement à un conteneur qui tournerait en
+      # utilisateur non-root et non 1000.
+      - ./certs:/etc/shopify-mcp-server-certs:ro
     command: ["java", "-jar", "/app/app.jar"]
 
   shopify-mcp-server-ts:

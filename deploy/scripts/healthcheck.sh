@@ -18,11 +18,17 @@ log() { [ "$QUIET" = "0" ] && echo "$@"; }
 FAILED=0
 
 # --- Kotlin : /actuator/health (couvre aussi l'indicateur Mongo, LOT0-02/LOT0-03) ---
-KOTLIN_BODY="$(curl -sf --max-time 3 http://127.0.0.1:8080/actuator/health 2>/dev/null)"
+# HTTPS réel (LOT2-12, geste 5) : le connecteur PRINCIPAL sert désormais /actuator/health en TLS sur
+# 8443, avec un vrai certificat Let's Encrypt émis pour le nom Tailscale — PAS pour 127.0.0.1/localhost
+# (architecture.md, LOT2-12 geste 4 : « un client TLS qui vérifie le nom refuserait la connexion en
+# boucle locale »). On sonde donc le nom `val-server.tail5e0606.ts.net`, jamais l'IP de loopback, et
+# SANS -k : le trust système suffit sur un vrai certificat, un -k nécessaire ici serait le signe que
+# quelque chose s'est mal passé (docker-compose.yml, geste 5), pas une chose à contourner.
+KOTLIN_BODY="$(curl -sf --max-time 3 https://val-server.tail5e0606.ts.net:8443/actuator/health 2>/dev/null)"
 if [ -n "$KOTLIN_BODY" ] && echo "$KOTLIN_BODY" | grep -q '"status":"UP"'; then
-  log "Kotlin (port 8080)      : UP"
+  log "Kotlin (port 8443, TLS)  : UP"
 else
-  log "Kotlin (port 8080)      : DOWN — pas de réponse UP sur /actuator/health"
+  log "Kotlin (port 8443, TLS)  : DOWN — pas de réponse UP sur https://…/actuator/health"
   FAILED=1
 fi
 

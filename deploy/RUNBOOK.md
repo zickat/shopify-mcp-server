@@ -16,8 +16,12 @@ compte rendu complet et le détail des vérifications.
 mongo-lot0                   MongoDB 7.0, réutilisé tel quel (LOT0-09/LOT2-08), restart=unless-stopped
 shopify-mcp-server-postgres  Postgres 16 — persistance de Keycloak
 shopify-mcp-server-keycloak  Keycloak 26.7.1, `start` + Postgres, HTTPS réel (LOT2-12 geste 2)
-shopify-mcp-server-app       Kotlin, port 8080, jar versionné (releases/<tag>/app.jar)
-shopify-mcp-server-ts        Node, mode relayé (RELAY_MODE=true), sans aucun secret Shopify
+shopify-mcp-server-app       Kotlin, DEUX connecteurs (LOT2-12 geste 4/5) : 8443 TLS public
+                              (/mcp, /.well-known/**, /actuator/health) + 127.0.0.1:8080 HTTP nu
+                              (/relay/** seulement, jamais joignable depuis le réseau Tailscale),
+                              jar versionné (releases/<tag>/app.jar)
+shopify-mcp-server-ts        Node, mode relayé (RELAY_MODE=true), sans aucun secret Shopify,
+                              appelle Kotlin sur http://127.0.0.1:8080 (inchangé par cette bascule)
 ```
 
 `keycloak-lot0` (l'instance jetable de LOT0-05/LOT2-08, base en mémoire) est **arrêtée, pas
@@ -165,6 +169,47 @@ matin.
 4.1 accepte un bundle PEM directement — `server.ssl.certificate`/`server.ssl.certificate-private-key`,
 pas besoin de PKCS12).
 
+**Mise à jour (`LOT2-12`, gestes 5-6, DevOps, 2026-08-09)** : tout ce qui précède est fait. Le Dev
+Backend a livré geste 3 (patch `kcadm` du realm vivant) et geste 4 (deux connecteurs Tomcat dans le
+même process Kotlin — voir `identity/RelayLoopbackConnectorCustomizer.kt`) sans les déployer ; ce
+passage a construit un jar sur `HEAD` propre (le commit qui porte cette mise à jour), monté
+`./certs:/etc/shopify-mcp-server-certs:ro` sur `shopify-mcp-server-app` (absent jusqu'ici — seul
+`keycloak` montait `./certs`), posé les six variables TLS dans `docker-compose.yml`
+(`SERVER_PORT`, `SERVER_SSL_ENABLED`, `SERVER_SSL_CERTIFICATE(_PRIVATE_KEY)`, `OAUTH_ISSUER_URI`,
+`OAUTH_JWK_SET_URI`, `MCP_EXPECTED_AUDIENCE` — les trois derniers en `https://`, alignés sur le realm
+patché au geste 3) puis déployé pour de vrai (`deploy.sh`). Vérifié après coup, pas seulement écrit :
+- `healthcheck.sh` vert sur `https://val-server.tail5e0606.ts.net:8443/actuator/health`, **sans
+  `-k`** — la chaîne Let's Encrypt passe le trust système.
+- `curl https://val-server.tail5e0606.ts.net:8443/mcp` sans jeton → `401`, chaîne TLS valide.
+- `curl http://127.0.0.1:8080/relay/sinks/…` toujours atteint le contrôleur (rejet métier, pas
+  réseau) : le relais TS→Kotlin (`RELAY_KOTLIN_BASE_URL=http://127.0.0.1:8080`, câblé en dur côté
+  TS) est intact après la bascule — c'était la régression la plus probable de tout ce chantier.
+- Les 5 conteneurs tournent.
+
+**Piège rencontré et évité, pas seulement théorique** : la sonde `healthcheck.sh` d'origine curlait
+`http://127.0.0.1:8080/actuator/health` — après la bascule, ce port ne sert plus que `/relay/**` en
+HTTP, `/actuator/health` a suivi le connecteur principal sur `8443`. Et sonder `8443` par l'IP de
+loopback aurait échoué la vérification de nom TLS (le certificat Let's Encrypt est émis pour
+`val-server.tail5e0606.ts.net`, pas pour `127.0.0.1`) — obligeant soit `-k` (proscrit par la tâche),
+soit la sonde sur le vrai nom Tailscale. C'est ce second choix qui est fait : `getent hosts
+val-server.tail5e0606.ts.net` résout localement vers l'IP Tailscale de cette même machine (MagicDNS),
+donc la sonde depuis l'hôte lui-même fonctionne sans particularité.
+
+**Cron de renouvellement (geste 6)** — posé sous l'utilisateur `val`, aucun sudo :
+```
+crontab -l   # pour vérifier — la ligne suivante y est déjà
+0 3 1 * * cd /home/val/IA_sandbox/shopify-mcp-server/deploy && ./scripts/setup-tailscale-cert.sh >> /home/val/IA_sandbox/shopify-mcp-server/deploy/logs/cert-renewal.log 2>&1 && docker compose restart shopify-mcp-server-keycloak shopify-mcp-server-app >> /home/val/IA_sandbox/shopify-mcp-server/deploy/logs/cert-renewal.log 2>&1
+```
+Le 1er de chaque mois à 3h — le certificat Let's Encrypt actuel expire le 2026-11-06, largement avant
+la prochaine échéance de renouvellement mensuel. **Ni Keycloak ni Kotlin ne relisent le fichier de
+certificat à chaud** (vérifié en lisant le point d'entrée des deux images : le bundle PEM n'est lu
+qu'au démarrage du processus) — d'où le `docker compose restart` après l'obtention du nouveau
+certificat, sur les deux seuls conteneurs qui en dépendent. **Ce que casse un renouvellement manqué
+n'est pas seulement le login navigateur** : une fois `server.ssl`/`KC_HTTPS_*` actifs, tout client TLS
+standard — navigateur, mais aussi le client MCP Claude Code, qui valide le certificat comme n'importe
+quel client HTTPS — refuse la connexion sur un certificat expiré. C'est une panne complète du service
+pour les deux opérateurs, pas une dégradation du seul flux de connexion.
+
 ### 4. `mongo-lot0` réutilisé tel quel, pas recréé sous `docker compose`
 
 Le conteneur existait déjà (LOT0-09), sa base `shopify_mcp_server` était vide au moment du lot 2
@@ -188,10 +233,12 @@ mise à jour de document.
 ## Ce qui reste bloqué sur Val — court, précis, actionnable en cinq minutes
 
 1. **HTTPS réel (D24)** — ~~fait~~ : `sudo tailscale set --operator=val` a été passé, le certificat
-   Let's Encrypt est sur disque, Keycloak sert en HTTPS réel depuis `LOT2-12` geste 2 (voir point 2
-   ci-dessus). Ce qui reste : gestes 3 à 6 de `LOT2-12.md` (patch du realm vivant, TLS Kotlin, build/
-   déploiement, cron de renouvellement), puis la vérification par un vrai navigateur (`LOT2-11`,
-   réservée à Val).
+   Let's Encrypt est sur disque, Keycloak sert en HTTPS réel depuis `LOT2-12` geste 2, le realm vivant
+   est patché (geste 3), Kotlin sert `/mcp` en TLS sur `8443` tout en gardant `/relay/**` en clair sur
+   `127.0.0.1:8080` (geste 4), le déploiement réel et le cron de renouvellement sont faits (gestes 5 et
+   6, DevOps — voir « Mise à jour (`LOT2-12`, gestes 5-6) » plus bas). Ce qui reste : la vérification
+   par un vrai navigateur (`LOT2-11`, réservée à Val) — aucune sonde scriptée, aussi complète soit-elle,
+   ne la remplace.
 2. **`CATALOG_MASTER_KEY` définitive** — remplacer la valeur intermédiaire (section « Décisions »,
    point 1 ci-dessus). Trois commandes, zéro perte de données.
 3. **Les deux `STORE_CREDENTIAL` réels** — pour chaque boutique :
