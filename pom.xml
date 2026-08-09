@@ -58,6 +58,15 @@
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-serialization-json</artifactId>
         </dependency>
+        <!-- LOT5-02 : parsing de brand.yaml (com.fasterxml.jackson.* — pas tools.jackson.*, la
+             famille 3.x apportée transitivement par spring-ai). Pas de <version> : déjà résolue
+             transitivement à 2.21.4 par spring-boot-dependencies (même famille que
+             jackson-module-kotlin ci-dessus) — la déclarer explicitement la rend directe au lieu
+             de transitive, sans changer la version qui tourne. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-datetime-jvm</artifactId>
