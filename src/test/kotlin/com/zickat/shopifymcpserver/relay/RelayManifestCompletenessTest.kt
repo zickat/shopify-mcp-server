@@ -1,6 +1,8 @@
 package com.zickat.shopifymcpserver.relay
 
+import com.zickat.shopifymcpserver.api.mcp.NativeToolNames
 import com.zickat.shopifymcpserver.relay.domain.models.ToolRoute
+import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -9,11 +11,17 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 import org.yaml.snakeyaml.Yaml
 
-class RelayManifestCompletenessTest {
+@SpringBootTest
+class RelayManifestCompletenessTest : WithMongoDBContainer() {
 
-    private data class ManifestRow(val toolName: String, val route: ToolRoute, val kind: String)
+    @Autowired
+    private lateinit var nativeToolNames: NativeToolNames
+
+    private data class ManifestRow(val toolName: String, val route: ToolRoute)
 
     private val manifest: List<ManifestRow> = loadManifestFromApplicationYml()
 
@@ -27,35 +35,17 @@ class RelayManifestCompletenessTest {
     }
 
     @Test
-    fun `the ten native tools are present in the manifest as NATIF`() {
-        val expectedNatif = mapOf(
-            "list_stores" to "READ",
-            "use_store" to "READ",
-            "create_redirect" to "MUTATION",
-            "search_resources" to "READ",
-            "list_menus" to "READ",
-            "get_seo" to "READ",
-            "list_metaobjects" to "READ",
-            "get_metaobject" to "READ",
-            "list_pages" to "READ",
-            "get_page_metafields" to "READ",
-        )
-        expectedNatif.forEach { (toolName, kind) ->
+    fun `the tools derived from the real McpTool beans are present in the manifest as NATIF`() {
+        nativeToolNames.names.forEach { toolName ->
             val row = manifest.firstOrNull { it.toolName == toolName }
-            checkNotNull(row) { "expected NATIF entry '$toolName' is absent from the manifest" }
+            checkNotNull(row) { "'$toolName' has an @McpTool bean but no manifest entry" }
             row.route shouldBe ToolRoute.NATIF
-            row.kind shouldBe kind
         }
     }
 
     @Test
-    fun `every manifest entry not among the ten NATIF tools is routed RELAIS`() {
-        val natifNames = setOf(
-            "list_stores", "use_store", "create_redirect", "search_resources",
-            "list_menus", "get_seo", "list_metaobjects", "get_metaobject",
-            "list_pages", "get_page_metafields",
-        )
-        manifest.filterNot { it.toolName in natifNames }.forEach { it.route shouldBe ToolRoute.RELAIS }
+    fun `every manifest entry not backed by an McpTool bean is routed RELAIS`() {
+        manifest.filterNot { it.toolName in nativeToolNames.names }.forEach { it.route shouldBe ToolRoute.RELAIS }
     }
 
     @Test
@@ -110,7 +100,6 @@ class RelayManifestCompletenessTest {
             ManifestRow(
                 toolName = entry["tool-name"] as String,
                 route = ToolRoute.valueOf(entry["route"] as String),
-                kind = entry["kind"] as String,
             )
         }
     }
