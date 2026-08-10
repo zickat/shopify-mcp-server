@@ -13,6 +13,7 @@ import com.zickat.shopifymcpserver.audit.domain.repositories.AuditLogRepository
 import com.zickat.shopifymcpserver.identity.domain.models.IdentityId
 import com.zickat.shopifymcpserver.identity.domain.repositories.IdentityRepository
 import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
+import com.zickat.shopifymcpserver.relay.exposed_interface.RelayGateway
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
 import com.zickat.shopifymcpserver.tenancy.StoreFixtures
 import com.zickat.shopifymcpserver.tenancy.domain.models.Grant
@@ -74,6 +75,15 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
     @Autowired
     private lateinit var activeStoreExposedService: ActiveStoreExposedService
+
+    @Autowired
+    private lateinit var relayToolContracts: RelayToolContracts
+
+    @Autowired
+    private lateinit var relayGateway: RelayGateway
+
+    @Autowired
+    private lateinit var nativeToolNames: NativeToolNames
 
     private val objectMapper = ObjectMapper()
 
@@ -677,7 +687,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `tools list exposes exactly the 80 real tools — 8 native and 72 relayed, no duplicate name`() {
+    fun `tools list exposes exactly the 80 real tools — 10 native and 70 relayed, no duplicate name`() {
         val storeId = registerStore()
         val subject = "operator-tools-list-count"
         val identityId = resolveIdentity(subject)
@@ -707,6 +717,65 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "check_shopify_connection"
         names shouldContain "publish_page"
         names shouldContain "unpublish_page"
+    }
+
+    @Test
+    fun `tools list carries a non-empty description for all 80 tools, and no two tools share one — D30`() {
+        val storeId = registerStore()
+        val subject = "operator-tools-list-descriptions"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (listResponse, listPayload) = toolsList(token, sessionId)
+
+        listResponse.statusCode shouldBe HttpStatus.OK
+        val tools = (listPayload?.get("result") as? Map<*, *>)?.get("tools") as? List<*>
+        checkNotNull(tools) { "tools/list did not return a tools array: $listPayload" }
+        val descriptionsByName = tools.mapNotNull {
+            val tool = it as? Map<*, *> ?: return@mapNotNull null
+            (tool["name"] as? String) to (tool["description"] as? String)
+        }.toMap()
+
+        descriptionsByName.forEach { (name, description) ->
+            checkNotNull(description) { "tool '$name' has no description" }
+            description.isBlank() shouldBe false
+        }
+        descriptionsByName.values.toSet() shouldHaveSize descriptionsByName.size
+    }
+
+    @Test
+    fun `tools list exposes, for every RELAIS tool, the real inputSchema from the LOT2-19 artifact — D30`() {
+        val storeId = registerStore()
+        val subject = "operator-tools-list-input-schemas"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (listResponse, listPayload) = toolsList(token, sessionId)
+
+        listResponse.statusCode shouldBe HttpStatus.OK
+        val tools = (listPayload?.get("result") as? Map<*, *>)?.get("tools") as? List<*>
+        checkNotNull(tools) { "tools/list did not return a tools array: $listPayload" }
+        val toolsByName = tools.mapNotNull { (it as? Map<*, *>) }
+            .mapNotNull { tool -> (tool["name"] as? String)?.let { it to tool } }
+            .toMap()
+
+        val relayedNames = relayGateway.relayedTools().map { it.toolName }.filterNot { it in nativeToolNames.names }
+        relayedNames shouldHaveSize 70
+
+        relayedNames.forEach { toolName ->
+            val exposedInputSchema = toolsByName[toolName]?.get("inputSchema")
+            checkNotNull(exposedInputSchema) { "relayed tool '$toolName' missing from tools/list or has no inputSchema" }
+
+            val contract = relayToolContracts.byToolName[toolName]
+            checkNotNull(contract) { "no LOT2-19 contract for relayed tool '$toolName'" }
+            val expectedInputSchema = objectMapper.readValue(contract.inputSchemaJson, Map::class.java)
+
+            exposedInputSchema shouldBe expectedInputSchema
+        }
     }
 
     @Test

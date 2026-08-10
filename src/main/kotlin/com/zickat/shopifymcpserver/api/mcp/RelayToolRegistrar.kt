@@ -8,6 +8,8 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
+import io.modelcontextprotocol.json.McpJsonMapper
+import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper
 import io.modelcontextprotocol.server.McpServerFeatures
 import io.modelcontextprotocol.server.McpSyncServerExchange
 import io.modelcontextprotocol.spec.McpSchema
@@ -17,8 +19,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import tools.jackson.databind.json.JsonMapper
 
 @Configuration
 class RelayToolRegistrarConfiguration(
@@ -26,13 +30,18 @@ class RelayToolRegistrarConfiguration(
     private val pipeline: AuthenticatedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val nativeToolNames: NativeToolNames,
+    private val contracts: RelayToolContracts,
 ) {
 
     @Bean
-    fun relayToolSpecifications(): List<McpServerFeatures.SyncToolSpecification> =
+    fun relayToolJsonMapper(@Qualifier("mcpServerJsonMapper") jsonMapper: JsonMapper): McpJsonMapper =
+        JacksonMcpJsonMapper(jsonMapper)
+
+    @Bean
+    fun relayToolSpecifications(relayToolJsonMapper: McpJsonMapper): List<McpServerFeatures.SyncToolSpecification> =
         relayGateway.relayedTools()
             .filterNot { it.toolName in nativeToolNames.names }
-            .map { descriptor -> relayToolSpecification(descriptor, relayGateway, pipeline, accessExposedService) }
+            .map { descriptor -> relayToolSpecification(descriptor, relayGateway, pipeline, accessExposedService, contracts, relayToolJsonMapper) }
 }
 
 fun relayToolSpecification(
@@ -40,10 +49,15 @@ fun relayToolSpecification(
     relayGateway: RelayGateway,
     pipeline: AuthenticatedToolPipeline,
     accessExposedService: AccessExposedService,
+    contracts: RelayToolContracts,
+    jsonMapper: McpJsonMapper,
 ): McpServerFeatures.SyncToolSpecification {
+    val contract = contracts.byToolName[descriptor.toolName]
+        ?: error("relay contract missing for tool '${descriptor.toolName}' — regenerate the artifact (LOT2-19)")
+
     val tool = McpSchema.Tool.builder(descriptor.toolName)
-        .description("Relayed tool — routed through the loopback TypeScript process (LOT2-03 scaffolding).")
-        .inputSchema(McpSchema.JsonSchema.builder().type("object").properties(emptyMap()).additionalProperties(true).build())
+        .description(contract.description)
+        .inputSchema(jsonMapper, contract.inputSchemaJson)
         .build()
 
     val handler = BiFunction<McpSyncServerExchange, McpSchema.CallToolRequest, McpSchema.CallToolResult> { exchange, request ->

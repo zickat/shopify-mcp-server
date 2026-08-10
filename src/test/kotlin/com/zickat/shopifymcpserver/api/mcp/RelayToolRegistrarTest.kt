@@ -22,8 +22,13 @@ import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.model.GrantedStore
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
+import io.modelcontextprotocol.json.McpJsonMapper
+import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
@@ -34,6 +39,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
+import tools.jackson.databind.json.JsonMapper
 import java.time.Instant
 
 class RelayToolRegistrarTest {
@@ -198,6 +204,9 @@ class RelayToolRegistrarTest {
         return NativeToolNames(context)
     }
 
+    private val contracts = RelayToolContracts()
+    private val jsonMapper: McpJsonMapper = JacksonMcpJsonMapper(JsonMapper.builder().build())
+
     @Test
     fun `relayToolSpecifications excludes a RELAIS entry whose name is already carried by a native McpTool bean`() {
         val nativeToolNames = nativeToolNamesWithBean(NativeListMenusToolDouble::class.java)
@@ -208,9 +217,9 @@ class RelayToolRegistrarTest {
             ),
         )
         val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, RelayTsClientFake()))
-        val configuration = RelayToolRegistrarConfiguration(relayGateway, pipeline, accessExposedService, nativeToolNames)
+        val configuration = RelayToolRegistrarConfiguration(relayGateway, pipeline, accessExposedService, nativeToolNames, contracts)
 
-        val specs = configuration.relayToolSpecifications()
+        val specs = configuration.relayToolSpecifications(jsonMapper)
 
         specs.map { it.tool().name() } shouldBe listOf("check_shopify_connection")
     }
@@ -220,10 +229,36 @@ class RelayToolRegistrarTest {
         val nativeToolNames = nativeToolNamesWithBean(NativeListMenusToolDouble::class.java)
         val manifest = RelayManifest(listOf(RelayManifestEntry("check_shopify_connection", ToolRoute.RELAIS, UseCaseKind.READ)))
         val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, RelayTsClientFake()))
-        val configuration = RelayToolRegistrarConfiguration(relayGateway, pipeline, accessExposedService, nativeToolNames)
+        val configuration = RelayToolRegistrarConfiguration(relayGateway, pipeline, accessExposedService, nativeToolNames, contracts)
 
-        val specs = configuration.relayToolSpecifications()
+        val specs = configuration.relayToolSpecifications(jsonMapper)
 
         specs.map { it.tool().name() } shouldBe listOf("check_shopify_connection")
+    }
+
+    @Test
+    fun `relayToolSpecification carries the real contract's description and inputSchema, not the LOT2-03 stub`() {
+        val descriptor = RelayToolDescriptor("check_shopify_connection", UseCaseKind.READ)
+        val manifest = RelayManifest(listOf(RelayManifestEntry("check_shopify_connection", ToolRoute.RELAIS, UseCaseKind.READ)))
+        val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, RelayTsClientFake()))
+
+        val spec = relayToolSpecification(descriptor, relayGateway, pipeline, accessExposedService, contracts, jsonMapper)
+
+        spec.tool().description() shouldBe contracts.byToolName.getValue("check_shopify_connection").description
+        spec.tool().description() shouldNotContain "LOT2-03 scaffolding"
+        spec.tool().inputSchema() shouldNotBe emptyMap<String, Any?>()
+    }
+
+    @Test
+    fun `relayToolSpecification refuses to build a tool for a RELAIS entry the artifact has no contract for`() {
+        val descriptor = RelayToolDescriptor("ghost_relayed_tool", UseCaseKind.READ)
+        val manifest = RelayManifest(listOf(RelayManifestEntry("ghost_relayed_tool", ToolRoute.RELAIS, UseCaseKind.READ)))
+        val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, RelayTsClientFake()))
+
+        val failure = shouldThrow<IllegalStateException> {
+            relayToolSpecification(descriptor, relayGateway, pipeline, accessExposedService, contracts, jsonMapper)
+        }
+
+        failure.message shouldContain "ghost_relayed_tool"
     }
 }
