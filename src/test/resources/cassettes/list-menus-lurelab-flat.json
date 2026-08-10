@@ -1,0 +1,152 @@
+{
+    "tool": "list_menus",
+    "toolInput": {},
+    "toolOutput": {
+        "content": [
+            {
+                "type": "text",
+                "text": "Boutique : lurelab"
+            },
+            {
+                "type": "text",
+                "text": "3 menu(s) trouv\u00e9(s).\n\n\u25b8 Menu principal (handle: main-menu, par d\u00e9faut) \u2014 id: gid://shopify/Menu/312996233601\n    1. Accueil \u2192 URL / \u2014 item_id: gid://shopify/MenuItem/792597856641\n    2. Quel leurre choisir ? \u2192 ARTICLE gid://shopify/Article/1002291331457 \u2014 item_id: gid://shopify/MenuItem/798765089153\n    3. O\u00f9 p\u00eacher ? \u2192 ARTICLE gid://shopify/Article/1002291396993 \u2014 item_id: gid://shopify/MenuItem/798765121921\n    4. R\u00e9glementation \u2192 ARTICLE gid://shopify/Article/1002291462529 \u2014 item_id: gid://shopify/MenuItem/798765154689\n    5. Catalogue \u2192 URL /collections/all \u2014 item_id: gid://shopify/MenuItem/792597889409\n    6. Contact \u2192 PAGE gid://shopify/Page/699212202369 \u2014 item_id: gid://shopify/MenuItem/792597922177\n\n\u25b8 Menu du pied de page (handle: footer, par d\u00e9faut) \u2014 id: gid://shopify/Menu/312996266369\n    1. Recherche \u2192 URL /search \u2014 item_id: gid://shopify/MenuItem/792597954945\n\n\u25b8 Customer account main menu (handle: customer-account-main-menu, par d\u00e9faut) \u2014 id: gid://shopify/Menu/312996299137\n    1. Orders \u2192 CUSTOMER_ACCOUNT_PAGE gid://shopify/CustomerAccountPage/239194177921 \u2014 item_id: gid://shopify/MenuItem/792597987713\n    2. Profile \u2192 CUSTOMER_ACCOUNT_PAGE gid://shopify/CustomerAccountPage/239194210689 \u2014 item_id: gid://shopify/MenuItem/792598020481"
+            }
+        ]
+    },
+    "calls": [
+        {
+            "sink": "shopify_admin_graphql",
+            "request": {
+                "query": "query ListMenus($query: String, $cursor: String) {\n            menus(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges { node { id handle title isDefault items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } } } }\n            }\n          }",
+                "variables": {
+                    "query": null,
+                    "cursor": null
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "menus": {
+                        "pageInfo": {
+                            "hasNextPage": false,
+                            "endCursor": "eyJsYXN0X2lkIjozMTI5OTYyOTkxMzcsImxhc3RfdmFsdWUiOjMxMjk5NjI5OTEzN30="
+                        },
+                        "edges": [
+                            {
+                                "node": {
+                                    "id": "gid://shopify/Menu/312996233601",
+                                    "handle": "main-menu",
+                                    "title": "Menu principal",
+                                    "isDefault": true,
+                                    "items": [
+                                        {
+                                            "id": "gid://shopify/MenuItem/792597856641",
+                                            "title": "Accueil",
+                                            "type": "FRONTPAGE",
+                                            "url": "/",
+                                            "resourceId": null,
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/798765089153",
+                                            "title": "Quel leurre choisir ?",
+                                            "type": "ARTICLE",
+                                            "url": "/blogs/guides/quel-leurre-choisir-quand-on-debute-la-peche-aux-carnassiers",
+                                            "resourceId": "gid://shopify/Article/1002291331457",
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/798765121921",
+                                            "title": "O\u00f9 p\u00eacher ?",
+                                            "type": "ARTICLE",
+                                            "url": "/blogs/guides/ou-pecher-le-carnassier-pres-de-chez-soi-quand-on-debute",
+                                            "resourceId": "gid://shopify/Article/1002291396993",
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/798765154689",
+                                            "title": "R\u00e9glementation",
+                                            "type": "ARTICLE",
+                                            "url": "/blogs/guides/reglementation-de-la-peche-aux-carnassiers-ce-quil-faut-savoir-avant-sa-premiere-sortie",
+                                            "resourceId": "gid://shopify/Article/1002291462529",
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/792597889409",
+                                            "title": "Catalogue",
+                                            "type": "CATALOG",
+                                            "url": "/collections/all",
+                                            "resourceId": null,
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/792597922177",
+                                            "title": "Contact",
+                                            "type": "PAGE",
+                                            "url": "/pages/contact",
+                                            "resourceId": "gid://shopify/Page/699212202369",
+                                            "tags": [],
+                                            "items": []
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "node": {
+                                    "id": "gid://shopify/Menu/312996266369",
+                                    "handle": "footer",
+                                    "title": "Menu du pied de page",
+                                    "isDefault": true,
+                                    "items": [
+                                        {
+                                            "id": "gid://shopify/MenuItem/792597954945",
+                                            "title": "Recherche",
+                                            "type": "SEARCH",
+                                            "url": "/search",
+                                            "resourceId": null,
+                                            "tags": [],
+                                            "items": []
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "node": {
+                                    "id": "gid://shopify/Menu/312996299137",
+                                    "handle": "customer-account-main-menu",
+                                    "title": "Customer account main menu",
+                                    "isDefault": true,
+                                    "items": [
+                                        {
+                                            "id": "gid://shopify/MenuItem/792597987713",
+                                            "title": "Orders",
+                                            "type": "CUSTOMER_ACCOUNT_PAGE",
+                                            "url": "https://account.lurelab.fr/orders",
+                                            "resourceId": "gid://shopify/CustomerAccountPage/239194177921",
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/792598020481",
+                                            "title": "Profile",
+                                            "type": "CUSTOMER_ACCOUNT_PAGE",
+                                            "url": "https://account.lurelab.fr/profile",
+                                            "resourceId": "gid://shopify/CustomerAccountPage/239194210689",
+                                            "tags": [],
+                                            "items": []
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

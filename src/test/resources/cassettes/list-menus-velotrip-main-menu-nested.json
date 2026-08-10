@@ -1,0 +1,225 @@
+{
+    "tool": "list_menus",
+    "toolInput": {},
+    "toolOutput": {
+        "content": [
+            {
+                "type": "text",
+                "text": "Boutique : velotrip"
+            },
+            {
+                "type": "text",
+                "text": "3 menu(s) trouv\u00e9(s).\n\n\u25b8 Menu principal (handle: main-menu, par d\u00e9faut) \u2014 id: gid://shopify/Menu/340712882501\n    1. Guides \u2192 PAGE gid://shopify/Page/725115011397 \u2014 item_id: gid://shopify/MenuItem/870871925061\n        1.1. Sacoches & rangement \u2192 ARTICLE gid://shopify/Article/751345140037 \u2014 item_id: gid://shopify/MenuItem/876917719365\n        1.2. Bivouac et autonomie \u2192 ARTICLE gid://shopify/Article/751345172805 \u2014 item_id: gid://shopify/MenuItem/876917752133\n        1.3. Itin\u00e9raires en France \u2192 ARTICLE gid://shopify/Article/751644475717 \u2014 item_id: gid://shopify/MenuItem/876917784901\n        1.4. V\u00eatements & garde-robe \u2192 ARTICLE gid://shopify/Article/751345205573 \u2014 item_id: gid://shopify/MenuItem/876917817669\n        1.5. Outils & r\u00e9paration \u2192 ARTICLE gid://shopify/Article/751345107269 \u2014 item_id: gid://shopify/MenuItem/876917850437\n        1.6. \u00c9lectronique & navigation \u2192 ARTICLE gid://shopify/Article/751644082501 \u2014 item_id: gid://shopify/MenuItem/876917883205\n        1.7. Hydratation & eau \u2192 ARTICLE gid://shopify/Article/751644213573 \u2014 item_id: gid://shopify/MenuItem/876917915973\n        1.8. D\u00e9buter en bikepacking \u2192 ARTICLE gid://shopify/Article/751345336645 \u2014 item_id: gid://shopify/MenuItem/876917948741\n    2. Sacoches et rangements \u2192 COLLECTION gid://shopify/Collection/693235974469 \u2014 item_id: gid://shopify/MenuItem/870871892293\n    3. Couchage et Bivouac \u2192 COLLECTION gid://shopify/Collection/693235941701 \u2014 item_id: gid://shopify/MenuItem/873900998981\n    4. V\u00eatements cyclisme \u2192 COLLECTION gid://shopify/Collection/693232206149 \u2014 item_id: gid://shopify/MenuItem/873901031749\n    5. Outils et r\u00e9paration v\u00e9lo \u2192 COLLECTION gid://shopify/Collection/693232075077 \u2014 item_id: gid://shopify/MenuItem/873901064517\n\n\u25b8 Menu du pied de page (handle: footer, par d\u00e9faut) \u2014 id: gid://shopify/Menu/340712915269\n    1. Rechercher \u2192 URL /search \u2014 item_id: gid://shopify/MenuItem/869032591685\n    2. Contact \u2192 PAGE gid://shopify/Page/725026308421 \u2014 item_id: gid://shopify/MenuItem/875594187077\n\n\u25b8 Menu principal du compte client (handle: customer-account-main-menu, par d\u00e9faut) \u2014 id: gid://shopify/Menu/340712948037\n    1. Commandes \u2192 CUSTOMER_ACCOUNT_PAGE gid://shopify/CustomerAccountPage/265948135749 \u2014 item_id: gid://shopify/MenuItem/869032624453\n    2. Profil \u2192 CUSTOMER_ACCOUNT_PAGE gid://shopify/CustomerAccountPage/265948168517 \u2014 item_id: gid://shopify/MenuItem/869032657221"
+            }
+        ]
+    },
+    "calls": [
+        {
+            "sink": "shopify_admin_graphql",
+            "request": {
+                "query": "query ListMenus($query: String, $cursor: String) {\n            menus(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges { node { id handle title isDefault items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } } } }\n            }\n          }",
+                "variables": {
+                    "query": null,
+                    "cursor": null
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "menus": {
+                        "pageInfo": {
+                            "hasNextPage": false,
+                            "endCursor": "eyJsYXN0X2lkIjozNDA3MTI5NDgwMzcsImxhc3RfdmFsdWUiOjM0MDcxMjk0ODAzN30="
+                        },
+                        "edges": [
+                            {
+                                "node": {
+                                    "id": "gid://shopify/Menu/340712882501",
+                                    "handle": "main-menu",
+                                    "title": "Menu principal",
+                                    "isDefault": true,
+                                    "items": [
+                                        {
+                                            "id": "gid://shopify/MenuItem/870871925061",
+                                            "title": "Guides",
+                                            "type": "PAGE",
+                                            "url": "/pages/guides-bikepacking",
+                                            "resourceId": "gid://shopify/Page/725115011397",
+                                            "tags": [],
+                                            "items": [
+                                                {
+                                                    "id": "gid://shopify/MenuItem/876917719365",
+                                                    "title": "Sacoches & rangement",
+                                                    "type": "ARTICLE",
+                                                    "url": "/blogs/guides/comment-choisir-ses-sacoches-de-bikepacking",
+                                                    "resourceId": "gid://shopify/Article/751345140037",
+                                                    "tags": [],
+                                                    "items": []
+                                                },
+                                                {
+                                                    "id": "gid://shopify/MenuItem/876917752133",
+                                                    "title": "Bivouac et autonomie",
+                                                    "type": "ARTICLE",
+                                                    "url": "/blogs/guides/partir-en-bivouac-a-velo-la-check-list-complete",
+                                                    "resourceId": "gid://shopify/Article/751345172805",
+                                                    "tags": [],
+                                                    "items": []
+                                                },
+                                                {
+                                                    "id": "gid://shopify/MenuItem/876917784901",
+                                                    "title": "Itin\u00e9raires en France",
+                                                    "type": "ARTICLE",
+                                                    "url": "/blogs/guides/ou-partir-en-bikepacking-en-france",
+                                                    "resourceId": "gid://shopify/Article/751644475717",
+                                                    "tags": [],
+                                                    "items": []
+                                                },
+                                                {
+                                                    "id": "gid://shopify/MenuItem/876917817669",
+                                                    "title": "V\u00eatements & garde-robe",
+                                                    "type": "ARTICLE",
+                                                    "url": "/blogs/guides/shabiller-pour-le-cyclotourisme-longue-distance",
+                                                    "resourceId": "gid://shopify/Article/751345205573",
+                                                    "tags": [],
+                                                    "items": []
+                                                },
+                                                {
+                                                    "id": "gid://shopify/MenuItem/876917850437",
+                                                    "title": "Outils & r\u00e9paration",
+                                                    "type": "ARTICLE",
+                                                    "url": "/blogs/guides/kit-de-reparation-velo-lessentiel-pour-partir-en-autonomie",
+                                                    "resourceId": "gid://shopify/Article/751345107269",
+                                                    "tags": [],
+                                                    "items": []
+                                                },
+                                                {
+                                                    "id": "gid://shopify/MenuItem/876917883205",
+                                                    "title": "\u00c9lectronique & navigation",
+                                                    "type": "ARTICLE",
+                                                    "url": "/blogs/guides/gps-velo-vs-application-telephone-que-choisir-en-bikepacking",
+                                                    "resourceId": "gid://shopify/Article/751644082501",
+                                                    "tags": [],
+                                                    "items": []
+                                                },
+                                                {
+                                                    "id": "gid://shopify/MenuItem/876917915973",
+                                                    "title": "Hydratation & eau",
+                                                    "type": "ARTICLE",
+                                                    "url": "/blogs/guides/gourde-ou-poche-a-eau-comment-shydrater-a-velo",
+                                                    "resourceId": "gid://shopify/Article/751644213573",
+                                                    "tags": [],
+                                                    "items": []
+                                                },
+                                                {
+                                                    "id": "gid://shopify/MenuItem/876917948741",
+                                                    "title": "D\u00e9buter en bikepacking",
+                                                    "type": "ARTICLE",
+                                                    "url": "/blogs/guides/comment-bien-preparer-mon-premier-voyage-en-bikepacking",
+                                                    "resourceId": "gid://shopify/Article/751345336645",
+                                                    "tags": [],
+                                                    "items": []
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/870871892293",
+                                            "title": "Sacoches et rangements",
+                                            "type": "COLLECTION",
+                                            "url": "/collections/sacoches-et-rangements",
+                                            "resourceId": "gid://shopify/Collection/693235974469",
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/873900998981",
+                                            "title": "Couchage et Bivouac",
+                                            "type": "COLLECTION",
+                                            "url": "/collections/couchage-et-bivouac",
+                                            "resourceId": "gid://shopify/Collection/693235941701",
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/873901031749",
+                                            "title": "V\u00eatements cyclisme",
+                                            "type": "COLLECTION",
+                                            "url": "/collections/vetements-cyclisme",
+                                            "resourceId": "gid://shopify/Collection/693232206149",
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/873901064517",
+                                            "title": "Outils et r\u00e9paration v\u00e9lo",
+                                            "type": "COLLECTION",
+                                            "url": "/collections/outils-et-reparation-velo",
+                                            "resourceId": "gid://shopify/Collection/693232075077",
+                                            "tags": [],
+                                            "items": []
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "node": {
+                                    "id": "gid://shopify/Menu/340712915269",
+                                    "handle": "footer",
+                                    "title": "Menu du pied de page",
+                                    "isDefault": true,
+                                    "items": [
+                                        {
+                                            "id": "gid://shopify/MenuItem/869032591685",
+                                            "title": "Rechercher",
+                                            "type": "SEARCH",
+                                            "url": "/search",
+                                            "resourceId": null,
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/875594187077",
+                                            "title": "Contact",
+                                            "type": "PAGE",
+                                            "url": "/pages/contact",
+                                            "resourceId": "gid://shopify/Page/725026308421",
+                                            "tags": [],
+                                            "items": []
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "node": {
+                                    "id": "gid://shopify/Menu/340712948037",
+                                    "handle": "customer-account-main-menu",
+                                    "title": "Menu principal du compte client",
+                                    "isDefault": true,
+                                    "items": [
+                                        {
+                                            "id": "gid://shopify/MenuItem/869032624453",
+                                            "title": "Commandes",
+                                            "type": "CUSTOMER_ACCOUNT_PAGE",
+                                            "url": "https://account.velotrip.fr/orders",
+                                            "resourceId": "gid://shopify/CustomerAccountPage/265948135749",
+                                            "tags": [],
+                                            "items": []
+                                        },
+                                        {
+                                            "id": "gid://shopify/MenuItem/869032657221",
+                                            "title": "Profil",
+                                            "type": "CUSTOMER_ACCOUNT_PAGE",
+                                            "url": "https://account.velotrip.fr/profile",
+                                            "resourceId": "gid://shopify/CustomerAccountPage/265948168517",
+                                            "tags": [],
+                                            "items": []
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

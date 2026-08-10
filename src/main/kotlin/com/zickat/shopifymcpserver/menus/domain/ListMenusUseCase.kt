@@ -24,15 +24,7 @@ private val LIST_MENUS_QUERY =
     "query ListMenus(\$query: String, \$cursor: String) {\n" +
         "            menus(first: 50, after: \$cursor, query: \$query) {\n" +
         "              pageInfo { hasNextPage endCursor }\n" +
-        "              edges {\n" +
-        "                node {\n" +
-        "                  id\n" +
-        "                  handle\n" +
-        "                  title\n" +
-        "                  isDefault\n" +
-        "                  items { $MENU_ITEMS_TREE }\n" +
-        "                }\n" +
-        "              }\n" +
+        "              edges { node { id handle title isDefault items { $MENU_ITEMS_TREE } } }\n" +
         "            }\n" +
         "          }"
 
