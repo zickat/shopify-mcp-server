@@ -1,8 +1,11 @@
 package com.zickat.shopifymcpserver.relay
 
+import com.zickat.shopifymcpserver.api.mcp.NativeToolKinds
 import com.zickat.shopifymcpserver.api.mcp.NativeToolNames
 import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
+import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
+import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -21,7 +24,10 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
     @Autowired
     private lateinit var nativeToolNames: NativeToolNames
 
-    private data class ManifestRow(val toolName: String, val route: ToolRoute)
+    @Autowired
+    private lateinit var nativeToolKinds: NativeToolKinds
+
+    private data class ManifestRow(val toolName: String, val route: ToolRoute, val kind: UseCaseKind)
 
     private val manifest: List<ManifestRow> = loadManifestFromApplicationYml()
 
@@ -47,6 +53,15 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
     @Test
     fun `every manifest entry not backed by an McpTool bean is routed RELAIS`() {
         manifest.filterNot { it.toolName in nativeToolNames.names }.forEach { it.route shouldBe ToolRoute.RELAIS }
+    }
+
+    @Test
+    fun `the kind of every native manifest entry matches its ToolUseCase`() {
+        nativeToolKinds.kinds.forEach { (toolName, kind) ->
+            withClue(toolName) {
+                manifest.first { it.toolName == toolName }.kind shouldBe kind
+            }
+        }
     }
 
     @Test
@@ -101,6 +116,7 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
             ManifestRow(
                 toolName = entry["tool-name"] as String,
                 route = ToolRoute.valueOf(entry["route"] as String),
+                kind = UseCaseKind.valueOf(entry["kind"] as String),
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.api.mcp
 
 import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
+import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
@@ -15,11 +16,13 @@ class ListPagesTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val pagesExposedService: PagesExposedService,
-) {
+) : HasToolUseCase {
 
     private object ListPagesToolUseCase : ToolUseCase {
         override val kind = UseCaseKind.READ
     }
+
+    override val toolUseCase: ToolUseCase = ListPagesToolUseCase
 
     @McpTool(
         name = "list_pages",

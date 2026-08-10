@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.api.mcp
 
 import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
+import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shared_kernel.isGidOfType
@@ -16,11 +17,13 @@ class GetPageMetafieldsTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val pagesExposedService: PagesExposedService,
-) {
+) : HasToolUseCase {
 
     private object GetPageMetafieldsToolUseCase : ToolUseCase {
         override val kind = UseCaseKind.READ
     }
+
+    override val toolUseCase: ToolUseCase = GetPageMetafieldsToolUseCase
 
     @McpTool(
         name = "get_page_metafields",

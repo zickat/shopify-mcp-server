@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.api.mcp
 
 import arrow.core.getOrElse
+import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
@@ -18,11 +19,13 @@ class UseStoreTool(
     private val accessExposedService: AccessExposedService,
     private val activeStoreExposedService: ActiveStoreExposedService,
     private val storeExposedService: StoreExposedService,
-) {
+) : HasToolUseCase {
 
     private object UseStoreUseCase : ToolUseCase {
         override val kind = UseCaseKind.READ
     }
+
+    override val toolUseCase: ToolUseCase = UseStoreUseCase
 
     @McpTool(
         name = "use_store",

@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.api.mcp
 
 import com.zickat.shopifymcpserver.menus.exposed_interface.MenusExposedService
+import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
@@ -15,11 +16,13 @@ class ListMenusTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val menusExposedService: MenusExposedService,
-) {
+) : HasToolUseCase {
 
     private object ListMenusToolUseCase : ToolUseCase {
         override val kind = UseCaseKind.READ
     }
+
+    override val toolUseCase: ToolUseCase = ListMenusToolUseCase
 
     @McpTool(
         name = "list_menus",

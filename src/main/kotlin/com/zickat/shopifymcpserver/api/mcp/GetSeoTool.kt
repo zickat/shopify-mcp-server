@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.api.mcp
 
 import com.zickat.shopifymcpserver.seo.exposed_interface.SeoExposedService
+import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shared_kernel.isGidOfType
@@ -16,11 +17,13 @@ class GetSeoTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val seoExposedService: SeoExposedService,
-) {
+) : HasToolUseCase {
 
     private object GetSeoToolUseCase : ToolUseCase {
         override val kind = UseCaseKind.READ
     }
+
+    override val toolUseCase: ToolUseCase = GetSeoToolUseCase
 
     @McpTool(
         name = "get_seo",

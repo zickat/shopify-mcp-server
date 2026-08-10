@@ -3,6 +3,7 @@ package com.zickat.shopifymcpserver.api.mcp
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.CatalogStatusExposedService
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourceType
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchStatusFilter
+import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
@@ -17,11 +18,13 @@ class SearchResourcesTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val catalogStatusExposedService: CatalogStatusExposedService,
-) {
+) : HasToolUseCase {
 
     private object SearchResourcesToolUseCase : ToolUseCase {
         override val kind = UseCaseKind.READ
     }
+
+    override val toolUseCase: ToolUseCase = SearchResourcesToolUseCase
 
     @McpTool(
         name = "search_resources",

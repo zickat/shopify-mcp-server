@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.api.mcp
 
 import com.zickat.shopifymcpserver.redirects.exposed_interface.RedirectsExposedService
+import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
@@ -15,11 +16,13 @@ class CreateRedirectTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val redirectsExposedService: RedirectsExposedService,
-) {
+) : HasToolUseCase {
 
     private object CreateRedirectToolUseCase : ToolUseCase {
         override val kind = UseCaseKind.MUTATION
     }
+
+    override val toolUseCase: ToolUseCase = CreateRedirectToolUseCase
 
     @McpTool(
         name = "create_redirect",
