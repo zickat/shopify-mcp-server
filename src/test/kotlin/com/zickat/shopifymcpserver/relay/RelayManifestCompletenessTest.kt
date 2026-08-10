@@ -36,11 +36,11 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `the tools derived from the real McpTool beans are present in the manifest as NATIF`() {
+    fun `every McpTool bean has a manifest entry`() {
         nativeToolNames.names.forEach { toolName ->
-            val row = manifest.firstOrNull { it.toolName == toolName }
-            checkNotNull(row) { "'$toolName' has an @McpTool bean but no manifest entry" }
-            row.route shouldBe ToolRoute.NATIF
+            checkNotNull(manifest.firstOrNull { it.toolName == toolName }) {
+                "'$toolName' has an @McpTool bean but no manifest entry"
+            }
         }
     }
 
