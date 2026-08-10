@@ -29,6 +29,8 @@ import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.springframework.ai.mcp.annotation.McpTool
+import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
@@ -182,5 +184,46 @@ class RelayToolRegistrarTest {
         result.isError() shouldBe true
         (result.content().first() as io.modelcontextprotocol.spec.McpSchema.TextContent).text() shouldContain "access.role.insufficient"
         tsClient.callCount.get() shouldBe 0
+    }
+
+    private class NativeListMenusToolDouble {
+        @McpTool(name = "list_menus")
+        fun listMenus(): String = "native"
+    }
+
+    private fun nativeToolNamesWithBean(beanClass: Class<*>): NativeToolNames {
+        val context = AnnotationConfigApplicationContext()
+        context.register(beanClass)
+        context.refresh()
+        return NativeToolNames(context)
+    }
+
+    @Test
+    fun `relayToolSpecifications excludes a RELAIS entry whose name is already carried by a native McpTool bean`() {
+        val nativeToolNames = nativeToolNamesWithBean(NativeListMenusToolDouble::class.java)
+        val manifest = RelayManifest(
+            listOf(
+                RelayManifestEntry("list_menus", ToolRoute.RELAIS, UseCaseKind.READ),
+                RelayManifestEntry("check_shopify_connection", ToolRoute.RELAIS, UseCaseKind.READ),
+            ),
+        )
+        val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, RelayTsClientFake()))
+        val configuration = RelayToolRegistrarConfiguration(relayGateway, pipeline, accessExposedService, nativeToolNames)
+
+        val specs = configuration.relayToolSpecifications()
+
+        specs.map { it.tool().name() } shouldBe listOf("check_shopify_connection")
+    }
+
+    @Test
+    fun `relayToolSpecifications keeps a RELAIS entry whose name has no native McpTool bean`() {
+        val nativeToolNames = nativeToolNamesWithBean(NativeListMenusToolDouble::class.java)
+        val manifest = RelayManifest(listOf(RelayManifestEntry("check_shopify_connection", ToolRoute.RELAIS, UseCaseKind.READ)))
+        val relayGateway = RelayGatewayImpl(manifest, RelayDispatcher(manifest, RelayTsClientFake()))
+        val configuration = RelayToolRegistrarConfiguration(relayGateway, pipeline, accessExposedService, nativeToolNames)
+
+        val specs = configuration.relayToolSpecifications()
+
+        specs.map { it.tool().name() } shouldBe listOf("check_shopify_connection")
     }
 }

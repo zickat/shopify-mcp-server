@@ -25,11 +25,14 @@ class RelayToolRegistrarConfiguration(
     private val relayGateway: RelayGateway,
     private val pipeline: AuthenticatedToolPipeline,
     private val accessExposedService: AccessExposedService,
+    private val nativeToolNames: NativeToolNames,
 ) {
 
     @Bean
     fun relayToolSpecifications(): List<McpServerFeatures.SyncToolSpecification> =
-        relayGateway.relayedTools().map { descriptor -> relayToolSpecification(descriptor, relayGateway, pipeline, accessExposedService) }
+        relayGateway.relayedTools()
+            .filterNot { it.toolName in nativeToolNames.names }
+            .map { descriptor -> relayToolSpecification(descriptor, relayGateway, pipeline, accessExposedService) }
 }
 
 fun relayToolSpecification(
