@@ -9,17 +9,29 @@ import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer
+import com.zickat.shopifymcpserver.tenancy.StoreFixtures
+import com.zickat.shopifymcpserver.tenancy.domain.models.Grant
+import com.zickat.shopifymcpserver.tenancy.domain.models.GrantId
+import com.zickat.shopifymcpserver.tenancy.domain.models.GrantRole
+import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
+import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
+import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import com.zickat.shopifymcpserver.tenancy.exposed_interface.ActiveStoreExposedService
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
 import java.time.Instant
 import java.util.Date
+import kotlin.time.Clock
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
+import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,12 +54,26 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
 
+    @Autowired
+    private lateinit var storeRepository: StoreRepository
+
+    @Autowired
+    private lateinit var grantRepository: GrantRepository
+
+    @Autowired
+    private lateinit var identityExposedService: IdentityExposedService
+
+    @Autowired
+    private lateinit var activeStoreExposedService: ActiveStoreExposedService
+
     private val objectMapper = ObjectMapper()
 
     companion object {
         private const val EXPECTED_AUDIENCE = "https://shopify-mcp-server.test/mcp"
         private const val ISSUER_URI = "https://idp.test.local/"
         private const val REMOVED_TOOL = "search_products"
+        private const val REROUTED_NATIVE_TOOL = "list_menus"
+        private const val REROUTED_NATIVE_TOOL_RELAY_TEXT = "list_menus reached the relay double — the manifest governs despite the native bean"
 
         private val key: RSAKey = RSAKeyGenerator(2048).keyID("test-key").generate()
 
@@ -64,16 +90,24 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
 
         private val relayTsDouble = MockWebServer().apply {
             dispatcher = object : Dispatcher() {
-                override fun dispatch(request: RecordedRequest): MockResponse =
-                    MockResponse()
+                override fun dispatch(request: RecordedRequest): MockResponse {
+                    val text = if (request.body.readUtf8().contains("\"toolName\":\"$REROUTED_NATIVE_TOOL\"")) {
+                        REROUTED_NATIVE_TOOL_RELAY_TEXT
+                    } else {
+                        "should never be reached for the removed tool"
+                    }
+                    return MockResponse()
                         .setResponseCode(200)
                         .setHeader("Content-Type", "application/json")
-                        .setBody("""{"content":[{"type":"text","text":"should never be reached for the removed tool"}],"isError":false}""")
+                        .setBody("""{"content":[{"type":"text","text":"$text"}],"isError":false}""")
+                }
             }
             start()
         }
 
-        private val reducedManifest = loadApplicationYmlManifest().filterNot { it.toolName == REMOVED_TOOL }
+        private val testManifest = loadApplicationYmlManifest()
+            .filterNot { it.toolName == REMOVED_TOOL }
+            .map { if (it.toolName == REROUTED_NATIVE_TOOL) it.copy(route = "RELAIS") else it }
 
         @JvmStatic
         @DynamicPropertySource
@@ -84,7 +118,7 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
             registry.add("spring.security.oauth2.resourceserver.jwt.issuer-uri") { ISSUER_URI }
             registry.add("mcp.security.expected-audience") { EXPECTED_AUDIENCE }
             registry.add("relay.ts.base-url") { relayTsDouble.url("").toString().trimEnd('/') }
-            reducedManifest.forEachIndexed { index, row ->
+            testManifest.forEachIndexed { index, row ->
                 registry.add("relay.manifest[$index].tool-name") { row.toolName }
                 registry.add("relay.manifest[$index].route") { row.route }
                 registry.add("relay.manifest[$index].kind") { row.kind }
@@ -185,6 +219,52 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
         notifyResponse.statusCode shouldBe HttpStatus.ACCEPTED
 
         return sessionId
+    }
+
+    private fun extractResultText(payload: Map<String, Any?>?): String {
+        val result = payload?.get("result") as? Map<*, *>
+        checkNotNull(result) { "tools/call did not return a result: $payload" }
+        return ((result["content"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("text") as? String ?: ""
+    }
+
+    private fun registerStore(slug: String): String =
+        storeRepository.save(StoreFixtures().withSlug(slug).build()).shouldBeRight().id.value
+
+    private fun resolveIdentity(subject: String): String =
+        identityExposedService.resolve(ISSUER_URI, subject).shouldBeRight()
+
+    private fun grant(identityId: String, storeId: String, role: GrantRole) {
+        grantRepository.save(
+            Grant(
+                id = GrantId(ObjectId().toHexString()),
+                identityId = identityId,
+                storeId = StoreId(storeId),
+                role = role,
+                grantedBy = identityId,
+                createdAt = Clock.System.now(),
+                revokedAt = null,
+            ),
+        ).shouldBeRight()
+    }
+
+    @Test
+    fun `a native tool is not executed once its route is switched to RELAIS — the manifest governs even though the bean and the annotation are still present`() {
+        val storeId = registerStore("rerouted-native-store")
+        val identityId = resolveIdentity("operator-rerouted-native")
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt("operator-rerouted-native")
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = sendJsonRpcRequestAndParseJsonPayload(
+            """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"$REROUTED_NATIVE_TOOL","arguments":{}}}""",
+            token,
+            sessionId,
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        extractResultText(callPayload) shouldContain REROUTED_NATIVE_TOOL_RELAY_TEXT
     }
 
     @Test
