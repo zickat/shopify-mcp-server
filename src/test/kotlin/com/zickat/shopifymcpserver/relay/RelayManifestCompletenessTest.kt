@@ -27,6 +27,7 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
 
     private val tsRepoToolsDir = Path.of(System.getProperty("user.home"), "IA_sandbox", "mcp-shopify-catalog", "src", "tools")
     private val tsRepoIndexFile = Path.of(System.getProperty("user.home"), "IA_sandbox", "mcp-shopify-catalog", "src", "index.ts")
+    private val tsRepoBuildServerFile = Path.of(System.getProperty("user.home"), "IA_sandbox", "mcp-shopify-catalog", "src", "build-server.ts")
 
     @Test
     fun `the manifest has no duplicated tool name`() {
@@ -50,7 +51,7 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
 
     @Test
     fun `the manifest names match exactly the real registerTool names of the TS repo — no missing tool, no phantom entry`() {
-        assumeTrue(Files.isDirectory(tsRepoToolsDir) && Files.isRegularFile(tsRepoIndexFile)) {
+        assumeTrue(Files.isDirectory(tsRepoToolsDir) && Files.isRegularFile(tsRepoIndexFile) && Files.isRegularFile(tsRepoBuildServerFile)) {
             "mcp-shopify-catalog repo not found next to this one at $tsRepoToolsDir — skipping (this test needs both repos co-located, as they are on Val's machine)"
         }
 
@@ -72,7 +73,7 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
 
         val tsFiles = Files.list(tsRepoToolsDir).use { stream ->
             stream.filter { it.toString().endsWith(".ts") }.toList()
-        } + listOf(tsRepoIndexFile)
+        } + listOf(tsRepoIndexFile, tsRepoBuildServerFile)
 
         val names = mutableSetOf<String>()
         tsFiles.forEach { file ->

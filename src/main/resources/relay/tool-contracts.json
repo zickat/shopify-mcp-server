@@ -1,0 +1,2618 @@
+{
+  "add_home_item": {
+    "description": "Ajoute un produit (section products) ou un guide (section guides) à la sélection de la home, par défaut en fin de liste (ou à une position 1-based). Le handle est celui d'un produit ou d'un article existant (le résoudre au préalable via search_products / search_resources). Refuse sans écrire si : section déjà au maximum (6 — remplacer/retirer d'abord), handle introuvable, ou handle déjà présent dans la section. Garde-fou de cohérence (US-08) : si la cible est indisponible (produit non actif / non publié en ligne / épuisé, ou article en brouillon), l'outil AVERTIT sans écrire ; rappeler avec confirm:true pour appliquer malgré tout. Le changement est visible immédiatement sur la boutique en ligne.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "type": "string",
+          "enum": [
+            "products",
+            "guides"
+          ],
+          "description": "Sélection cible : products ou guides."
+        },
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Handle du produit (section products) ou de l'article/guide (section guides)."
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Position 1-based dans la sélection. Omis/au-delà = ajout en fin."
+        },
+        "confirm": {
+          "type": "boolean",
+          "description": "Mettre à true pour confirmer l'ajout d'une cible signalée indisponible (US-08). Ne contourne JAMAIS un handle introuvable ni la borne max."
+        }
+      },
+      "required": [
+        "section",
+        "handle"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "add_menu_item": {
+    "description": "Ajoute un item à un menu existant, À N'IMPORTE QUEL NIVEAU : parent_item_id désigne le parent sous lequel insérer (repère fourni par list_menus) ; OMIS, l'item est ajouté au premier niveau du menu. position est 1-based DANS LA FRATRIE DÉSIGNÉE (les enfants de parent_item_id, ou le premier niveau si omis) ; omise ou au-delà = ajout en fin. Fournir EXACTEMENT un de resource_id (gid d'une Collection/Product/Page/Article/Blog/Metaobject — le type de lien est dérivé du gid) ou url (lien externe absolu http(s), validé anti-XSS). BORNE DE PROFONDEUR : l'insertion est REFUSÉE si le parent désigné est déjà au niveau 3 — la navigation Shopify n'en rend que 3, et créer un 4e niveau gèlerait le menu (plus aucune de ces mutations n'y passerait). Les autres items du menu — et leurs sous-menus — sont préservés à l'identique (read-modify-write : menuUpdate réécrit tout l'arbre, l'outil réémet fidèlement l'existant). isError sans aucune écriture si : menu introuvable, parent_item_id introuvable, parent au niveau 3, ni/les-deux de resource_id/url, url invalide, gid de ressource non reconnu, ou userErrors Shopify.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "menu_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Menu/..."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Libellé affiché du lien"
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid de la ressource cible (Collection/Product/Page/Article/Blog/Metaobject). Exclusif avec url — fournir exactement un des deux. Le type de lien en est dérivé."
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "URL externe absolue (http(s)) pour un lien HTTP. Exclusif avec resource_id. Validée (schéma http/https uniquement)."
+        },
+        "parent_item_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — gid://shopify/MenuItem/... du parent sous lequel insérer (repère fourni par list_menus). OMIS = insertion au premier niveau du menu. Refus si le parent est déjà au niveau 3 : la navigation Shopify n'en rend que 3 et l'outillage n'écrit pas au-delà."
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Position 1-based DANS LA FRATRIE DÉSIGNÉE (les enfants de parent_item_id, ou le premier niveau si parent_item_id est omis). Omis/au-delà = ajout en fin."
+        }
+      },
+      "required": [
+        "menu_id",
+        "title"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "add_testimonial": {
+    "description": "Ajoute un VRAI témoignage client à la section témoignages de la home : crée l'instance puis l'ajoute à la liste ordonnée (en fin par défaut, ou à une position 1-based). Dès le premier témoignage, la section apparaît sur la home. Doctrine anti-faux-avis : n'ajouter que de vrais retours de vrais clients, jamais de contenu d'exemple ou illustratif.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Texte du retour client (obligatoire)."
+        },
+        "author_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nom / attribution de l'auteur (obligatoire)."
+        },
+        "author_context": {
+          "type": "string",
+          "description": "Contexte de l'auteur (ex. « Traversée des Alpes, 2025 »)."
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Position 1-based dans la liste. Omise/au-delà = ajout en fin."
+        }
+      },
+      "required": [
+        "quote",
+        "author_name"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "attach_generated_images": {
+    "description": "Attache un ou plusieurs candidats déjà générés (resource_url renvoyé par generate_product_images/generate_cross_product_image) à la galerie d'un produit — SEUL outil de ce fichier qui modifie réellement Shopify. Un produit ACTIVE dont la galerie change repasse en DRAFT + « à review » (bascule DRAFT en premier, avant toute image visible) et n'est jamais republié automatiquement. Les images arrivent en fin de galerie — utiliser curate_product_images en suivi pour en faire l'image principale. N'appeler qu'après validation humaine explicite des images renvoyées inline par generate_*.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/... — galerie cible."
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource_url": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Renvoyé par generate_product_images/generate_cross_product_image."
+              },
+              "alt_text": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Texte alternatif — obligatoire, jamais une image sans alt."
+              }
+            },
+            "required": [
+              "resource_url",
+              "alt_text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10
+        }
+      },
+      "required": [
+        "product_id",
+        "candidates"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "attach_to_guide_theme": {
+    "description": "Ajoute un Article à la liste `articles` d'un guide_theme existant (idempotent : aucun doublon si l'article y est déjà) — sans ce rattachement, un article créé par propose_guide n'apparaît jamais sur la page Hub. Refuse proprement (jamais un échec silencieux) si guide_theme_id ou article_id sont invalides ou introuvables.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "guide_theme_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Metaobject/... d'un guide_theme existant (cf. list_guide_themes)"
+        },
+        "article_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Article/... à rattacher"
+        }
+      },
+      "required": [
+        "guide_theme_id",
+        "article_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "check_shopify_connection": {
+    "description": "Diagnostic d'infrastructure : vérifie que l'authentification Admin API Shopify fonctionne (requête { shop { name } }). Ne retourne jamais de secret ni de token — uniquement le nom de la boutique en cas de succès, ou un message d'erreur générique en cas d'échec. Pas un outil métier du pipeline (voir MCP-03 à MCP-05 pour ceux-ci).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "clear_related_guides_override": {
+    "description": "Repasse product.custom.related_guides_source à \"auto\" et relance immédiatement la projection pour CE produit (scan des guides existants dont les sections le référencent encore, plafonné à 3 par publishedAt décroissant) — sans ce second geste, le produit resterait affiché avec l'ancienne liste manuelle figée. No-op documenté si le produit n'est pas en override. Refuse proprement si product_id est invalide ou introuvable.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        }
+      },
+      "required": [
+        "product_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "complete_guide_section": {
+    "description": "Écrit UNIQUEMENT les champs passés (image via image_product_id, image_alt, choices) sur UNE seule guide_section déjà existante. Jamais de balayage, jamais de boucle sur l'article. Mêmes règles qu'à la création : image_product_id doit être un produit lié à la section et avoir une image principale exploitable (sinon refus), image_alt requis si image, choices seulement sur arbitrage réel. Refuse d'écraser un champ DÉJÀ rempli sans overwrite_confirmed: true. N'écrit un champ que parce qu'il est explicitement passé — un champ vide ne déclenche jamais d'écriture (protège un champ délibérément vidé). À utiliser après get_guide_section_state et confirmation de l'opérateur.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Metaobject/... d'une guide_section existante"
+        },
+        "image_product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — gid://shopify/Product/... (lié à la section) dont la featured image sera écrite dans le champ image. Requiert image_alt. Omettre pour ne pas toucher l'image."
+        },
+        "image_alt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — texte alternatif éditorial (jamais le nom de fichier). REQUIS si image_product_id est fourni. Peut être passé seul pour corriger un alt existant."
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "label",
+              "content"
+            ],
+            "additionalProperties": false
+          },
+          "default": [],
+          "description": "OPTIONNEL — box multi-choix (H3). Vide/absent ⇒ le champ choices n'est PAS touché (jamais vidé ni rempli automatiquement)."
+        },
+        "overwrite_confirmed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Confirmation humaine explicite pour écraser un champ ciblé DÉJÀ rempli. Sans ce flag, l'outil refuse d'écraser une valeur existante."
+        }
+      },
+      "required": [
+        "section_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "create_guide_theme": {
+    "description": "Crée un guide_theme vide (aucun article rattaché) à partir d'un titre — point d'entrée dédié et sûr pour créer un thème avant d'y rattacher des articles via attach_to_guide_theme. Refuse proprement (jamais un échec silencieux) un titre vide/espaces et un titre déjà existant (doublon normalisé : rappelle l'id du thème existant plutôt que d'en créer un second).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Titre du nouveau guide_theme (ex. « Sacoches »)"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "create_menu": {
+    "description": "Crée un nouveau menu de navigation (menuCreate). items est une LISTE PLATE d'items de premier niveau, optionnelle : AUCUN ARBRE IMBRIQUÉ n'est accepté en entrée — c'est délibéré, un second constructeur d'item serait un second endroit où valider une URL et dériver un type. Pour peupler en profondeur, appeler ensuite add_menu_item avec parent_item_id : un menu à 3 niveaux se construit en quelques appels. Chaque item exige EXACTEMENT un de resource_id ou url, mêmes règles qu'add_menu_item. Le schéma d'item est STRICT : toute clé inconnue — id compris — est refusée explicitement avant tout appel réseau, plutôt qu'ignorée en silence (fournir un id n'a pas de sens à la création, c'est Shopify qui les attribue). Le handle n'est PAS pré-validé côté connecteur : Shopify le normalise (minuscules, tirets) et refuse les collisions — le compte-rendu affiche donc le handle RÉELLEMENT ATTRIBUÉ et signale explicitement s'il diffère de celui demandé. Le menu créé n'est jamais un menu par défaut : il sera supprimable par delete_menu, et son handle restera modifiable par update_menu.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Handle souhaité (ex. \"guides-sidebar\"). Shopify le normalise et refuse les collisions — le handle réellement attribué est renvoyé dans le compte-rendu. C'est par cette valeur qu'un thème référencera le menu."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Titre affiché du menu"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Libellé affiché du lien"
+              },
+              "resource_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "gid de la ressource cible (Collection/Product/Page/Article/Blog/Metaobject). Exclusif avec url — fournir exactement un des deux."
+              },
+              "url": {
+                "type": "string",
+                "minLength": 1,
+                "description": "URL externe absolue (http(s)). Exclusif avec resource_id. Validée anti-XSS."
+              }
+            },
+            "required": [
+              "title"
+            ],
+            "additionalProperties": false
+          },
+          "description": "OPTIONNEL — items de PREMIER NIVEAU uniquement, dans l'ordre voulu. Omis ou vide : menu créé sans aucun item. Pas de sous-items ici : utiliser add_menu_item (parent_item_id) ensuite. Toute clé autre que title/resource_id/url est REFUSÉE."
+        }
+      },
+      "required": [
+        "handle",
+        "title"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "create_metaobject": {
+    "description": "Crée une nouvelle instance d'un type de metaobject déjà défini dans le schema Shopify (type en chaîne libre, aucune allowlist — couvre un type legacy comme guide_theme, même principe que list_metaobjects). Un champ déclaré rich_text_field côté Shopify (ex. guide_section.body) reçoit la valeur comme du texte en clair et la convertit automatiquement (paragraphes séparés par une ligne vide, liste à puces via \"- \", liens \"[texte](url)\") — ne jamais fournir de JSON Lexical déjà construit sur ces champs. Aucune autre validation redondante côté MCP : Shopify est la seule source de vérité sur les définitions existantes, ses userErrors remontent tel quel (type inconnu, champ requis manquant, valeur incompatible...). Pas de jugement de cohérence éditoriale (contrairement à propose_collection) — délégué à la ressource qui référencera ce metaobject. Non idempotent : un appel répété avec les mêmes fields crée un nouveau metaobject à chaque fois.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Type de metaobject, ex. \"guide_theme\", \"faq_item\" — chaîne libre, aucune allowlist."
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "Champs à écrire ({key, value}). Un champ list.*_reference (ex. articles) attend une chaîne JSON d'un tableau de gid (ex. \"[\\\"gid://shopify/Article/1\\\"]\"). Un champ rich_text_field attend du texte en clair, converti automatiquement — pas de JSON."
+        }
+      },
+      "required": [
+        "type",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "create_page": {
+    "description": "Crée une Page Shopify (title + body HTML natif, handle optionnel). En BROUILLON par défaut (isPublished: false, toujours passé explicitement) — sur ce store une Page créée sans statut explicite est publiée par défaut (confirmé par spike réel), le brouillon est donc garanti par le code : utiliser publish_page après relecture pour mettre en ligne. publish: true crée directement publiée (demande explicite). Le body est du HTML stocké TEL QUEL et rendu sur le storefront (pas de sanitizer côté MCP — même HTML que l'admin Shopify natif) : rédiger sous supervision humaine, la relecture avant publish_page borne le risque. Handle jamais inventé côté MCP : omis → Shopify le génère depuis le titre et la réponse renvoie le handle EFFECTIVEMENT attribué ; fourni → utilisé tel quel (un conflit remonte via userErrors). N'écrit jamais un metafield custom.* (voir update_page_metafields).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Titre de la Page, ex. \"Livraison et retours\""
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Corps HTML natif de la Page — stocké tel quel, rendu sur le storefront (aucun nettoyage côté MCP)."
+        },
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — handle d'URL. Omis = Shopify le génère depuis le titre (la réponse renvoie le handle réel). Jamais slugifié/inventé côté MCP."
+        },
+        "publish": {
+          "type": "boolean",
+          "description": "OPTIONNEL, défaut false (brouillon). true = publication immédiate explicite. Le défaut brouillon est garanti par le code, jamais laissé au comportement implicite de Shopify."
+        }
+      },
+      "required": [
+        "title",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "create_redirect": {
+    "description": "Crée une redirection Admin Shopify d'un ancien chemin public (from_path) vers un nouveau (to_path), pour éviter qu'une URL cassée renvoie un 404 (collection supprimée, guide/page réorganisé, rattrapage a posteriori). Idempotent : recréer une redirection déjà existante pour ce from_path est un succès, pas une erreur — mais la cible n'est alors ni vérifiée ni modifiée (création uniquement, pas de mise à jour de cible). Les deux chemins sont obligatoires. Ne modifie aucune autre ressource du store.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "from_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OBLIGATOIRE — ancien chemin public à rediriger, ex. \"/collections/vieux-slug\""
+        },
+        "to_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OBLIGATOIRE — nouveau chemin cible, ex. \"/collections/nouveau-slug\" ou \"/pages/guide-remplacement\""
+        }
+      },
+      "required": [
+        "from_path",
+        "to_path"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "curate_product_images": {
+    "description": "Réordonne et/ou exclut des images DÉJÀ attachées à un produit (jamais de génération/retouche/téléchargement d'image). L'image en tête de l'ordre voulu devient l'image principale (position 1). Exclure = reléguer en fin d'ordre par défaut (non destructif) ; une suppression définitive n'a lieu QUE pour les images explicitement listées dans delete_media_ids. Un produit déjà publié (ACTIVE) dont la galerie change effectivement repasse en DRAFT + « à review » (bascule DRAFT en premier, avant toute modification visible) et n'est jamais republié automatiquement. Un appel sans changement effectif est un no-op (aucune mutation). Lire get_raw_content au préalable pour obtenir les id de média.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        },
+        "ordered_media_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Ordre voulu en tête de galerie ([0] = image principale). Sous-ensemble des médias du produit, gid://shopify/MediaImage/... Absent = ordre non modifié."
+        },
+        "relegate_media_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Médias à reléguer en fin d'ordre — NON destructif (restent attachés à la fiche). Mode d'exclusion par défaut."
+        },
+        "delete_media_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Médias à SUPPRIMER définitivement (destructif côté Shopify). Ne se déclenche QUE si un id précis est fourni ici — jamais de suppression par défaut ni « en masse »."
+        }
+      },
+      "required": [
+        "product_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "delete_collection": {
+    "description": "Supprime définitivement une collection (collectionDelete, irréversible côté Shopify). DEUX garde-fous cumulatifs et indépendants (ni l'un ni l'autre ne court-circuite l'autre) : (1) si la collection ne porte aucun champ custom.* (summary/intro_text/faq), elle est probablement une collection legacy hors périmètre du pipeline — refusée sauf confirm_out_of_scope_deletion: true ; (2) si elle est publiée sur au moins un canal, refusée dans tous les cas (jamais contourné par confirm_out_of_scope_deletion) — utiliser unpublish_collection d'abord. Ne nettoie jamais les faq_item devenus orphelins (cf. delete_metaobject pour ce nettoyage explicite et volontaire).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Collection/..."
+        },
+        "confirm_out_of_scope_deletion": {
+          "type": "boolean",
+          "default": false,
+          "description": "true pour forcer la suppression d'une collection SANS aucun champ custom.* (legacy, hors périmètre du pipeline) — ne contourne JAMAIS le garde-fou de publication ci-dessous."
+        }
+      },
+      "required": [
+        "collection_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "delete_menu": {
+    "description": "Supprime définitivement un menu et TOUT son arbre d'items (menuDelete, irréversible côté Shopify). DEUX garde-fous cumulatifs et indépendants : (1) un menu PAR DÉFAUT (mention « , par défaut » dans list_menus — main-menu et footer) est refusé dans TOUS les cas, ce refus n'est JAMAIS contournable, Shopify l'interdisant lui-même ; (2) un menu portant au moins un item est refusé sauf confirm_non_empty_deletion: true. Le garde-fou (2) est un PROXY IMPARFAIT : « porte des items » n'est pas « est utilisé » — un menu vide peut être référencé par le thème, un menu peuplé peut être un brouillon. Le connecteur ne peut pas vérifier qu'un thème référence ce menu (il le fait par handle, dans du Liquid hors de ce dépôt). menuDelete ne retourne que l'id supprimé : le menu est donc RELU avant suppression et le compte-rendu de succès contient l'ARBRE COMPLET du menu détruit — c'est la seule copie restante et le seul plan de reconstruction possible. isError sans aucune suppression si : menu introuvable, menu par défaut, menu non vide sans confirmation, ou userErrors Shopify.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "menu_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Menu/..."
+        },
+        "confirm_non_empty_deletion": {
+          "type": "boolean",
+          "default": false,
+          "description": "true pour supprimer un menu qui porte au moins un item — ne contourne JAMAIS le refus sur un menu par défaut. Ne pas confondre avec confirm_out_of_scope_deletion (delete_collection), confirm_referenced_deletion (delete_metaobject) ni confirm_handle_change (update_menu) : axe de risque distinct (détruire une arborescence de navigation représentant du travail)."
+        }
+      },
+      "required": [
+        "menu_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "delete_metaobject": {
+    "description": "Supprime définitivement un metaobject (metaobjectDelete, irréversible côté Shopify, pas de corbeille). Refuse PAR DÉFAUT si le metaobject est encore référencé par une ressource (Metaobject.referencedBy, exhaustif par construction — jamais déclaré orphelin par excès de confiance en cas de troncature) — override explicite via confirm_referenced_deletion: true. Paramètre DISTINCT de confirm_out_of_scope_deletion (delete_collection) : axe de risque orthogonal (référencé ou non, indépendamment du périmètre pipeline). Ne nettoie jamais la ressource qui référençait le metaobject supprimé — avertissement explicite dans le compte-rendu si suppression forcée malgré une référence active.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "metaobject_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Metaobject/..."
+        },
+        "confirm_referenced_deletion": {
+          "type": "boolean",
+          "default": false,
+          "description": "true pour forcer la suppression d'un metaobject encore référencé par au moins une ressource (ou dont la détection de référence est incertaine) — ne pas confondre avec confirm_out_of_scope_deletion de delete_collection."
+        }
+      },
+      "required": [
+        "metaobject_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "delete_page": {
+    "description": "Supprime DÉFINITIVEMENT une Page (action irréversible — aucune corbeille, aucune restauration côté MCP). Relit l'existence de la Page AVANT suppression (isError: true si introuvable, jamais de suppression silencieuse) et renvoie son title/handle pour la traçabilité. À réserver aux Pages réellement obsolètes ; pour un simple retrait temporaire du storefront, utiliser unpublish_page (réversible).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Page/..."
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "detach_from_guide_theme": {
+    "description": "Symétrique d'attach_to_guide_theme : retire un Article de la liste `articles` d'un guide_theme ET efface l'inverse de silo article.custom.guide_theme s'il pointe vers ce thème (idempotent : aucun effet si l'article n'y est pas rattaché ; l'inverse pointant vers un AUTRE thème n'est jamais touché). Refuse proprement si guide_theme_id ou article_id sont invalides ou introuvables.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "guide_theme_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Metaobject/... d'un guide_theme existant (cf. list_guide_themes)"
+        },
+        "article_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Article/... à détacher"
+        }
+      },
+      "required": [
+        "guide_theme_id",
+        "article_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "enrich_product": {
+    "description": "Écrit le contenu éditorial complet d'un produit (contrat custom.* + productType/tags/title/descriptionHtml/handle natifs) et bascule la fiche en statut « à review » (status: DRAFT + content_status: to_review). Le handle (URL du produit) est recalculé automatiquement à partir du nouveau titre (slug minuscule sans accents) pour rester synchronisé — si ce handle est déjà utilisé par un AUTRE produit, l'opération échoue explicitement (jamais de suffixe numérique inventé automatiquement) : reformuler le titre pour lever la collision. Si le handle change, une redirection de l'ancienne URL vers la nouvelle est créée automatiquement avant le changement (l'URL publique d'un produit déjà publié n'est donc jamais cassée par une retouche de titre) ; si l'échec de cette redirection n'est pas dû à une redirection identique déjà existante, tout l'enrichissement est abandonné sans modifier aucun champ. Les champs natifs (title/descriptionHtml/handle/productType/tags/status: DRAFT) sont écrits en premier, avant tout contenu custom.*, pour qu'un produit déjà publié (ACTIVE) ne soit jamais brièvement exposé avec un contenu neuf. `image_alts` est OBLIGATOIRE dès que le produit a des images attachées (tableau vide accepté seulement si le produit n'en a aucune) : un texte alternatif réel doit être fourni pour CHAQUE image actuellement attachée (couverture vérifiée côté serveur, pas seulement déclarée par l'appelant) — l'outil refuse si une image attachée n'a pas d'alt fourni, et refuse si un media_id fourni ne correspond à aucune image réellement attachée (anti-invention). Lire get_raw_content au préalable pour obtenir les media_id et, pour chaque image, la ou les combinaisons variant (couleur/taille) dont elle est la photo désignée — l'alt doit mentionner cette caractéristique quand elle existe, jamais un texte générique recopié sur plusieurs images (doctrine complète : SKILL.md). Toutes les écritures doivent réussir ensemble : en cas d'échec partiel, la fiche n'est jamais présentée comme « à review » — l'erreur précise l'étape qui a échoué. Consulte le profil de marque actif (brand.yaml, store-brand-profile) : refuse tout l'appel sans rien écrire si une mention d'origine fournisseur interdite est détectée — la liste des termes est celle du profil actif (tone.blocked_origin_terms), jamais une liste en dur ici — détectée dans title/body_html/why_recommend/how_to_use/summary_points/specs/faq/tags ; si le profil demande la conversion de tailles fournisseur pour ce product_type et qu'aucune table fiable ne couvre les tailles trouvées, un avertissement non bloquant est ajouté au compte-rendu (jugement agent requis, jamais de conversion inventée).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        },
+        "summary_points": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 5,
+          "description": "2-3 points forts, jamais le titre reformulé"
+        },
+        "why_recommend": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Texte éditorial différenciant (paragraphes séparés par une ligne vide ; une ligne \"- \" = item de liste)"
+        },
+        "how_to_use": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Même format texte que why_recommend"
+        },
+        "specs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "label",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "faq": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "answer": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "question",
+              "answer"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "complementary_product_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [],
+          "description": "gid://shopify/Product/... de produits réellement complémentaires (peut être vide si aucun complément réel n'existe dans le catalogue)"
+        },
+        "product_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Vocabulaire cohérent avec le catalogue déjà enrichi (ex. \"Sacoche de guidon\")"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Titre reformulé (doctrine SKILL.md §1 — reformuler ≠ traduire), pas une traduction littérale du titre fournisseur d'origine"
+        },
+        "body_html": {
+          "type": "string",
+          "minLength": 1,
+          "description": "HTML structuré (paragraphes/listes) — balises autorisées : <p>, <ul>, <li>, <strong>, <em>, <br>, <a href=\"...\"> (attribut href uniquement, http(s): exclusivement, aucun autre attribut). Jamais de <script>/attribut on.../URI javascript:. Un href invalide fait rejeter tout l'appel."
+        },
+        "image_alts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "media_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "gid://shopify/MediaImage/... — obtenu via get_raw_content"
+              },
+              "alt_text": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Texte alternatif fidèle à ce que l'image montre réellement (regardée, pas déduite du titre) ; mentionne la caractéristique de variant (couleur/taille) si get_raw_content l'a listée pour cette image, jamais un texte générique recopié sur une autre image du même produit"
+              }
+            },
+            "required": [
+              "media_id",
+              "alt_text"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Un alt par image ACTUELLEMENT attachée au produit (liste vérifiée côté serveur via get_raw_content) — couverture totale exigée : vide UNIQUEMENT si le produit n'a aucune image. Refusé si une image attachée n'a pas d'alt fourni, ou si un media_id fourni ne correspond à aucune image réellement attachée."
+        }
+      },
+      "required": [
+        "product_id",
+        "summary_points",
+        "why_recommend",
+        "how_to_use",
+        "specs",
+        "faq",
+        "product_type",
+        "tags",
+        "title",
+        "body_html",
+        "image_alts"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "generate_cross_product_image": {
+    "description": "Combine 2 à 6 produits réels distincts (chacun avec une image déjà attachée) en UNE seule scène cohérente générée par Gemini (ex. tenue complète : cuissard + maillot + sacoche). AUCUN effet Shopify : le composite est uploadé vers le stockage stagé (non rattaché) et renvoyé inline pour review — l'attachement à la galerie d'UN des produits combinés se fait ensuite via attach_generated_images, jamais automatiquement.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "product_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "gid://shopify/Product/..."
+              },
+              "source_media_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "gid://shopify/MediaImage/... — DOIT appartenir à product_id."
+              },
+              "role": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Rôle du produit dans la scène (ex. \"a cycling jersey\")."
+              }
+            },
+            "required": [
+              "product_id",
+              "source_media_id",
+              "role"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "2 à 6 produits réels distincts à combiner."
+        },
+        "scene_description": {
+          "type": "string",
+          "description": "Description libre de la scène ; à défaut, gabarit générique de image-prompts.yaml."
+        }
+      },
+      "required": [
+        "products"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "generate_editorial_scene": {
+    "description": "Génère une scène éditoriale entièrement neuve (paysage, ambiance, activité) décrite en langage naturel — AUCUNE image de référence/produit n'est requise ni acceptée en entrée (c'est le critère distinctif face à generate_product_images). La direction artistique de la marque (golden hour, paysages réels crédibles, style documentaire, personnes qui ne posent jamais) est appliquée automatiquement, sans avoir à la repréciser. AUCUN effet Shopify : le candidat est uploadé vers le stockage stagé Shopify (non rattaché, invisible) et renvoyé inline (image + resource_url) pour review humaine — l'attachement effectif à un emplacement (home/guide/collection) est un geste séparé via set_home_hero_image/set_guide_hero_image/set_collection_hero_image, jamais automatique.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "scene_description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Description en langage naturel de la scène voulue (ex. \"une ambiance de bivouac au coucher du soleil, tente et vélo chargé\")."
+        },
+        "framing": {
+          "type": "string",
+          "enum": [
+            "landscape",
+            "portrait"
+          ],
+          "description": "Cadrage INDICATIF de composition uniquement (défaut \"landscape\") — landscape = cadrage large horizontal, portrait = cadrage vertical. N'a AUCUN effet sur un metafield ni sur le choix de l'emplacement de publication (geste séparé et explicite de set_*_hero_image en aval)."
+        }
+      },
+      "required": [
+        "scene_description"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "generate_product_images": {
+    "description": "Génère, à partir d'une image DÉJÀ attachée à un produit, une variante STUDIO (fond/éclairage/cadrage retravaillés, produit inchangé) et/ou une ou plusieurs variantes LIFESTYLE (produit en situation d'usage réelle et précise — pas une pose générique). AUCUN effet Shopify : chaque candidat généré est uploadé vers le stockage stagé Shopify (non rattaché à aucun produit, invisible) et renvoyé inline (image + resource_url) pour review humaine — l'attachement effectif est un geste séparé (attach_generated_images), jamais automatique. Toujours appeler get_raw_content au préalable pour obtenir un source_media_id réel.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        },
+        "source_media_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/MediaImage/... — DOIT appartenir au produit (get_raw_content)."
+        },
+        "studio": {
+          "type": "boolean",
+          "description": "Générer une variante studio (fond/éclairage/cadrage retravaillés)."
+        },
+        "lifestyle_scenes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maxItems": 5,
+          "description": "0 à 5 scènes d'usage réel PRÉCISES (ex. \"worn while riding a bicycle on a paved road\"), jamais une pose générique — une image générée par scène. Liste vide = aucune variante lifestyle demandée (retombe sur studio seul si studio=true)."
+        }
+      },
+      "required": [
+        "product_id",
+        "source_media_id",
+        "studio",
+        "lifestyle_scenes"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "get_enriched_content": {
+    "description": "Retourne l'état actuellement écrit par le pipeline pour un produit (title, descriptionHtml natif brut — réutilisable tel quel comme body_html, productType, tags, summary_points, why_recommend, how_to_use, specs, faq, produits complémentaires, statut de review, snapshot du titre/description fournisseur d'origine si déjà capturé, guide(s) lié(s) et leur origine, « idéal pour ») — à appeler avant de retoucher un produit déjà enrichi ou déjà ACTIVE, pour juger la cohérence entre un nouveau titre et le contenu custom.* déjà écrit, et pour récupérer body_html actuel sans reconstruction à l'aveugle. Expose aussi : relatedGuides (guide(s) liés à ce produit, id/handle/title — projection automatique plafonnée à 3 par publishedAt décroissant, ou override manuel sans plafond, jamais les deux à la fois), relatedGuidesSource (\"auto\"|\"manual\" — le discriminant qui dit lequel des deux régimes est actif ; \"manual\" ⇒ figé, à modifier via set_related_guides/ clear_related_guides_override, jamais en réécrivant directement le produit), idealFor (liste de chaînes « idéal pour » — plomberie de lecture seule pour l'instant, aucun outil ne produit encore ce contenu, toujours [] tant que la doctrine éditoriale n'est pas tranchée). Lecture seule, aucune mutation, distinct de get_raw_content (fiche source fournisseur brute).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        }
+      },
+      "required": [
+        "product_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "get_guide_section_state": {
+    "description": "Lecture seule : pour chaque guide_section d'un article, restitue le heading, un extrait du corps, les produits liés (avec, pour chacun, si une image principale est disponible) et l'état actuel rempli|vide des champs image/image_alt/choices. Ne modifie rien et ne propose aucune valeur — fournit le matériel pour juger (doctrine H2/H3) quelle section peut recevoir une image ou une box, puis présenter les valeurs candidates à l'opérateur avant d'appeler complete_guide_section. À appeler AVANT toute complétion rétroactive.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "article_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Article/... du guide à inspecter"
+        }
+      },
+      "required": [
+        "article_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "get_home_editorial": {
+    "description": "Lecture seule : restitue le contenu éditorial de la page d'accueil — bloc fondateur (titre, citation, bio, lien, portrait défini/non défini), bloc confiance (titre + intro + 3 valeurs) et un compteur de témoignages. Point d'entrée avant toute modification (update_home_founder / update_home_trust / add/update/remove_testimonial). Ne modifie rien ; ne renvoie jamais d'erreur (message clair si le setup n'a pas encore été fait).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "get_metaobject": {
+    "description": "Retourne le même niveau d'information qu'une entrée de list_metaobjects (type, champs bruts, statut de référence orphelin/référencé) pour un metaobject déjà identifié par son id — évite de repasser par un listing complet. Lecture seule.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "metaobject_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Metaobject/..."
+        }
+      },
+      "required": [
+        "metaobject_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "get_page_metafields": {
+    "description": "Retourne les metafields custom.* déjà écrits sur une Page Shopify (page Hub de guides ou autre page de contenu). Sans keys : tous les metafields custom.* trouvés. Avec keys : filtre sur les clés demandées et signale explicitement celles qui ne sont pas définies (« non défini »), jamais une omission silencieuse. Lecture seule.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Page/..."
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "OPTIONNEL — sous-ensemble de clés custom.* à retourner (ex. [\"themes\"]). Omis = toutes les clés trouvées. Une clé demandée mais absente est signalée « non défini », pas silencieusement omise."
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "get_raw_content": {
+    "description": "Retourne la matière première existante d'un produit (titre, description source, prix, images) — à lire avant de rédiger le contenu enrichi via enrich_product. Ne modifie rien.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        }
+      },
+      "required": [
+        "product_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "get_seo": {
+    "description": "Retourne le meta title et la meta description natifs actuellement définis sur un produit, une collection, un guide (article) ou une page — le couple SEO affiché dans les résultats de recherche et l'onglet du navigateur. Un champ non renseigné est explicitement signalé « non défini » (jamais une omission silencieuse). Lecture strictement en lecture seule. Le resource_id doit être le gid du type indiqué par resource_type (un gid d'un autre type est signalé « ressource introuvable »).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "resource_type": {
+          "type": "string",
+          "enum": [
+            "product",
+            "collection",
+            "article",
+            "page"
+          ],
+          "description": "Type de la ressource (article = guide)."
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/{Product|Collection|Article|Page}/... — cohérent avec resource_type."
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "link_variant_image": {
+    "description": "Désigne une image déjà présente dans la galerie d'un produit (media_id, gid MediaImage obtenu via get_raw_content) comme LA photo d'un ou plusieurs variants (couleur/taille) de ce même produit — remplace silencieusement toute désignation précédente pour chaque variant ciblé. Passer media_id: null pour dé-lier les variant_ids listés (retire l'association sans toucher à la galerie ni à l'image elle-même). N'upload ni ne génère aucune image (voir curate_product_images/generate_product_images pour cela) : lie uniquement une image déjà attachée. Refuse explicitement (isError) tout media_id inconnu ou tout variant_id n'appartenant pas au product_id — refus total du batch si un seul variant_id est invalide, aucune association partielle créée. Idempotent : rappeler avec le même état déjà atteint (variant déjà lié à ce media_id, ou déjà sans image en dé-liaison) est un succès sans effet.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        },
+        "variant_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "description": "gid://shopify/ProductVariant/... — un ou plusieurs variants du MÊME produit"
+        },
+        "media_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "gid://shopify/MediaImage/..., obtenu via get_raw_content — null EXPLICITE pour dé-lier les variant_ids listés (une chaîne vide est rejetée : passer null, pas \"\")."
+        }
+      },
+      "required": [
+        "product_id",
+        "variant_ids",
+        "media_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_guide_themes": {
+    "description": "Liste les metaobjects guide_theme existants (id, titre, articles déjà rattachés avec leur titre résolu) — lecture seule, à utiliser avant attach_to_guide_theme pour choisir le thème le plus pertinent plutôt qu'à l'aveugle.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_home_selection": {
+    "description": "Lecture seule : liste les DEUX sélections éditoriales de la page d'accueil — les produits de « Notre sélection » et les guides de « Guides populaires » — dans leur ordre d'affichage réel, chaque item identifié par un libellé lisible (titre) + son handle, avec un compteur n/max (max 6) par section. Point d'entrée avant toute modification (add/remove/replace/reorder), qui attendent un handle précis. Ne modifie rien, ne renvoie jamais d'erreur.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_menus": {
+    "description": "Liste les menus Shopify (en-tête main-menu, pied de page footer, autres) avec, pour chacun, son ARBRE D'ITEMS COMPLET — sous-menus inclus, jusqu'à 4 niveaux. Chaque ligne porte : une numérotation hiérarchique (1., 1.1., 1.1.1. — le DERNIER segment est la valeur à passer en position à add_menu_item, le préfixe désigne le parent), le titre, la cible (type + resourceId, ou URL), et le suffixe « — item_id: <gid> », invariant à toute profondeur : c'est le repère stable à réutiliser dans add/remove/reorder/update_menu_item. L'en-tête d'un menu porte la mention « , par défaut » si Shopify le protège (main-menu et footer) : ce menu n'est ni supprimable ni renommable de handle. Trois plafonds, tous SIGNALÉS et JAMAIS silencieux : depth (affichage, défaut 3) émet « +N sous-item(s) masqué(s) » ; 200 lignes par menu émet « N item(s) non affiché(s) » ; la pagination des menus est signalée comme tronquée. Un menu contenant des items au-delà de 4 niveaux (N5+) porte un ⚠ : il n'est modifiable par AUCUN de ces outils (les réécrire supprimerait ces items) — c'est le seul endroit où cette cause est visible. Lecture seule, jamais isError. Sans query : tous les menus. Avec query : syntaxe de recherche Shopify Admin — title:*mot* et la recherche plein-texte fonctionnent ; le filtre handle: n'est PAS supporté (il renvoie tous les menus). Le handle de chaque menu figure de toute façon dans le résultat.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "OPTIONNEL — recherche Shopify Admin sur les menus (ex. \"title:*pied*\"). Omis/vide = tous les menus. Note : \"handle:...\" n'est PAS un filtre supporté (renvoie tout)."
+        },
+        "depth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4,
+          "description": "OPTIONNEL — profondeur d'AFFICHAGE de l'arbre, 1 à 4 (défaut 3). Purement cosmétique : la lecture descend toujours à 4 niveaux, ce paramètre n'économise que du contexte. Ce qui est masqué est TOUJOURS compté et annoncé, jamais tronqué en silence."
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_metaobjects": {
+    "description": "Sans type : liste les définitions de metaobjects présentes sur le store (type, nom, nombre d'instances) — y compris des types que le pipeline ne crée ni ne consomme lui-même, pour découvrir un type legacy sans le connaître à l'avance. Avec type (chaîne libre, aucune valeur imposée) : liste chaque instance de ce type avec ses champs bruts et son statut de référence (orphelin / référencé par quoi), calculé via Metaobject.referencedBy (exhaustif par construction, pas un balayage du catalogue). Balayage borné, troncature signalée explicitement. Lecture seule.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Type de metaobject, ex. \"faq_item\" — chaîne libre, aucune allowlist. Omis = liste les types disponibles avec leur décompte."
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_orphan_products": {
+    "description": "Retourne les produits (statut natif ACTIVE ou DRAFT, ARCHIVED exclu par défaut) qui n'appartiennent à AUCUNE collection — manuelle ou legacy, sans distinction. Utile pour identifier les angles morts de catégorisation du catalogue. Signale explicitement toute troncature du balayage (côté collections ou côté produits) plutôt que de laisser croire à une liste exhaustive.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_pages": {
+    "description": "Liste les Pages Shopify du store (id, title, handle). Sans query : toutes les Pages. Avec query (syntaxe de recherche Shopify Admin, ex. \"title:*guide*\", \"handle:guide-hub\") : filtre le résultat. Lecture seule — outil de découverte de GID en amont de get_page_metafields/update_page_metafields, qui exigent tous deux un page_id déjà connu.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "OPTIONNEL — requête de recherche Shopify Admin (ex. \"title:*guide*\", \"handle:guide-hub\"). Omis ou vide = toutes les Pages du store."
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_stores": {
+    "description": "Liste les boutiques configurées sur ce poste et indique laquelle est active. Ne retourne aucun secret : uniquement des identifiants de boutique, que l'opérateur connaît déjà (ce sont les siennes). À utiliser quand on ne sait plus sur quelle boutique on travaille, ou quand un outil refuse d'agir faute de sélection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_testimonials": {
+    "description": "Lecture seule : liste les témoignages de la page d'accueil dans leur ordre d'affichage, chacun avec son id (pour update/remove), sa citation et son auteur (nom + contexte). Point d'entrée avant update_testimonial / remove_testimonial. Ne modifie rien.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "list_to_review": {
+    "description": "Liste les ressources (product|collection|article) avec content_status: to_review.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "resource_type": {
+          "type": "string",
+          "enum": [
+            "product",
+            "collection",
+            "article"
+          ]
+        }
+      },
+      "required": [
+        "resource_type"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "mark_blocked": {
+    "description": "Bascule content_status: blocked sur la ressource entière — aucune autre écriture, jamais de contenu partiel dans custom.*. La raison est retournée par l'outil (pas stockée côté Shopify) pour être restituée en langage naturel à l'opérateur.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "resource_type": {
+          "type": "string",
+          "enum": [
+            "product",
+            "collection",
+            "article"
+          ]
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Raison précise (quel(s) champ(s), pourquoi) — jamais générique"
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "propose_collection": {
+    "description": "Crée une Collection Shopify manuelle (liste explicite de produits, jamais une collection automatique par règles) à partir de produits déjà enrichis par enrich_product, écrit les metafields custom.* (summary, intro_text, faq) et bascule content_status: to_review. Ne publie JAMAIS sur le canal Online Store à ce stade — utiliser publish_collection après validation humaine. Refuse et retourne le statut insufficient_material si le regroupement proposé n'est pas cohérent ou manque de matière (jugement documenté, pas un seuil numérique rigide).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Titre de la collection, ex. \"Sacoches de guidon\""
+        },
+        "product_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "description": "gid://shopify/Product/... — au moins 2 produits réellement pertinents requis (cf. jugement de cohérence)"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Intérêt/but de la collection — pour qui, pour quel usage (pas une description de catégorie)"
+        },
+        "intro_text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "2-3 phrases posant un contexte d'usage (format texte : paragraphes séparés par une ligne vide, \"- \" = item de liste)"
+        },
+        "faq": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "answer": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "question",
+              "answer"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "FAQ orientée choix entre produits de la collection (pas une FAQ produit)"
+        }
+      },
+      "required": [
+        "title",
+        "product_ids",
+        "summary",
+        "intro_text",
+        "faq"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "propose_guide": {
+    "description": "Crée un Article Shopify (sur le blog 'guides' déjà existant) à partir de sections structurées (guide_section) ancrées sur le catalogue déjà enrichi, écrit les metafields custom.* (summary, sections, faq, is_howto) et bascule content_status: to_review. Ne publie JAMAIS à ce stade (isPublished: false explicite) — utiliser publish_guide après validation humaine. Refuse et retourne le statut insufficient_material si le guide ne s'ancre pas explicitement dans des produits déjà enrichis (FAQ existante).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Titre du guide, ex. \"Bien installer sa sacoche de guidon au quotidien\""
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Ce que l'article va traiter concrètement (mini-résumé, jamais un chapeau marketing)"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "heading": {
+                "type": "string",
+                "minLength": 1,
+                "description": "h2 numéroté de la section"
+              },
+              "body": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Texte de la section (paragraphes séparés par une ligne vide, \"- \" = item de liste). Doit répondre de façon autonome à une question implicite. Un segment `[texte](url)` produit un vrai lien cliquable (nœud link Lexical) ; un href invalide (schéma autre que http(s):, URL malformée) fait échouer tout l'appel, rien n'est écrit."
+              },
+              "related_product_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "default": [],
+                "description": "gid://shopify/Product/... liés PRÉCISÉMENT à cette section (peut être vide si aucun produit n'est pertinent pour cette section précise — cf. précédent THEME-10 : jamais une liste générique répétée à l'identique sur toutes les sections)"
+              },
+              "image_product_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "OPTIONNEL — gid://shopify/Product/... dont la featured image illustrera la section. DOIT figurer dans related_product_ids de CETTE section. Le code résout sa featured image (jamais un GID d'image libre). À ne renseigner que si UN unique produit lié a une image qui illustre réellement le sujet (doctrine H2) — sinon laisser vide, jamais d'image inventée ni piochée hors des produits liés."
+              },
+              "image_alt": {
+                "type": "string",
+                "minLength": 1,
+                "description": "OPTIONNEL mais REQUIS si image_product_id est fourni — texte alternatif éditorial décrivant ce que l'image montre réellement, JAMAIS le nom de fichier, jamais vide si image (contrainte de rendu THEME-27)."
+              },
+              "choices": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "content": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Explication de l'option (même format que body : un `[texte](url)` produit un vrai lien cliquable, un href invalide fait échouer tout l'appel)."
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "content"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": [],
+                "description": "OPTIONNEL — box multi-choix (guide_choice_item) à créer UNIQUEMENT si la section porte un vrai arbitrage entre au moins deux options réelles et distinctes présentes dans le catalogue (doctrine H3). Vide/absent ⇒ aucune box (cas majoritaire des sections narratives). Ne jamais dédoubler le corps de la section ni inventer une option."
+              }
+            },
+            "required": [
+              "heading",
+              "body"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "faq": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "answer": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "question",
+              "answer"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "FAQ 'contexte annexe' du guide — jamais une aide à la décision d'achat (rôle réservé aux FAQ produit/collection, cf. skill enrichir-catalogue)"
+        },
+        "is_howto": {
+          "type": "boolean",
+          "description": "Jugement éditorial explicite : true seulement si le contenu est réellement une procédure/suite d'étapes actionnables, ne jamais forcer true par défaut"
+        }
+      },
+      "required": [
+        "title",
+        "summary",
+        "sections",
+        "faq",
+        "is_howto"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "publish_collection": {
+    "description": "Publie une Collection « à review » sur le canal Online Store (publishablePublish) et retire content_status. Outil séparé de publish_resource (MCP-03) : Collection n'a pas de champ status natif (pas de DRAFT/ACTIVE) — sa visibilité passe uniquement par la publication sur canal, jamais par une bascule de statut.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Collection/..."
+        }
+      },
+      "required": [
+        "collection_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "publish_guide": {
+    "description": "Publie un Article « à review » : bascule isPublished: true via articleUpdate et retire content_status. Pas de publishablePublish — Article n'implémente pas Publishable (constaté par introspection en MCP-03), sa visibilité passe uniquement par isPublished.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "article_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Article/..."
+        }
+      },
+      "required": [
+        "article_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "publish_page": {
+    "description": "Publie une Page en brouillon (bascule isPublished: true via pageUpdate). No-op documenté si la Page est déjà publiée (aucune mutation, message explicite). Ne touche jamais title/body/handle ni un metafield custom.* — seul le statut de visibilité change.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Page/..."
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "publish_resource": {
+    "description": "Bascule une ressource « à review » vers l'état publié : status ACTIVE, retrait de content_status, et publishablePublish sur le canal Online Store si jamais publié (ACTIVE seul ne suffit pas — cf. VERIF-03). À ce stade (MCP-03), ne prend en charge que resource_type: product — Collection et Article n'ont pas le même mécanisme natif de visibilité que Product (Collection : pas de champ status ; Article : pas Publishable, utilise isPublished) et seront couverts par MCP-04/MCP-05.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "resource_type": {
+          "type": "string",
+          "enum": [
+            "product",
+            "collection",
+            "article"
+          ]
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "remove_home_item": {
+    "description": "Retire de la sélection de la home le produit (section products) ou le guide (section guides) désigné par son handle. Les items restants se resserrent sans trou. Refuse sans écrire si le handle n'est pas présent dans la section, ou si la section n'a plus qu'un seul item (minimum 1 — une section vide n'a pas de sens en home). Changement visible immédiatement en ligne.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "type": "string",
+          "enum": [
+            "products",
+            "guides"
+          ],
+          "description": "Sélection cible : products ou guides."
+        },
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Handle du produit ou du guide à retirer (tel qu'affiché par list_home_selection)."
+        }
+      },
+      "required": [
+        "section",
+        "handle"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "remove_menu_item": {
+    "description": "Retire l'item désigné par son item_id, cherché à PROFONDEUR QUELCONQUE dans le menu (repère fourni par list_menus). DÉFAUT DE REFUS, à connaître avant d'appeler : si l'item porte des sous-items, le retrait est REFUSÉ sans aucune écriture et le message en donne le nombre — retirer une tête de silo emporterait tous ses enfants, et « Lien retiré » serait la formulation exacte d'une destruction silencieuse. Relancer avec with_children: true pour retirer le sous-arbre entier : le compte-rendu ÉNUMÈRE alors tous les item_id supprimés, ce qui est le seul moyen de reconstruire en cas d'erreur. Les autres items — et leurs sous-menus — sont conservés à l'identique et dans le même ordre. isError sans aucune écriture si le menu est introuvable ou si item_id n'existe à aucune profondeur de ce menu (« item introuvable » — jamais une réécriture silencieuse).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "menu_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Menu/..."
+        },
+        "item_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/MenuItem/... à retirer, à PROFONDEUR QUELCONQUE dans le menu (repère fourni par list_menus)."
+        },
+        "with_children": {
+          "type": "boolean",
+          "description": "OPTIONNEL, défaut false. false : le retrait est REFUSÉ sans aucune écriture si l'item porte des sous-items (le message en donne le nombre). true : retrait du sous-arbre entier, le compte-rendu énumère tous les item_id supprimés."
+        }
+      },
+      "required": [
+        "menu_id",
+        "item_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "remove_testimonial": {
+    "description": "Retire un témoignage de la home : détache sa référence de la liste ordonnée PUIS supprime l'instance orpheline. Si c'était le dernier, la section témoignages se masque d'elle-même. Refuse sans écrire si l'id n'est pas présent dans la liste. Changement visible immédiatement sur la boutique en ligne.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "testimonial_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "GID du témoignage à retirer (via list_testimonials)."
+        }
+      },
+      "required": [
+        "testimonial_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "rename_variant_options": {
+    "description": "Applique, sur un produit donné, des libellés déjà décidés par l'appelant pour un ou plusieurs noms d'option (ex. Color → Couleur) et/ou leurs valeurs (ex. Light Green → Vert clair) — un appel = un produit (voir get_raw_content, section \"Options de variante\", pour lire l'état actuel avant d'appeler). NE TRADUIT RIEN lui-même : applique tel quel le résultat déjà jugé par l'appelant (traduction, nettoyage d'un code fournisseur résiduel, analyse de cohérence sur une valeur composite) — aucune logique de traduction interne. Les cibles sont désignées par current_name/current_value (libellé EXACT actuel, jamais un gid) : la résolution est faite côté serveur par relecture du produit, refus explicite (isError) et total du batch si un seul current_name/current_value ne correspond à aucune option/valeur réelle de ce produit — jamais de création implicite. Renommer plusieurs options en un seul appel déclenche une mutation Shopify séquentielle par option (pas de primitive batch connue) : en cas d'échec en cours de boucle, le message précise quelle(s) option(s) ont déjà été appliquées. Rappel systématique en fin de message de succès : renommer une valeur d'option met à jour automatiquement le title composite des variants concernés côté Shopify (comportement natif, hors du contrôle direct de cet outil).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        },
+        "option_renames": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "current_name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Nom EXACT de l'option existante sur ce produit (ex. \"Color\") — comparaison sensible à la casse et aux espaces, copier tel quel depuis get_raw_content, jamais un nom deviné/normalisé."
+              },
+              "new_name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Nouveau nom d'option (ex. \"Couleur\") — omis si seules les valeurs changent."
+              },
+              "value_renames": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "current_value": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Valeur EXACTE existante de cette option (ex. \"Light Green\") — comparaison sensible à la casse et aux espaces, copier tel quel depuis get_raw_content (section \"Options de variante\"), jamais une valeur devinée/normalisée."
+                    },
+                    "new_value": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Nouveau libellé de valeur (ex. \"Vert clair\")."
+                    }
+                  },
+                  "required": [
+                    "current_value",
+                    "new_value"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "description": "Valeurs à renommer pour CETTE option — omis si seul le nom change."
+              }
+            },
+            "required": [
+              "current_name"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "Une entrée par option du produit à renommer (nom et/ou valeurs)."
+        }
+      },
+      "required": [
+        "product_id",
+        "option_renames"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "reorder_home_items": {
+    "description": "Réordonne la sélection de la home selon ordered_handles, qui doit être une PERMUTATION EXACTE des handles actuels de la section (même cardinalité, mêmes éléments, aucun doublon, aucun inconnu). Sinon refus sans AUCUNE modification. Utiliser list_home_selection pour obtenir les handles actuels. Changement visible immédiatement sur la boutique en ligne.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "type": "string",
+          "enum": [
+            "products",
+            "guides"
+          ],
+          "description": "Sélection cible : products ou guides."
+        },
+        "ordered_handles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "description": "Handles dans l'ordre cible — permutation exacte des handles actuels de la section."
+        }
+      },
+      "required": [
+        "section",
+        "ordered_handles"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "reorder_menu_items": {
+    "description": "Réordonne UNE FRATRIE de menu selon ordered_item_ids. La fratrie visée est celle des enfants de parent_item_id ; parent_item_id OMIS, ce sont les items de premier niveau du menu. ordered_item_ids doit être une PERMUTATION EXACTE des item_id de CETTE fratrie (même cardinalité, mêmes éléments, aucun doublon, aucun inconnu) — les items des autres fratries n'y figurent pas. Sinon isError sans AUCUNE modification (jamais d'état partiel). Chaque item permuté emporte son sous-menu à l'identique ; les autres branches sont intactes. Utiliser list_menus pour récupérer les item_id de la fratrie visée (leur numérotation partage le même préfixe).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "menu_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Menu/..."
+        },
+        "parent_item_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — gid://shopify/MenuItem/... dont on réordonne les ENFANTS. OMIS = réordonnancement des items de premier niveau du menu."
+        },
+        "ordered_item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "description": "Liste ORDONNÉE des item_id de la FRATRIE DÉSIGNÉE par parent_item_id (ou du premier niveau si omis), dans l'ordre cible. Doit référencer exactement l'ensemble des items de cette fratrie (permutation)."
+        }
+      },
+      "required": [
+        "menu_id",
+        "ordered_item_ids"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "replace_home_item": {
+    "description": "Remplace, À LA MÊME POSITION, le produit/guide old_handle par new_handle dans la sélection de la home. Refuse sans écrire si old_handle n'est pas présent, si new_handle est introuvable dans le catalogue, ou si new_handle est déjà présent ailleurs dans la section. Garde-fou US-08 sur la nouvelle référence : si new_handle est indisponible (produit non actif/non publié/épuisé, ou article en brouillon), l'outil avertit sans écrire ; rappeler avec confirm:true pour appliquer. Pour un guide, la carte reprend automatiquement la couverture de l'article (aucune image à saisir). Changement visible immédiatement en ligne.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "type": "string",
+          "enum": [
+            "products",
+            "guides"
+          ],
+          "description": "Sélection cible : products ou guides."
+        },
+        "old_handle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Handle du produit/guide actuellement en home à remplacer."
+        },
+        "new_handle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Handle du produit/guide de remplacement."
+        },
+        "confirm": {
+          "type": "boolean",
+          "description": "Mettre à true pour confirmer un new_handle signalé indisponible (US-08). Ne contourne JAMAIS un handle introuvable ni un old_handle absent."
+        }
+      },
+      "required": [
+        "section",
+        "old_handle",
+        "new_handle"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "reproject_related_guides": {
+    "description": "Parcourt tous les articles du blog \"guides\" et rejoue reprojectArticle pour chacun — idempotent. Sert deux usages : la première passe de rattrapage sur les guides existants (aucun n'a jamais projeté quoi que ce soit avant cette initiative) et la réparation après un échec partiel (nettoie aussi les liens devenus caducs, pas seulement les manquants). Respecte les overrides manuels (related_guides_source: manual), jamais touchés. À déclencher UNE FOIS, sciemment, jamais en effet de bord d'un déploiement automatisé (peut écrire sur tous les produits du catalogue).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "retouch_editorial_image": {
+    "description": "Retouche une image qu'Antoine possède déjà (issue d'une banque d'images libres de droit) pour l'adapter au style de la marque (teinte, lumière, cadrage) — édition image-à-image, pas une génération from-scratch. Le sujet réel de la photo (lieu, personnes, objets présents) n'est JAMAIS altéré : seuls teinte/lumière/cadrage sont ajustables, rappelé systématiquement dans le prompt sans qu'Antoine ait à le répéter. AUCUN effet Shopify : le candidat est uploadé vers le stockage stagé Shopify (non rattaché, invisible) et renvoyé inline (image + resource_url) pour review humaine — l'attachement effectif est un geste séparé via set_home_hero_image/set_guide_hero_image/set_collection_hero_image, jamais automatique. Comparer ATTENTIVEMENT le résultat à l'image source avant toute décision d'attachement.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "image_base64": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Bytes de l'image externe qu'Antoine possède déjà, encodés en base64."
+        },
+        "image_mime_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "image/jpeg, image/png ou image/webp uniquement — toute autre valeur est refusée."
+        },
+        "retouch_description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Description du résultat voulu (ex. \"réchauffe les tons pour coller à notre palette, ambiance golden hour\")."
+        }
+      },
+      "required": [
+        "image_base64",
+        "image_mime_type",
+        "retouch_description"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "search_products": {
+    "description": "Recherche des produits du catalogue par requête Shopify (ex. \"product_type:sacoches\", \"created_at:>=2026-06-01\") et/ou par statut de traitement par le pipeline. Point d'entrée unique pour identifier un lot de produits à traiter — ne retourne jamais de contenu, seulement de quoi identifier les produits (get_raw_content lit le détail).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Requête de recherche Shopify optionnelle (syntaxe produits Admin, ex. product_type:..., tag:..., title:*mot*, created_at:>=YYYY-MM-DD). Laisser vide pour ne filtrer que par statut."
+        },
+        "status_filter": {
+          "type": "string",
+          "enum": [
+            "untreated",
+            "to_review",
+            "blocked",
+            "all"
+          ],
+          "description": "untreated (défaut) = jamais passé dans le pipeline ; to_review ; blocked ; all = tous statuts."
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "search_resources": {
+    "description": "Recherche des collections ou des articles (guides) du catalogue par requête Shopify (ex. \"title:*sacoche*\", \"handle:guide-bikepacking\") et/ou par statut de traitement par le pipeline. Équivalent collection/article de search_products (les produits restent couverts par search_products, pas par cet outil). Point d'entrée pour identifier un lot de collections/guides à traiter — ne retourne jamais de contenu, seulement de quoi identifier les ressources.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "resource_type": {
+          "type": "string",
+          "enum": [
+            "collection",
+            "article"
+          ],
+          "description": "Type de ressource à lister."
+        },
+        "query": {
+          "type": "string",
+          "description": "Requête de recherche Shopify optionnelle (syntaxe Admin, ex. title:*mot*, handle:..., created_at:>=YYYY-MM-DD). Laisser vide pour ne filtrer que par statut."
+        },
+        "status_filter": {
+          "type": "string",
+          "enum": [
+            "untreated",
+            "to_review",
+            "blocked",
+            "all"
+          ],
+          "description": "untreated (défaut) = jamais passé dans le pipeline ; to_review ; blocked ; all = tous statuts."
+        }
+      },
+      "required": [
+        "resource_type"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "set_collection_hero_image": {
+    "description": "Attache une image hero desktop OU mobile (un format par appel) à une Collection, via le metafield custom.hero_image_desktop/custom.hero_image_mobile — ne touche JAMAIS aux fichiers de thème. Accepte soit un fichier fourni (image_base64 + image_mime_type), soit le resource_url déjà stagé d'une génération (generate_product_images/generate_cross_product_image, après review humaine) — exactement un des deux requis. Remplace l'image existante pour ce format (pas de duplication). Appeler deux fois (format desktop puis mobile) pour renseigner les deux — une collection sans l'autre format en hérite automatiquement par repli symétrique côté thème.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Collection/..."
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "desktop",
+            "mobile"
+          ],
+          "description": "Format visé par CET appel — appeler l'outil deux fois pour renseigner les deux formats (cohérent avec update_guide/update_collection_content : un appel = un geste explicite)."
+        },
+        "image_base64": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Bytes de l'image déjà en possession d'Antoine, encodés base64 (chemin 'upload', US-07a)."
+        },
+        "image_mime_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Requis avec image_base64 — 'image/jpeg' | 'image/png' | 'image/webp' uniquement."
+        },
+        "resource_url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "resourceUrl déjà stagé, renvoyé par generate_product_images/generate_cross_product_image après review humaine (chemin 'génération', US-07b)."
+        },
+        "alt_text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Texte alternatif du fichier (visible dans l'admin Shopify Files ; le rendu hero est en arrière-plan CSS, pas un <img>, mais jamais de fichier sans alt — même doctrine que le reste du plugin)."
+        }
+      },
+      "required": [
+        "collection_id",
+        "format",
+        "alt_text"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "set_guide_cover": {
+    "description": "Assigne une image comme couverture NATIVE d'un guide/article existant (Article.image) — c'est cette image que le thème Vélotrip affiche pour la carte guide sur la home (HOME-02). image_url accepte soit un resourceUrl de fichier stagé renvoyé par generate_product_images/generate_cross_product_image (couverture GÉNÉRÉE — la génération seule, sans cet appel, ne modifie jamais la couverture), soit l'URL publique d'une image déjà disponible (produit ou cross-produit, lue via get_raw_content) à ASSIGNER telle quelle. Remplace silencieusement toute couverture déjà assignée sans confirmation préalable (l'ancienne image n'est jamais supprimée de sa source — seule la désignation \"couverture de ce guide\" change). Ne modifie aucune autre ressource du guide (titre, corps, tags, statut de publication, metafields custom.*) — uniquement la couverture. Refuse explicitement (aucune écriture) si l'article n'existe pas ou si image_url n'est pas une URL http(s) bien formée.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "article_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OBLIGATOIRE — gid://shopify/Article/..."
+        },
+        "image_url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OBLIGATOIRE — URL de l'image de couverture : soit un resourceUrl renvoyé par generate_product_images/generate_cross_product_image (couverture générée), soit l'URL publique d'une image existante obtenue via get_raw_content (image produit/cross-produit à réutiliser). http(s):// uniquement."
+        },
+        "image_alt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OBLIGATOIRE — texte alternatif éditorial décrivant ce que montre la couverture — jamais un nom de fichier, jamais vide (accessibilité + rendu carte guide)."
+        }
+      },
+      "required": [
+        "article_id",
+        "image_url",
+        "image_alt"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "set_guide_hero_image": {
+    "description": "Attache une image hero desktop OU mobile (un format par appel) à un Guide, via le metafield custom.hero_image_desktop/custom.hero_image_mobile — ne touche JAMAIS aux fichiers de thème. Accepte soit un fichier fourni (image_base64 + image_mime_type), soit le resource_url déjà stagé d'une génération (generate_product_images/generate_cross_product_image, après review humaine) — exactement un des deux requis. Remplace l'image existante pour ce format (pas de duplication). Appeler deux fois (format desktop puis mobile) pour renseigner les deux — un guide sans l'autre format en hérite automatiquement par repli symétrique côté thème.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "article_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Article/..."
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "desktop",
+            "mobile"
+          ],
+          "description": "Format visé par CET appel — appeler l'outil deux fois pour renseigner les deux formats (cohérent avec update_guide/update_collection_content : un appel = un geste explicite)."
+        },
+        "image_base64": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Bytes de l'image déjà en possession d'Antoine, encodés base64 (chemin 'upload', US-07a)."
+        },
+        "image_mime_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Requis avec image_base64 — 'image/jpeg' | 'image/png' | 'image/webp' uniquement."
+        },
+        "resource_url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "resourceUrl déjà stagé, renvoyé par generate_product_images/generate_cross_product_image après review humaine (chemin 'génération', US-07b)."
+        },
+        "alt_text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Texte alternatif du fichier (visible dans l'admin Shopify Files ; le rendu hero est en arrière-plan CSS, pas un <img>, mais jamais de fichier sans alt — même doctrine que le reste du plugin)."
+        }
+      },
+      "required": [
+        "article_id",
+        "format",
+        "alt_text"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "set_home_hero_image": {
+    "description": "Attache une image hero desktop OU mobile (un format par appel) à la Home — la boutique elle-même, il n'y en a qu'une, aucun identifiant à fournir — via le metafield custom.hero_image_desktop/custom.hero_image_mobile porté par shop. Ne touche JAMAIS aux fichiers de thème. Accepte soit un fichier fourni (image_base64 + image_mime_type), soit le resource_url déjà stagé d'une génération (generate_product_images/generate_cross_product_image, après review humaine) — exactement un des deux requis. Remplace l'image existante pour ce format (pas de duplication). Appeler deux fois (format desktop puis mobile) pour renseigner les deux — la Home sans l'autre format en hérite automatiquement par repli symétrique côté thème. Tant qu'aucun des deux formats n'a jamais été renseigné, la Home continue d'afficher le réglage de section existant.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": [
+            "desktop",
+            "mobile"
+          ],
+          "description": "Format visé par CET appel — appeler l'outil deux fois pour renseigner les deux formats (même convention que set_guide_hero_image/set_collection_hero_image)."
+        },
+        "image_base64": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Bytes de l'image déjà en possession d'Antoine, encodés base64 (chemin 'upload', US-06)."
+        },
+        "image_mime_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Requis avec image_base64 — 'image/jpeg' | 'image/png' | 'image/webp' uniquement."
+        },
+        "resource_url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "resourceUrl déjà stagé, renvoyé par generate_product_images/generate_cross_product_image après review humaine (chemin 'génération', US-06)."
+        },
+        "alt_text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Texte alternatif du fichier (visible dans l'admin Shopify Files ; le rendu hero est en arrière-plan CSS, pas un <img>, mais jamais de fichier sans alt — même doctrine que le reste du plugin)."
+        }
+      },
+      "required": [
+        "format",
+        "alt_text"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "set_related_guides": {
+    "description": "Écrit product.custom.related_guides = article_ids TEL QUEL (aucun plafond, contrairement à la projection automatique limitée à 3) et bascule related_guides_source à \"manual\" — ce produit sort alors du régime de projection automatique : createGuideSections/update_guide/publish_guide/unpublish_guide ne le toucheront plus tant que clear_related_guides_override n'est pas appelé. Liste vide acceptée (override vide délibéré : aucun guide affiché, choix explicite). Refuse proprement (jamais un échec silencieux) si product_id ou un article_ids[] sont invalides ou introuvables.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Product/..."
+        },
+        "article_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Liste ORDONNÉE de gid://shopify/Article/... à afficher pour ce produit — peut être vide (override vide délibéré). Aucun plafond : contrairement à la projection automatique (limitée à 3), un override manuel peut en compter davantage, le thème le rend tel quel."
+        }
+      },
+      "required": [
+        "product_id",
+        "article_ids"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "unpublish_collection": {
+    "description": "Retire une collection déjà publiée du canal Online Store (publishableUnpublish) sans la supprimer — inverse de publish_collection. No-op documenté si déjà non publiée sur aucun canal. Ne modifie jamais custom.content_status (dépublier n'est pas une modification de contenu éditorial) ni l'appartenance produit.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Collection/..."
+        }
+      },
+      "required": [
+        "collection_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "unpublish_guide": {
+    "description": "Retire un Article (guide) déjà publié du storefront sans le supprimer — inverse de publish_guide. Bascule isPublished: false via articleUpdate (Article n'implémente pas Publishable, pas de publishablePublish/publishableUnpublish pour ce type). No-op documenté si déjà isPublished: false. Ne modifie jamais custom.content_status (dépublier n'est pas une modification de contenu éditorial).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "article_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Article/..."
+        }
+      },
+      "required": [
+        "article_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "unpublish_page": {
+    "description": "Retire une Page du storefront sans la supprimer (bascule isPublished: false via pageUpdate). No-op documenté si la Page est déjà dépubliée. Ne touche jamais title/body/handle ni un metafield custom.* — seul le statut de visibilité change. Pour supprimer définitivement une Page, utiliser delete_page.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Page/..."
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "unpublish_resource": {
+    "description": "Retire un produit déjà publié du canal Online Store (publishableUnpublish) sans le supprimer ni le repasser en DRAFT — le statut natif reste ACTIVE (le retrait du canal suffit à masquer le produit du storefront ; rétrograder le statut est un geste plus large, hors périmètre de cet outil). Ne prend en charge que resource_type: product — refuse explicitement collection/article en renvoyant vers unpublish_collection/unpublish_guide (même refus que publish_resource pour ces mêmes types). Ne modifie jamais custom.content_status.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "resource_type": {
+          "type": "string",
+          "enum": [
+            "product",
+            "collection",
+            "article"
+          ]
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_collection_content": {
+    "description": "Met à jour partiellement le titre et/ou le contenu éditorial (summary, intro_text, faq) d'une collection existante — les champs omis restent inchangés. Une faq fournie remplace intégralement la précédente (pas de fusion item par item) ; les anciens faq_item ne sont pas supprimés automatiquement (orphelins gérables via delete_metaobject). Si la collection est déjà publiée, repasse automatiquement content_status: to_review et le signale explicitement. Ne modifie jamais l'appartenance produit (update_collection_products) ni le statut de publication (publish_collection/unpublish_collection).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Collection/..."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau titre — omis = inchangé"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau summary — omis = inchangé"
+        },
+        "intro_text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau intro_text (même format texte que propose_collection) — omis = inchangé"
+        },
+        "faq": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "answer": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "question",
+              "answer"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "Nouvelle FAQ complète (remplace intégralement l'existante) — omis = inchangée"
+        }
+      },
+      "required": [
+        "collection_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_collection_products": {
+    "description": "Ajoute et/ou retire des produits d'une collection MANUELLE déjà existante (jamais une modification de contenu éditorial — utiliser update_collection_content pour cela). L'ajout est idempotent (un produit déjà membre n'est pas dupliqué, aucune erreur) et refuse tout produit qui n'a pas encore de productType renseigné (pas encore passé par enrich_product). Le retrait refuse si la collection descendrait à 0 ou 1 produit restant (garde-fou plancher, une collection existe pour aider à choisir entre PLUSIEURS produits). Ne revalide jamais la cohérence thématique de l'ensemble résultant (geste ciblé et volontaire, pas une nouvelle proposition de segmentation).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Collection/..."
+        },
+        "add_product_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [],
+          "description": "gid://shopify/Product/... à ajouter — un produit déjà membre est ignoré silencieusement (idempotence)"
+        },
+        "remove_product_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [],
+          "description": "gid://shopify/Product/... à retirer — refusé si la collection descendrait à moins de 2 produits"
+        }
+      },
+      "required": [
+        "collection_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_guide": {
+    "description": "Met à jour partiellement un Article/guide déjà créé (title, summary, sections, faq, is_howto) — les champs omis restent inchangés. N'appelle JAMAIS articleDelete/articleCreate : le gid et le handle de l'article restent stables à travers toute mise à jour — c'est le garde-fou central de cet outil, construit en réponse directe à l'incident du 2026-07-09 (suppression/recréation de guide_theme faute d'outil de mise à jour). Une sections/faq fournie remplace INTÉGRALEMENT la liste précédente (pas de fusion item par item, mêmes anciens guide_section/faq_item non supprimés automatiquement — orphelins gérables via delete_metaobject). Ne gère JAMAIS la mise à jour en place du contenu d'une section déjà existante : pour ça, utiliser update_metaobject(section_gid, [{key: \"body\", value: ...}]) directement, pas cet outil — sections sert uniquement à remplacer la COMPOSITION de la liste (ajouter/retirer/réordonner des sections). Si le guide était déjà publié (isPublished: true) et qu'au moins un champ de contenu est modifié, content_status repasse automatiquement à to_review et la réponse le signale ; isPublished n'est JAMAIS modifié par cet outil (relève de publish_guide/unpublish_guide).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "article_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Article/..."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau titre — omis = inchangé"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau summary — omis = inchangé"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "heading": {
+                "type": "string",
+                "minLength": 1,
+                "description": "h2 numéroté de la section"
+              },
+              "body": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Texte de la section (paragraphes séparés par une ligne vide, \"- \" = item de liste). Doit répondre de façon autonome à une question implicite. Un segment `[texte](url)` produit un vrai lien cliquable (nœud link Lexical) ; un href invalide (schéma autre que http(s):, URL malformée) fait échouer tout l'appel, rien n'est écrit."
+              },
+              "related_product_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "default": [],
+                "description": "gid://shopify/Product/... liés PRÉCISÉMENT à cette section (peut être vide si aucun produit n'est pertinent pour cette section précise — cf. précédent THEME-10 : jamais une liste générique répétée à l'identique sur toutes les sections)"
+              },
+              "image_product_id": {
+                "type": "string",
+                "minLength": 1,
+                "description": "OPTIONNEL — gid://shopify/Product/... dont la featured image illustrera la section. DOIT figurer dans related_product_ids de CETTE section. Le code résout sa featured image (jamais un GID d'image libre). À ne renseigner que si UN unique produit lié a une image qui illustre réellement le sujet (doctrine H2) — sinon laisser vide, jamais d'image inventée ni piochée hors des produits liés."
+              },
+              "image_alt": {
+                "type": "string",
+                "minLength": 1,
+                "description": "OPTIONNEL mais REQUIS si image_product_id est fourni — texte alternatif éditorial décrivant ce que l'image montre réellement, JAMAIS le nom de fichier, jamais vide si image (contrainte de rendu THEME-27)."
+              },
+              "choices": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "content": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Explication de l'option (même format que body : un `[texte](url)` produit un vrai lien cliquable, un href invalide fait échouer tout l'appel)."
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "content"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": [],
+                "description": "OPTIONNEL — box multi-choix (guide_choice_item) à créer UNIQUEMENT si la section porte un vrai arbitrage entre au moins deux options réelles et distinctes présentes dans le catalogue (doctrine H3). Vide/absent ⇒ aucune box (cas majoritaire des sections narratives). Ne jamais dédoubler le corps de la section ni inventer une option."
+              }
+            },
+            "required": [
+              "heading",
+              "body"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "Liste COMPLÈTE de remplacement des sections (même structure que propose_guide) — omis = inchangée. Remplace intégralement custom.sections : nouveaux guide_section créés pour la liste fournie, anciens non supprimés (orphelins gérables via delete_metaobject). Pas un chemin de mise à jour en place d'une section existante (utiliser update_metaobject pour ça)."
+        },
+        "faq": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string",
+                "minLength": 1
+              },
+              "answer": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "question",
+              "answer"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "Nouvelle FAQ complète (remplace intégralement l'existante) — omis = inchangée"
+        },
+        "is_howto": {
+          "type": "boolean",
+          "description": "Nouveau jugement is_howto — omis = inchangé"
+        }
+      },
+      "required": [
+        "article_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_home_founder": {
+    "description": "Met à jour, de façon PARTIELLE, les champs de la section fondateur « Qui sommes-nous » de la home. Seuls les paramètres fournis sont écrits ; les autres restent inchangés. `portrait_file_id` est le GID d'un fichier image DÉJÀ uploadé sur le store (ex. gid://shopify/MediaImage/...) — cet outil ne fait pas d'upload. Changement visible immédiatement sur la boutique en ligne. Refuse si aucun champ n'est fourni.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "heading": {
+          "type": "string",
+          "description": "Titre de la section fondateur."
+        },
+        "quote": {
+          "type": "string",
+          "description": "Citation / accroche du fondateur."
+        },
+        "bio": {
+          "type": "string",
+          "description": "Bio du fondateur, texte en clair (paragraphes séparés par une ligne vide, liste à puces via \"- \", liens \"[texte](url)\") — converti automatiquement au format attendu par Shopify, ne jamais fournir de JSON déjà construit."
+        },
+        "link_label": {
+          "type": "string",
+          "description": "Libellé du lien (ex. « Lire les guides »)."
+        },
+        "link_url": {
+          "type": "string",
+          "description": "URL cible du lien."
+        },
+        "portrait_file_id": {
+          "type": "string",
+          "description": "GID d'un fichier image déjà uploadé (portrait). Aucun upload effectué ici."
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_home_trust": {
+    "description": "Met à jour, de façon PARTIELLE, la section confiance « Pourquoi nous faire confiance » : son titre, son paragraphe d'introduction et/ou le titre et le texte de chacune des 3 valeurs (cardinal fixe). Seuls les paramètres fournis sont écrits ; les autres restent inchangés. Changement visible immédiatement sur la boutique en ligne. Refuse si aucun champ n'est fourni.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "heading": {
+          "type": "string",
+          "description": "Titre de la section confiance."
+        },
+        "intro": {
+          "type": "string",
+          "description": "Paragraphe d'introduction affiché sous le titre de la section confiance."
+        },
+        "value_1_title": {
+          "type": "string",
+          "description": "Titre de la 1re valeur."
+        },
+        "value_1_body": {
+          "type": "string",
+          "description": "Texte de la 1re valeur."
+        },
+        "value_2_title": {
+          "type": "string",
+          "description": "Titre de la 2e valeur."
+        },
+        "value_2_body": {
+          "type": "string",
+          "description": "Texte de la 2e valeur."
+        },
+        "value_3_title": {
+          "type": "string",
+          "description": "Titre de la 3e valeur."
+        },
+        "value_3_body": {
+          "type": "string",
+          "description": "Texte de la 3e valeur."
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_menu": {
+    "description": "Modifie le TITRE et/ou le HANDLE du menu lui-même — pas ses items. Le titre est cosmétique et ne demande aucune confirmation. LE HANDLE EST BIEN PLUS DANGEREUX, et c'est la raison d'être des garde-fous : un thème référence ses menus PAR HANDLE (section.settings.menu stocke un handle, pas un id) — le changer fait disparaître la zone de navigation correspondante SANS erreur, SANS log, sans que Shopify signale quoi que ce soit. D'où : (1) sur un menu par défaut (mention « , par défaut » dans list_menus — main-menu, footer), le changement de handle est REFUSÉ et ce refus n'est JAMAIS contournable, Shopify l'interdisant lui-même ; le titre, lui, y reste modifiable ; (2) sur tout autre menu, le changement de handle exige confirm_handle_change: true. Cette confirmation est un RALENTISSEUR CONSCIENT, PAS UNE GARANTIE : le connecteur ne peut pas vérifier qu'un handle est référencé par le thème sans sortir de ce dépôt. Le compte-rendu rappelle toujours l'ancien handle, ce qui rend le retour en arrière trivial. Sous le capot, menuUpdate exige les items à chaque appel : l'opération est un cycle read-modify-write à transformation identité, protégé par les mêmes garde-fous que les autres mutations (aucun item ne peut être perdu au passage). isError sans aucune écriture si : menu introuvable, ni title ni handle fourni, handle sans confirmation, handle sur un menu par défaut, ou userErrors Shopify (handle déjà pris).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "menu_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Menu/..."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — nouveau titre affiché du menu. Cosmétique, aucune confirmation requise, modifiable même sur un menu par défaut."
+        },
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — nouveau handle. CASSE toute référence du thème à ce menu (la zone de navigation disparaît silencieusement). Exige confirm_handle_change: true, et est toujours refusé sur un menu par défaut. Shopify normalise la valeur (minuscules, tirets) et refuse les collisions."
+        },
+        "confirm_handle_change": {
+          "type": "boolean",
+          "default": false,
+          "description": "true pour autoriser le changement de handle — ne contourne JAMAIS le refus sur un menu par défaut. Ne pas confondre avec confirm_non_empty_deletion (delete_menu) : axe de risque distinct (casser une référence de thème, pas détruire du contenu). Sans effet si handle n'est pas fourni."
+        }
+      },
+      "required": [
+        "menu_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_menu_item": {
+    "description": "Modifie un item de menu EN PLACE, à profondeur quelconque : son item_id et son sous-menu sont PRÉSERVÉS. C'est la totalité de son intérêt — renommer un item par remove + add détruirait ses enfants, ce que remove_menu_item refuse précisément. SEULS LES CHAMPS FOURNIS CHANGENT. title seul : le titre change, la cible ET le type restent intacts, non re-dérivés (7 des 13 types de lien ne sont pas dérivables d'un gid — FRONTPAGE, COLLECTIONS, CATALOG, SEARCH, SHOP_POLICY, HTTP sans url, CUSTOMER_ACCOUNT_PAGE ; re-dériver le type en renommant « Accueil » le casserait). resource_id ou url : la cible est remplacée et le type re-dérivé du gid. Les deux paramètres de cible sont mutuellement exclusifs ; url est validée anti-XSS. Ne DÉPLACE rien — ni position (voir reorder_menu_items), ni parent (aucun outil ne le fait). isError sans aucune écriture si : menu ou item introuvable, aucun des trois champs fourni (appel sans effet), resource_id et url fournis ensemble, url invalide, gid non reconnu, ou userErrors Shopify.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "menu_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Menu/..."
+        },
+        "item_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/MenuItem/... à modifier, à PROFONDEUR QUELCONQUE dans le menu (repère fourni par list_menus)."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — nouveau libellé affiché. Omis : le titre actuel est conservé. Fourni SEUL, la cible et le type de l'item ne sont pas touchés."
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — nouvelle cible : gid d'une Collection/Product/Page/Article/Blog/Metaobject. Le type de lien en est re-dérivé. Exclusif avec url. Omis (comme url) : cible et type inchangés."
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONNEL — nouvelle cible externe absolue (http(s)), validée. Le type devient HTTP. Exclusif avec resource_id."
+        }
+      },
+      "required": [
+        "menu_id",
+        "item_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_metaobject": {
+    "description": "Met à jour un ou plusieurs champs d'un metaobject existant — mise à jour partielle : tout champ existant non mentionné dans fields reste inchangé. Relit l'existence du metaobject avant toute écriture (isError: true si introuvable, même garde-fou que delete_metaobject). Un champ list.*_reference fourni (ex. articles d'un guide_theme) est remplacé intégralement par la valeur donnée — propriété native de l'API Shopify, pas une fusion : appeler get_metaobject au préalable pour composer la liste complète à écrire (ex. retirer une référence morte sans perdre les autres). Un champ déclaré rich_text_field côté Shopify (ex. guide_section.body) reçoit la valeur comme du texte en clair et la convertit automatiquement (paragraphes séparés par une ligne vide, liste à puces via \"- \", liens \"[texte](url)\") — ne jamais fournir de JSON Lexical déjà construit sur ces champs. Aucune autre validation redondante côté MCP : les userErrors Shopify remontent tel quel.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "metaobject_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Metaobject/..."
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "Champs à modifier ({key, value}) — seuls ces champs sont écrits. Un champ list.*_reference attend la liste JSON complète de remplacement, pas une fusion. Un champ rich_text_field attend du texte en clair, converti automatiquement — pas de JSON."
+        }
+      },
+      "required": [
+        "metaobject_id",
+        "fields"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_page": {
+    "description": "Met à jour PARTIELLEMENT le contenu natif d'une Page existante (title, body HTML, handle) — seuls les champs fournis sont modifiés, les champs omis restent inchangés. Relit l'existence de la Page AVANT toute écriture (isError: true si introuvable). Le gid de la Page reste STABLE à travers la mise à jour (jamais delete+recreate — référencement préservé). N'écrit JAMAIS un metafield custom.* : strictement disjoint de update_page_metafields (contenu natif vs custom.*). Aucun champ fourni → aucune modification (no-op signalé). Le body est du HTML stocké tel quel et rendu sur le storefront (pas de sanitizer côté MCP).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Page/..."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau titre — omis = inchangé"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau corps HTML (stocké tel quel, rendu sur le storefront) — omis = inchangé"
+        },
+        "handle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau handle d'URL — omis = inchangé"
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_page_metafields": {
+    "description": "Écrit un ou plusieurs metafields custom.* sur une Page Shopify. Relit l'existence de la Page avant toute écriture (isError: true si introuvable). Aucune validation redondante de type/value côté MCP : Shopify est la seule source de vérité, ses userErrors remontent tel quel (type incompatible, valeur invalide...). Un champ list.*_reference (ex. themes) est remplacé INTÉGRALEMENT par la valeur donnée — propriété native de l'API Shopify, pas une fusion : relire via get_page_metafields au préalable pour composer la liste complète à écrire (ex. retirer une référence morte sans perdre les autres). Ne touche jamais un champ natif de la Page (title/body — hors périmètre).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/Page/..."
+        },
+        "metafields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Clé du metafield custom.* (ex. \"themes\")"
+              },
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Type Shopify du metafield (ex. \"list.metaobject_reference\", \"single_line_text_field\")"
+              },
+              "value": {
+                "type": "string",
+                "description": "Valeur — pour un list.*_reference, chaîne JSON du tableau complet de gid (remplacement intégral)"
+              }
+            },
+            "required": [
+              "key",
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "description": "Metafields custom.* à écrire ({key, type, value}) — namespace custom implicite."
+        }
+      },
+      "required": [
+        "page_id",
+        "metafields"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_seo": {
+    "description": "Pose ou met à jour le meta title et/ou la meta description d'un produit, d'une collection, d'un guide (article) ou d'une page. Mise à jour PARTIELLE indépendante par champ : seul le champ fourni est modifié, l'autre reste inchangé. Aucun champ fourni → aucune écriture (no-op signalé, pas d'erreur). Relit l'existence de la ressource AVANT toute écriture (isError si introuvable / mauvais type). N'écrit QUE le couple SEO — jamais le titre natif, le body, le handle, le statut de publication ni un metafield custom.*. Une fiche déjà publiée n'est PAS rebasculée « à review » (une retouche SEO n'est pas une modification éditoriale). Les contraintes de longueur/format sont celles de Shopify : ses userErrors remontent tels quels, sans validation réinventée côté MCP.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "resource_type": {
+          "type": "string",
+          "enum": [
+            "product",
+            "collection",
+            "article",
+            "page"
+          ],
+          "description": "Type de la ressource (article = guide)."
+        },
+        "resource_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "gid://shopify/{Product|Collection|Article|Page}/... — cohérent avec resource_type."
+        },
+        "seo_title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouveau meta title — omis = inchangé."
+        },
+        "seo_description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nouvelle meta description — omise = inchangée."
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "update_testimonial": {
+    "description": "Met à jour, de façon PARTIELLE, un témoignage existant désigné par son id (obtenu via list_testimonials). Seuls les paramètres fournis sont écrits. Refuse sans écrire si l'id est introuvable ou ne désigne pas un témoignage, ou si aucun champ n'est fourni. Changement visible immédiatement sur la boutique en ligne.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "testimonial_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "GID du témoignage (gid://shopify/Metaobject/...), via list_testimonials."
+        },
+        "quote": {
+          "type": "string",
+          "description": "Nouveau texte du retour client."
+        },
+        "author_name": {
+          "type": "string",
+          "description": "Nouveau nom / attribution."
+        },
+        "author_context": {
+          "type": "string",
+          "description": "Nouveau contexte de l'auteur."
+        }
+      },
+      "required": [
+        "testimonial_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  },
+  "use_store": {
+    "description": "Choisit la boutique sur laquelle porteront tous les appels suivants de cette session, et vide tout ce qui avait été mémorisé pour la précédente (jeton, configuration, profil de marque, prompts d'image). Sans ce choix, quand plusieurs boutiques sont configurées, les outils refusent d'agir — aucune n'est prise par défaut, pour qu'un contenu ne parte jamais dans la mauvaise boutique. La sélection ne survit pas à la session : la refaire au début de chaque conversation.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "store_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifiant de la boutique, tel que list_stores le renvoie (ex. « lurelab »)."
+        }
+      },
+      "required": [
+        "store_id"
+      ],
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    }
+  }
+}
