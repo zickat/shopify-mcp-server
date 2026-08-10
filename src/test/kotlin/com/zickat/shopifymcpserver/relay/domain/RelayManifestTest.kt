@@ -1,7 +1,7 @@
 package com.zickat.shopifymcpserver.relay.domain
 
 import com.zickat.shopifymcpserver.relay.domain.models.RelayManifestEntry
-import com.zickat.shopifymcpserver.relay.domain.models.ToolRoute
+import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

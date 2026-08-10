@@ -13,8 +13,8 @@ import com.zickat.shopifymcpserver.relay.domain.RelayTsClientFake
 import com.zickat.shopifymcpserver.relay.domain.models.RelayContentBlock
 import com.zickat.shopifymcpserver.relay.domain.models.RelayManifestEntry
 import com.zickat.shopifymcpserver.relay.domain.models.RelayToolOutcome
-import com.zickat.shopifymcpserver.relay.domain.models.ToolRoute
 import com.zickat.shopifymcpserver.relay.exposed_interface.RelayToolDescriptor
+import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.AccessRole
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.TenantContext

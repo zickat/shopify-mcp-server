@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class UseStoreTool(
-    private val pipeline: AuthenticatedToolPipeline,
+    private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val activeStoreExposedService: ActiveStoreExposedService,
     private val storeExposedService: StoreExposedService,

@@ -3,9 +3,9 @@ package com.zickat.shopifymcpserver.relay.domain
 import arrow.core.Either
 import arrow.core.left
 import com.zickat.shopifymcpserver.relay.domain.models.RelayToolOutcome
-import com.zickat.shopifymcpserver.relay.domain.models.ToolRoute
 import com.zickat.shopifymcpserver.relay.domain.repositories.RelayToolInvocationRequest
 import com.zickat.shopifymcpserver.relay.domain.repositories.RelayTsClient
+import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.AccessRole
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError

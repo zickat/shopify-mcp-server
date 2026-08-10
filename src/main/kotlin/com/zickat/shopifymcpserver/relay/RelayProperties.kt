@@ -1,6 +1,6 @@
 package com.zickat.shopifymcpserver.relay
 
-import com.zickat.shopifymcpserver.relay.domain.models.ToolRoute
+import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import org.springframework.boot.context.properties.ConfigurationProperties
 

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class GetPageMetafieldsTool(
-    private val pipeline: AuthenticatedToolPipeline,
+    private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val pagesExposedService: PagesExposedService,
 ) {

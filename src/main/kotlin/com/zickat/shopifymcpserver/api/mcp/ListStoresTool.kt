@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ListStoresTool(
-    private val pipeline: AuthenticatedToolPipeline,
+    private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val activeStoreExposedService: ActiveStoreExposedService,
 ) {

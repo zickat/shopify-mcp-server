@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ListPagesTool(
-    private val pipeline: AuthenticatedToolPipeline,
+    private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val pagesExposedService: PagesExposedService,
 ) {

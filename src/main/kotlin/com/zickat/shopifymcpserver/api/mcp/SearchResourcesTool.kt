@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class SearchResourcesTool(
-    private val pipeline: AuthenticatedToolPipeline,
+    private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val catalogStatusExposedService: CatalogStatusExposedService,
 ) {

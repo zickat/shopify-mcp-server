@@ -4,7 +4,7 @@ import arrow.core.right
 import com.zickat.shopifymcpserver.relay.domain.RelayDispatcher
 import com.zickat.shopifymcpserver.relay.domain.RelayManifest
 import com.zickat.shopifymcpserver.relay.domain.models.RelayManifestEntry
-import com.zickat.shopifymcpserver.relay.domain.models.ToolRoute
+import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.relay.spi.http.RelayTsHttpClient
 import com.zickat.shopifymcpserver.relay.spi.web.RelayEgressController
 import com.zickat.shopifymcpserver.shared_kernel.AccessRole

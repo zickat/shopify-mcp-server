@@ -12,6 +12,8 @@ import org.springframework.modulith.NamedInterface
 interface RelayGateway {
     fun relayedTools(): List<RelayToolDescriptor>
 
+    fun routeFor(toolName: String): ToolRoute?
+
     fun invoke(
         toolName: String,
         toolInput: JsonElement,

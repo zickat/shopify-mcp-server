@@ -4,6 +4,7 @@ import arrow.core.Either
 import com.zickat.shopifymcpserver.relay.domain.models.RelayToolOutcome
 import com.zickat.shopifymcpserver.relay.exposed_interface.RelayGateway
 import com.zickat.shopifymcpserver.relay.exposed_interface.RelayToolDescriptor
+import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.AccessRole
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import kotlinx.serialization.json.JsonElement
@@ -17,6 +18,8 @@ class RelayGatewayImpl(
 
     override fun relayedTools(): List<RelayToolDescriptor> =
         manifest.relayedTools().map { RelayToolDescriptor(it.toolName, it.kind) }
+
+    override fun routeFor(toolName: String): ToolRoute? = manifest.entryFor(toolName)?.route
 
     override fun invoke(
         toolName: String,

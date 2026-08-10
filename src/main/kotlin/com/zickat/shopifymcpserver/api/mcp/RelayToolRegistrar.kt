@@ -2,9 +2,11 @@ package com.zickat.shopifymcpserver.api.mcp
 
 import com.zickat.shopifymcpserver.relay.exposed_interface.RelayGateway
 import com.zickat.shopifymcpserver.relay.exposed_interface.RelayToolDescriptor
+import com.zickat.shopifymcpserver.shared_kernel.TenantContext
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
+import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import io.modelcontextprotocol.server.McpServerFeatures
 import io.modelcontextprotocol.server.McpSyncServerExchange
@@ -64,28 +66,39 @@ fun relayToolCallResult(
 
     return try {
         pipeline.runForActiveStore(descriptor.toolName, useCase, sessionId, toolInputDigest) { tenant, user ->
-            val storeSlugRecognizedByTheRelayedTsProcess = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            relayGateway.invoke(descriptor.toolName, toolInputJson, storeSlugRecognizedByTheRelayedTsProcess, user.role).fold(
-                { error -> relayErrorResult(error) },
-                { outcome ->
-                    val builder = McpSchema.CallToolResult.builder().isError(outcome.isError)
-                    outcome.content.forEach { block -> builder.addTextContent(block.text) }
-                    builder.build()
-                },
-            )
+            relayCallResult(descriptor.toolName, relayGateway, accessExposedService, tenant, user, toolInputJson)
         }
     } catch (e: UseCaseErrorException) {
         relayErrorResult(e.error)
     }
 }
 
-private fun relayErrorResult(error: UseCaseError): McpSchema.CallToolResult =
+fun relayCallResult(
+    toolName: String,
+    relayGateway: RelayGateway,
+    accessExposedService: AccessExposedService,
+    tenant: TenantContext,
+    user: UserContext,
+    toolInputJson: JsonElement,
+): McpSchema.CallToolResult {
+    val storeSlugRecognizedByTheRelayedTsProcess = accessExposedService.slugFor(user.identityId, tenant.storeId)
+    return relayGateway.invoke(toolName, toolInputJson, storeSlugRecognizedByTheRelayedTsProcess, user.role).fold(
+        { error -> relayErrorResult(error) },
+        { outcome ->
+            val builder = McpSchema.CallToolResult.builder().isError(outcome.isError)
+            outcome.content.forEach { block -> builder.addTextContent(block.text) }
+            builder.build()
+        },
+    )
+}
+
+fun relayErrorResult(error: UseCaseError): McpSchema.CallToolResult =
     McpSchema.CallToolResult.builder()
         .isError(true)
         .addTextContent(UseCaseErrorException(error).message ?: "technical.error")
         .build()
 
-private fun Map<String, Any?>.toJsonElement(): JsonElement = JsonObject(mapValues { (_, value) -> value.toJsonElement() })
+fun Map<String, Any?>.toJsonElement(): JsonElement = JsonObject(mapValues { (_, value) -> value.toJsonElement() })
 
 private fun Any?.toJsonElement(): JsonElement = when (this) {
     null -> JsonNull

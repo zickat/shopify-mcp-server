@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ListMetaobjectsTool(
-    private val pipeline: AuthenticatedToolPipeline,
+    private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val metaobjectsExposedService: MetaobjectsExposedService,
 ) {

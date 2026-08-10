@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ListMenusTool(
-    private val pipeline: AuthenticatedToolPipeline,
+    private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
     private val menusExposedService: MenusExposedService,
 ) {
