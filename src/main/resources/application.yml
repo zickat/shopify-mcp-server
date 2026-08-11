@@ -112,6 +112,15 @@ mcp:
 # `SearchProductsTool`/`GetRawContentTool`/`GetEnrichedContentTool`/`ListToReviewTool`/
 # `ListOrphanProductsTool` s'enregistrent sous ces cinq noms, même conflit de `SyncToolSpecification`
 # au démarrage sinon. 15 en NATIF désormais, 65 en RELAIS — total inchangé (80).
+#
+# LOT2-23 (D31) — `generate_product_images`/`generate_cross_product_image`/`generate_editorial_scene`/
+# `retouch_editorial_image` basculent `kind: READ` → `kind: MUTATION`. `route` reste `RELAIS` pour les
+# quatre — ce n'est pas un portage, c'est une correction de classification : chacun émet
+# `stagedUploadsCreate` après un appel facturé à Gemini (`shared.ts:1637`), donc une identité `viewer`
+# ne doit pas pouvoir les appeler et l'audit ne doit pas les journaliser `isMutation: false`. 6 entrées
+# `RELAIS`+`READ` restent après ce lot (`check_shopify_connection`, `get_guide_section_state`,
+# `get_home_editorial`, `list_guide_themes`, `list_home_selection`, `list_testimonials`) — épinglées
+# dans `RelayManifestCompletenessTest`.
 relay:
   ts:
     base-url: ${RELAY_TS_BASE_URL:http://127.0.0.1:8765}
@@ -178,13 +187,13 @@ relay:
       kind: MUTATION
     - tool-name: generate_cross_product_image
       route: RELAIS
-      kind: READ
+      kind: MUTATION
     - tool-name: generate_editorial_scene
       route: RELAIS
-      kind: READ
+      kind: MUTATION
     - tool-name: generate_product_images
       route: RELAIS
-      kind: READ
+      kind: MUTATION
     - tool-name: get_enriched_content
       route: NATIF
       kind: READ
@@ -283,7 +292,7 @@ relay:
       kind: MUTATION
     - tool-name: retouch_editorial_image
       route: RELAIS
-      kind: READ
+      kind: MUTATION
     - tool-name: search_products
       route: NATIF
       kind: READ

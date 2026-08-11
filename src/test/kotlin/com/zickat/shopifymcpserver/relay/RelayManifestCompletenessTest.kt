@@ -31,6 +31,15 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
 
     private val manifest: List<ManifestRow> = loadManifestFromApplicationYml()
 
+    private val handReviewedRelaisReadTools = setOf(
+        "check_shopify_connection",
+        "get_guide_section_state",
+        "get_home_editorial",
+        "list_guide_themes",
+        "list_home_selection",
+        "list_testimonials",
+    )
+
     private val tsRepoToolsDir = Path.of(System.getProperty("user.home"), "IA_sandbox", "mcp-shopify-catalog", "src", "tools")
     private val tsRepoIndexFile = Path.of(System.getProperty("user.home"), "IA_sandbox", "mcp-shopify-catalog", "src", "index.ts")
     private val tsRepoBuildServerFile = Path.of(System.getProperty("user.home"), "IA_sandbox", "mcp-shopify-catalog", "src", "build-server.ts")
@@ -62,6 +71,16 @@ class RelayManifestCompletenessTest : WithMongoDBContainer() {
                 manifest.first { it.toolName == toolName }.kind shouldBe kind
             }
         }
+    }
+
+    @Test
+    fun `the RELAIS entries declared READ are exactly the ones a human has reviewed — D31`() {
+        val actualRelaisReadTools = manifest
+            .filter { it.route == ToolRoute.RELAIS && it.kind == UseCaseKind.READ }
+            .map { it.toolName }
+            .toSet()
+
+        actualRelaisReadTools shouldBe handReviewedRelaisReadTools
     }
 
     @Test
