@@ -71,7 +71,7 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
     companion object {
         private const val EXPECTED_AUDIENCE = "https://shopify-mcp-server.test/mcp"
         private const val ISSUER_URI = "https://idp.test.local/"
-        private const val REMOVED_TOOL = "search_products"
+        private const val REMOVED_TOOL = "check_shopify_connection"
         private const val REROUTED_NATIVE_TOOL = "list_menus"
         private const val REROUTED_NATIVE_TOOL_RELAY_TEXT = "list_menus reached the relay double — the manifest governs despite the native bean"
 
@@ -268,7 +268,7 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `a tool removed from the manifest by mistake is refused, closed by default — real manifest minus search_products`() {
+    fun `a tool removed from the manifest by mistake is refused, closed by default — real manifest minus check_shopify_connection`() {
         val token = jwt("operator-closed-by-default")
         val sessionId = handshake(token)
 
