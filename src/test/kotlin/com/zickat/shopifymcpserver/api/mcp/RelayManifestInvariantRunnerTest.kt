@@ -61,6 +61,31 @@ private class GetPageMetafieldsFakeBean {
     fun call(): String = "ok"
 }
 
+private class SearchProductsFakeBean {
+    @McpTool(name = "search_products", description = "fake")
+    fun call(): String = "ok"
+}
+
+private class GetRawContentFakeBean {
+    @McpTool(name = "get_raw_content", description = "fake")
+    fun call(): String = "ok"
+}
+
+private class GetEnrichedContentFakeBean {
+    @McpTool(name = "get_enriched_content", description = "fake")
+    fun call(): String = "ok"
+}
+
+private class ListToReviewFakeBean {
+    @McpTool(name = "list_to_review", description = "fake")
+    fun call(): String = "ok"
+}
+
+private class ListOrphanProductsFakeBean {
+    @McpTool(name = "list_orphan_products", description = "fake")
+    fun call(): String = "ok"
+}
+
 class RelayManifestInvariantRunnerTest {
 
     private val contextRunner = ApplicationContextRunner()
@@ -94,6 +119,11 @@ class RelayManifestInvariantRunnerTest {
             .withBean(GetMetaobjectFakeBean::class.java)
             .withBean(ListPagesFakeBean::class.java)
             .withBean(GetPageMetafieldsFakeBean::class.java)
+            .withBean(SearchProductsFakeBean::class.java)
+            .withBean(GetRawContentFakeBean::class.java)
+            .withBean(GetEnrichedContentFakeBean::class.java)
+            .withBean(ListToReviewFakeBean::class.java)
+            .withBean(ListOrphanProductsFakeBean::class.java)
             .withBean(
                 RelayProperties::class.java,
                 Supplier {
@@ -108,6 +138,11 @@ class RelayManifestInvariantRunnerTest {
                         "get_metaobject" to ToolRoute.NATIF,
                         "list_pages" to ToolRoute.NATIF,
                         "get_page_metafields" to ToolRoute.NATIF,
+                        "search_products" to ToolRoute.NATIF,
+                        "get_raw_content" to ToolRoute.NATIF,
+                        "get_enriched_content" to ToolRoute.NATIF,
+                        "list_to_review" to ToolRoute.NATIF,
+                        "list_orphan_products" to ToolRoute.NATIF,
                     )
                 },
             )

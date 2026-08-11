@@ -106,6 +106,12 @@ mcp:
 # `list_menus`/`get_seo`/`list_metaobjects` : `GetPageMetafieldsTool`/`ListPagesTool` s'enregistrent
 # sous ces deux noms, même conflit de `SyncToolSpecification` au démarrage sinon. 10 en NATIF
 # désormais, 70 en RELAIS — total inchangé (80).
+#
+# LOT5-04 — `search_products`/`get_raw_content`/`get_enriched_content`/`list_to_review`/
+# `list_orphan_products` basculent NATIF pour la même raison mécanique que les lots précédents :
+# `SearchProductsTool`/`GetRawContentTool`/`GetEnrichedContentTool`/`ListToReviewTool`/
+# `ListOrphanProductsTool` s'enregistrent sous ces cinq noms, même conflit de `SyncToolSpecification`
+# au démarrage sinon. 15 en NATIF désormais, 65 en RELAIS — total inchangé (80).
 relay:
   ts:
     base-url: ${RELAY_TS_BASE_URL:http://127.0.0.1:8765}
@@ -180,7 +186,7 @@ relay:
       route: RELAIS
       kind: READ
     - tool-name: get_enriched_content
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: get_guide_section_state
       route: RELAIS
@@ -195,7 +201,7 @@ relay:
       route: NATIF
       kind: READ
     - tool-name: get_raw_content
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: get_seo
       route: NATIF
@@ -216,7 +222,7 @@ relay:
       route: NATIF
       kind: READ
     - tool-name: list_orphan_products
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: list_pages
       route: NATIF
@@ -228,7 +234,7 @@ relay:
       route: RELAIS
       kind: READ
     - tool-name: list_to_review
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: mark_blocked
       route: RELAIS
@@ -279,7 +285,7 @@ relay:
       route: RELAIS
       kind: READ
     - tool-name: search_products
-      route: RELAIS
+      route: NATIF
       kind: READ
     - tool-name: search_resources
       route: NATIF

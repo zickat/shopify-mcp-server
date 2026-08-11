@@ -687,7 +687,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `tools list exposes exactly the 80 real tools — 10 native and 70 relayed, no duplicate name`() {
+    fun `tools list exposes exactly the 80 real tools — 15 native and 65 relayed, no duplicate name`() {
         val storeId = registerStore()
         val subject = "operator-tools-list-count"
         val identityId = resolveIdentity(subject)
@@ -714,6 +714,11 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "get_metaobject"
         names shouldContain "list_pages"
         names shouldContain "get_page_metafields"
+        names shouldContain "search_products"
+        names shouldContain "get_raw_content"
+        names shouldContain "get_enriched_content"
+        names shouldContain "list_to_review"
+        names shouldContain "list_orphan_products"
         names shouldContain "check_shopify_connection"
         names shouldContain "publish_page"
         names shouldContain "unpublish_page"
@@ -764,7 +769,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
             .toMap()
 
         val relayedNames = relayGateway.relayedTools().map { it.toolName }.filterNot { it in nativeToolNames.names }
-        relayedNames shouldHaveSize 70
+        relayedNames shouldHaveSize 65
 
         relayedNames.forEach { toolName ->
             val exposedInputSchema = toolsByName[toolName]?.get("inputSchema")
@@ -1067,5 +1072,298 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         combined shouldContain "Page"
         combined shouldNotContain "introuvable"
         combined shouldNotContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `search_products (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-search-products"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "search_products", emptyMap())
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `search_products without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-search-products")
+        val subject = "operator-search-products-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "search_products", emptyMap())
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-search-products"
+    }
+
+    @Test
+    fun `get_raw_content (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-get-raw-content"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_raw_content",
+            mapOf("product_id" to "gid://shopify/Product/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `get_raw_content without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-get-raw-content")
+        val subject = "operator-get-raw-content-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_raw_content",
+            mapOf("product_id" to "gid://shopify/Product/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-get-raw-content"
+    }
+
+    @Test
+    fun `get_raw_content refuses a product_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-get-raw-content-wrong-type")
+        val subject = "operator-get-raw-content-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_raw_content",
+            mapOf("product_id" to "gid://shopify/Collection/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "product_id invalide"
+        combined shouldContain "Product"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `get_enriched_content (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-get-enriched-content"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_enriched_content",
+            mapOf("product_id" to "gid://shopify/Product/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `get_enriched_content without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-get-enriched-content")
+        val subject = "operator-get-enriched-content-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_enriched_content",
+            mapOf("product_id" to "gid://shopify/Product/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-get-enriched-content"
+    }
+
+    @Test
+    fun `get_enriched_content refuses a product_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-get-enriched-content-wrong-type")
+        val subject = "operator-get-enriched-content-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "get_enriched_content",
+            mapOf("product_id" to "gid://shopify/Collection/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "product_id invalide"
+        combined shouldContain "Product"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `list_to_review (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-list-to-review"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_to_review", mapOf("resource_type" to "product"))
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `list_to_review without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-list-to-review")
+        val subject = "operator-list-to-review-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_to_review", mapOf("resource_type" to "product"))
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-list-to-review"
+    }
+
+    @Test
+    fun `list_to_review refuses an unknown resource_type, without touching Shopify`() {
+        val storeId = registerStore("velotrip-list-to-review-wrong-type")
+        val subject = "operator-list-to-review-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_to_review", mapOf("resource_type" to "page"))
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "Type de ressource invalide"
+        combined shouldContain "page"
+        combined shouldNotContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `list_orphan_products (READ) is callable by a viewer with an active store selected — reaches business logic instead of being blocked by role`() {
+        val storeId = registerStore()
+        val subject = "viewer-list-orphan-products"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_orphan_products", emptyMap())
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldNotContain "access.role.insufficient"
+        combined shouldContain "storeCredential.not.found"
+    }
+
+    @Test
+    fun `list_orphan_products without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("lurelab-list-orphan-products")
+        val subject = "operator-list-orphan-products-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(token, sessionId, "list_orphan_products", emptyMap())
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "lurelab-list-orphan-products"
     }
 }

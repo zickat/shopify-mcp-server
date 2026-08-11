@@ -9,6 +9,13 @@ import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.ListMetao
 import com.zickat.shopifymcpserver.pages.exposed_interface.model.GetPageMetafieldsOutcome
 import com.zickat.shopifymcpserver.pages.exposed_interface.model.GetPageMetafieldsResult
 import com.zickat.shopifymcpserver.pages.exposed_interface.model.ListPagesResult
+import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentOutcome
+import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentResult
+import com.zickat.shopifymcpserver.products.exposed_interface.model.GetRawContentOutcome
+import com.zickat.shopifymcpserver.products.exposed_interface.model.GetRawContentResult
+import com.zickat.shopifymcpserver.products.exposed_interface.model.ListOrphanProductsResult
+import com.zickat.shopifymcpserver.products.exposed_interface.model.ListToReviewResult
+import com.zickat.shopifymcpserver.products.exposed_interface.model.SearchProductsResult
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectOutcome
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectStatus
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.RequiredRedirectField
@@ -155,6 +162,38 @@ object McpToolResults {
             GetPageMetafieldsOutcome.FOUND ->
                 withBanner(storeSlug, requireNotNull(result.text))
         }
+
+    fun searchProductsResult(storeSlug: String, result: SearchProductsResult): CallToolResult =
+        withBanner(storeSlug, result.text)
+
+    fun getRawContentResult(storeSlug: String, result: GetRawContentResult): CallToolResult =
+        when (result.outcome) {
+            GetRawContentOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Produit introuvable : ${result.productId}", isError = true)
+            GetRawContentOutcome.FOUND ->
+                withBanner(storeSlug, requireNotNull(result.text))
+        }
+
+    fun getEnrichedContentResult(storeSlug: String, result: GetEnrichedContentResult): CallToolResult =
+        when (result.outcome) {
+            GetEnrichedContentOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Produit introuvable : ${result.productId}", isError = true)
+            GetEnrichedContentOutcome.FOUND ->
+                withBanner(storeSlug, requireNotNull(result.text))
+        }
+
+    fun listToReviewResult(storeSlug: String, result: ListToReviewResult): CallToolResult =
+        withBanner(storeSlug, result.text)
+
+    fun listOrphanProductsResult(storeSlug: String, result: ListOrphanProductsResult): CallToolResult =
+        withBanner(storeSlug, result.text)
+
+    fun invalidToReviewResourceType(storeSlug: String, value: String): CallToolResult =
+        withBanner(
+            storeSlug,
+            "Type de ressource invalide : \"$value\" (attendu \"product\", \"collection\" ou \"article\").",
+            isError = true,
+        )
 
     fun errorResult(storeSlug: String, error: UseCaseError): CallToolResult =
         withBanner(storeSlug, UseCaseErrorException(error).message ?: "technical.error", isError = true)

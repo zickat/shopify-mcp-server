@@ -13,11 +13,12 @@ class NativeToolNamesTest : WithMongoDBContainer() {
     private lateinit var nativeToolNames: NativeToolNames
 
     @Test
-    fun `derives exactly the ten known native tool names from the real application context`() {
+    fun `derives exactly the fifteen known native tool names from the real application context`() {
         nativeToolNames.names shouldBe setOf(
             "list_stores", "use_store", "create_redirect", "search_resources",
             "list_menus", "get_seo", "list_metaobjects", "get_metaobject",
             "list_pages", "get_page_metafields",
+            "search_products", "get_raw_content", "get_enriched_content", "list_to_review", "list_orphan_products",
         )
     }
 }
