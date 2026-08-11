@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.products.domain
+package com.zickat.shopifymcpserver.shared_kernel
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

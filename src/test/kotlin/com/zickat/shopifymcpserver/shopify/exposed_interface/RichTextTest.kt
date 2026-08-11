@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.catalog_status.domain
+package com.zickat.shopifymcpserver.shopify.exposed_interface
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

@@ -6,6 +6,7 @@ import com.zickat.shopifymcpserver.products.exposed_interface.model.ListOrphanPr
 import com.zickat.shopifymcpserver.shared_kernel.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import com.zickat.shopifymcpserver.shopify.exposed_interface.RichText
 import com.zickat.shopifymcpserver.shopify.exposed_interface.ShopifyAdminGateway
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull

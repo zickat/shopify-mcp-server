@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.products.domain
+package com.zickat.shopifymcpserver.shared_kernel
 
 private val TAG_PATTERN = Regex("<[^>]+>")
 private val WHITESPACE_PATTERN = Regex("\\s+")

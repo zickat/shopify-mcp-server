@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.products.domain
+package com.zickat.shopifymcpserver.shopify.exposed_interface
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -8,7 +8,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import org.springframework.modulith.NamedInterface
 
+@NamedInterface("exposed_interface")
 object RichText {
 
     private val json = Json { ignoreUnknownKeys = true }

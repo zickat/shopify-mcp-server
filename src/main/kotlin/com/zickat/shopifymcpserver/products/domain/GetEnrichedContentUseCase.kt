@@ -4,6 +4,8 @@ import arrow.core.Either
 import arrow.core.raise.either
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentResult
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import com.zickat.shopifymcpserver.shared_kernel.stripHtml
+import com.zickat.shopifymcpserver.shopify.exposed_interface.RichText
 import com.zickat.shopifymcpserver.shopify.exposed_interface.ShopifyAdminGateway
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
