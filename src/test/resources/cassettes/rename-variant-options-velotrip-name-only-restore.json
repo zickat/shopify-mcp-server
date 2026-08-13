@@ -1,0 +1,88 @@
+{
+  "tool": "rename_variant_options",
+  "toolInput": {
+    "product_id": "gid://shopify/Product/16095198478661",
+    "option_renames": [
+      {
+        "current_name": "TailleTMP",
+        "new_name": "Taille"
+      }
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Renommage appliqué sur gid://shopify/Product/16095198478661 :\n  - Option \"TailleTMP\" → \"Taille\"\nLe title composite des variants concernés a pu changer en conséquence (mise à jour automatique côté Shopify, hors du contrôle direct de cet outil)."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchProductOptions($id: ID!) {\n      product(id: $id) {\n        options {\n          id\n          name\n          optionValues { id name }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Product/16095198478661"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "product": {
+            "options": [
+              {
+                "id": "[REDACTED by D37 cassette allowlist — undeclared field \"product.options[].id\"]",
+                "name": "[REDACTED by D37 cassette allowlist — undeclared field \"product.options[].name\"]",
+                "optionValues": [
+                  {
+                    "id": "[REDACTED by D37 cassette allowlist — undeclared field \"product.options[].optionValues[].id\"]",
+                    "name": "[REDACTED by D37 cassette allowlist — undeclared field \"product.options[].optionValues[].name\"]"
+                  },
+                  {
+                    "id": "[REDACTED by D37 cassette allowlist — undeclared field \"product.options[].optionValues[].id\"]",
+                    "name": "[REDACTED by D37 cassette allowlist — undeclared field \"product.options[].optionValues[].name\"]"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "redactedResponseFields": [
+        "product.options[].id",
+        "product.options[].name",
+        "product.options[].optionValues[].id",
+        "product.options[].optionValues[].name",
+        "product.options[].optionValues[].id",
+        "product.options[].optionValues[].name"
+      ]
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation ProductOptionUpdate(\n      $productId: ID!\n      $option: OptionUpdateInput!\n      $optionValuesToUpdate: [OptionValueUpdateInput!]\n      $variantStrategy: ProductOptionUpdateVariantStrategy\n    ) {\n      productOptionUpdate(\n        productId: $productId\n        option: $option\n        optionValuesToUpdate: $optionValuesToUpdate\n        variantStrategy: $variantStrategy\n      ) {\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "productId": "gid://shopify/Product/16095198478661",
+          "option": {
+            "id": "gid://shopify/ProductOption/18677156053317",
+            "name": "Taille"
+          },
+          "variantStrategy": "LEAVE_AS_IS"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "productOptionUpdate": {
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}
