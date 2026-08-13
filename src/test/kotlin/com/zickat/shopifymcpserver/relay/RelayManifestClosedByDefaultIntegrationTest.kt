@@ -71,9 +71,16 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
     companion object {
         private const val EXPECTED_AUDIENCE = "https://shopify-mcp-server.test/mcp"
         private const val ISSUER_URI = "https://idp.test.local/"
-        private const val REMOVED_TOOL = "check_shopify_connection"
         private const val REROUTED_NATIVE_TOOL = "list_menus"
         private const val REROUTED_NATIVE_TOOL_RELAY_TEXT = "list_menus reached the relay double — the manifest governs despite the native bean"
+
+        private val realManifest = loadApplicationYmlManifest()
+
+        private val REMOVED_TOOL: String? = realManifest
+            .filter { it.route == "RELAIS" }
+            .map { it.toolName }
+            .sorted()
+            .firstOrNull()
 
         private val key: RSAKey = RSAKeyGenerator(2048).keyID("test-key").generate()
 
@@ -105,7 +112,7 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
             start()
         }
 
-        private val testManifest = loadApplicationYmlManifest()
+        private val testManifest = realManifest
             .filterNot { it.toolName == REMOVED_TOOL }
             .map { if (it.toolName == REROUTED_NATIVE_TOOL) it.copy(route = "RELAIS") else it }
 
@@ -268,7 +275,13 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `a tool removed from the manifest by mistake is refused, closed by default — real manifest minus check_shopify_connection`() {
+    fun `a tool removed from the manifest by mistake is refused, closed by default`() {
+        val removedTool = checkNotNull(REMOVED_TOOL) {
+            "no RELAIS entry remains in the manifest to anchor this scenario on — the relay branch is " +
+                "gone (lot 8), this test has nothing left to derive from and should be retired along with it"
+        }
+        realManifest.first { it.toolName == removedTool }.route shouldBe "RELAIS"
+
         val token = jwt("operator-closed-by-default")
         val sessionId = handshake(token)
 
@@ -281,18 +294,18 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
         val tools = (listPayload?.get("result") as? Map<*, *>)?.get("tools") as? List<*>
         checkNotNull(tools) { "tools/list did not return a tools array: $listPayload" }
         val names = tools.mapNotNull { (it as? Map<*, *>)?.get("name") as? String }
-        names shouldNotContain REMOVED_TOOL
+        names shouldNotContain removedTool
 
         val (callResponse, callPayload) = sendJsonRpcRequestAndParseJsonPayload(
-            """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"$REMOVED_TOOL","arguments":{}}}""",
+            """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"$removedTool","arguments":{}}}""",
             token,
             sessionId,
         )
 
         callResponse.statusCode shouldBe HttpStatus.OK
         val errorNode = callPayload?.get("error") as? Map<*, *>
-        checkNotNull(errorNode) { "removed tool '$REMOVED_TOOL' was not refused at the JSON-RPC layer — response was: $callPayload" }
+        checkNotNull(errorNode) { "removed tool '$removedTool' was not refused at the JSON-RPC layer — response was: $callPayload" }
         errorNode["message"] as? String shouldContain "Unknown tool"
-        errorNode["data"] as? String shouldContain REMOVED_TOOL
+        errorNode["data"] as? String shouldContain removedTool
     }
 }
