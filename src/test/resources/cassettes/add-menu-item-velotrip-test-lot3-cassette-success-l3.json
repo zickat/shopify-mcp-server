@@ -1,0 +1,168 @@
+{
+  "tool": "add_menu_item",
+  "toolInput": {
+    "menu_id": "gid://shopify/Menu/344830673221",
+    "title": "[test-lot3-cassette] G1",
+    "url": "https://example.com/test-lot3-cassette-g1",
+    "parent_item_id": "gid://shopify/MenuItem/880184754501"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Lien \"[test-lot3-cassette] G1\" ajouté au menu \"[test-lot3-cassette] throwaway menu\" (test-lot3-cassette-2026-08-14) sous l'item gid://shopify/MenuItem/880184754501, en position 1 → URL https://example.com/test-lot3-cassette-g1."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMenu($id: ID!) {\n      menu(id: $id) {\n        id handle title isDefault\n        items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Menu/344830673221"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menu": {
+            "id": "gid://shopify/Menu/344830673221",
+            "handle": "test-lot3-cassette-2026-08-14",
+            "title": "[test-lot3-cassette] throwaway menu",
+            "isDefault": false,
+            "items": [
+              {
+                "id": "gid://shopify/MenuItem/880184688965",
+                "title": "[test-lot3-cassette] R1",
+                "type": "HTTP",
+                "url": "https://example.com/test-lot3-cassette-r1",
+                "resourceId": null,
+                "tags": [],
+                "items": []
+              },
+              {
+                "id": "gid://shopify/MenuItem/880184721733",
+                "title": "[test-lot3-cassette] R2",
+                "type": "HTTP",
+                "url": "https://example.com/test-lot3-cassette-r2",
+                "resourceId": null,
+                "tags": [],
+                "items": [
+                  {
+                    "id": "gid://shopify/MenuItem/880184754501",
+                    "title": "[test-lot3-cassette] C1",
+                    "type": "HTTP",
+                    "url": "https://example.com/test-lot3-cassette-c1",
+                    "resourceId": null,
+                    "tags": [],
+                    "items": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation UpdateMenu($id: ID!, $title: String!, $handle: String, $items: [MenuItemUpdateInput!]!) {\n      menuUpdate(id: $id, title: $title, handle: $handle, items: $items) {\n        menu { id items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } } }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Menu/344830673221",
+          "title": "[test-lot3-cassette] throwaway menu",
+          "handle": "test-lot3-cassette-2026-08-14",
+          "items": [
+            {
+              "title": "[test-lot3-cassette] R1",
+              "type": "HTTP",
+              "tags": [],
+              "id": "gid://shopify/MenuItem/880184688965",
+              "url": "https://example.com/test-lot3-cassette-r1"
+            },
+            {
+              "title": "[test-lot3-cassette] R2",
+              "type": "HTTP",
+              "tags": [],
+              "id": "gid://shopify/MenuItem/880184721733",
+              "url": "https://example.com/test-lot3-cassette-r2",
+              "items": [
+                {
+                  "title": "[test-lot3-cassette] C1",
+                  "type": "HTTP",
+                  "tags": [],
+                  "id": "gid://shopify/MenuItem/880184754501",
+                  "url": "https://example.com/test-lot3-cassette-c1",
+                  "items": [
+                    {
+                      "title": "[test-lot3-cassette] G1",
+                      "type": "HTTP",
+                      "tags": [],
+                      "url": "https://example.com/test-lot3-cassette-g1"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menuUpdate": {
+            "menu": {
+              "id": "gid://shopify/Menu/344830673221",
+              "items": [
+                {
+                  "id": "gid://shopify/MenuItem/880184688965",
+                  "title": "[test-lot3-cassette] R1",
+                  "type": "HTTP",
+                  "url": "https://example.com/test-lot3-cassette-r1",
+                  "resourceId": null,
+                  "tags": [],
+                  "items": []
+                },
+                {
+                  "id": "gid://shopify/MenuItem/880184721733",
+                  "title": "[test-lot3-cassette] R2",
+                  "type": "HTTP",
+                  "url": "https://example.com/test-lot3-cassette-r2",
+                  "resourceId": null,
+                  "tags": [],
+                  "items": [
+                    {
+                      "id": "gid://shopify/MenuItem/880184754501",
+                      "title": "[test-lot3-cassette] C1",
+                      "type": "HTTP",
+                      "url": "https://example.com/test-lot3-cassette-c1",
+                      "resourceId": null,
+                      "tags": [],
+                      "items": [
+                        {
+                          "id": "gid://shopify/MenuItem/880184787269",
+                          "title": "[test-lot3-cassette] G1",
+                          "type": "HTTP",
+                          "url": "https://example.com/test-lot3-cassette-g1",
+                          "resourceId": null,
+                          "tags": [],
+                          "items": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

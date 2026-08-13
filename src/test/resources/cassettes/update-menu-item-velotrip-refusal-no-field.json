@@ -1,0 +1,21 @@
+{
+  "tool": "update_menu_item",
+  "toolInput": {
+    "menu_id": "gid://shopify/Menu/344830673221",
+    "item_id": "gid://shopify/MenuItem/880184688965"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Modification refusée : fournir au moins un de title, resource_id ou url — un appel sans aucun des trois serait sans effet. Aucune modification."
+      }
+    ],
+    "isError": true
+  },
+  "calls": []
+}

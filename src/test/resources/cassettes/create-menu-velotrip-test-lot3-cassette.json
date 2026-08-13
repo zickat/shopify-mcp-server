@@ -1,0 +1,89 @@
+{
+  "tool": "create_menu",
+  "toolInput": {
+    "handle": "test-lot3-cassette-2026-08-14",
+    "title": "[test-lot3-cassette] throwaway menu",
+    "items": [
+      {
+        "title": "[test-lot3-cassette] R1",
+        "url": "https://example.com/test-lot3-cassette-r1"
+      },
+      {
+        "title": "[test-lot3-cassette] R2",
+        "url": "https://example.com/test-lot3-cassette-r2"
+      }
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Menu \"[test-lot3-cassette] throwaway menu\" créé — handle attribué : \"test-lot3-cassette-2026-08-14\", id: gid://shopify/Menu/344830673221.\n▸ [test-lot3-cassette] throwaway menu (handle: test-lot3-cassette-2026-08-14) — id: gid://shopify/Menu/344830673221\n    1. [test-lot3-cassette] R1 → URL https://example.com/test-lot3-cassette-r1 — item_id: gid://shopify/MenuItem/880184688965\n    2. [test-lot3-cassette] R2 → URL https://example.com/test-lot3-cassette-r2 — item_id: gid://shopify/MenuItem/880184721733"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation CreateMenu($title: String!, $handle: String!, $items: [MenuItemCreateInput!]!) {\n            menuCreate(title: $title, handle: $handle, items: $items) {\n              menu { id handle title isDefault items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } } }\n              userErrors { field message }\n            }\n          }",
+        "variables": {
+          "title": "[test-lot3-cassette] throwaway menu",
+          "handle": "test-lot3-cassette-2026-08-14",
+          "items": [
+            {
+              "title": "[test-lot3-cassette] R1",
+              "type": "HTTP",
+              "tags": [],
+              "url": "https://example.com/test-lot3-cassette-r1"
+            },
+            {
+              "title": "[test-lot3-cassette] R2",
+              "type": "HTTP",
+              "tags": [],
+              "url": "https://example.com/test-lot3-cassette-r2"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menuCreate": {
+            "menu": {
+              "id": "gid://shopify/Menu/344830673221",
+              "handle": "test-lot3-cassette-2026-08-14",
+              "title": "[test-lot3-cassette] throwaway menu",
+              "isDefault": false,
+              "items": [
+                {
+                  "id": "gid://shopify/MenuItem/880184688965",
+                  "title": "[test-lot3-cassette] R1",
+                  "type": "HTTP",
+                  "url": "https://example.com/test-lot3-cassette-r1",
+                  "resourceId": null,
+                  "tags": [],
+                  "items": []
+                },
+                {
+                  "id": "gid://shopify/MenuItem/880184721733",
+                  "title": "[test-lot3-cassette] R2",
+                  "type": "HTTP",
+                  "url": "https://example.com/test-lot3-cassette-r2",
+                  "resourceId": null,
+                  "tags": [],
+                  "items": []
+                }
+              ]
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "tool": "add_menu_item",
+  "toolInput": {
+    "menu_id": "gid://shopify/Menu/344830673221",
+    "title": "[test-lot3-cassette] should fail depth",
+    "url": "https://example.com/should-fail",
+    "parent_item_id": "gid://shopify/MenuItem/880184787269"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Échec de l'ajout du lien \"[test-lot3-cassette] should fail depth\" : Ajout refusé : le parent désigné est déjà au niveau 3, la navigation Shopify n'en rend que 3 et l'outillage n'écrit pas au-delà. Aucune modification."
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMenu($id: ID!) {\n      menu(id: $id) {\n        id handle title isDefault\n        items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Menu/344830673221"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menu": {
+            "id": "gid://shopify/Menu/344830673221",
+            "handle": "test-lot3-cassette-2026-08-14",
+            "title": "[test-lot3-cassette] throwaway menu",
+            "isDefault": false,
+            "items": [
+              {
+                "id": "gid://shopify/MenuItem/880184688965",
+                "title": "[test-lot3-cassette] R1",
+                "type": "HTTP",
+                "url": "https://example.com/test-lot3-cassette-r1",
+                "resourceId": null,
+                "tags": [],
+                "items": []
+              },
+              {
+                "id": "gid://shopify/MenuItem/880184721733",
+                "title": "[test-lot3-cassette] R2",
+                "type": "HTTP",
+                "url": "https://example.com/test-lot3-cassette-r2",
+                "resourceId": null,
+                "tags": [],
+                "items": [
+                  {
+                    "id": "gid://shopify/MenuItem/880184754501",
+                    "title": "[test-lot3-cassette] C1",
+                    "type": "HTTP",
+                    "url": "https://example.com/test-lot3-cassette-c1",
+                    "resourceId": null,
+                    "tags": [],
+                    "items": [
+                      {
+                        "id": "gid://shopify/MenuItem/880184787269",
+                        "title": "[test-lot3-cassette] G1",
+                        "type": "HTTP",
+                        "url": "https://example.com/test-lot3-cassette-g1",
+                        "resourceId": null,
+                        "tags": [],
+                        "items": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

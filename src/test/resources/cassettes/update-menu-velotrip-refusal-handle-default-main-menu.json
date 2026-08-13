@@ -1,0 +1,163 @@
+{
+  "tool": "update_menu",
+  "toolInput": {
+    "menu_id": "gid://shopify/Menu/340712882501",
+    "handle": "should-never-apply",
+    "confirm_handle_change": true
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Échec de la mise à jour du menu : Changement de handle refusé : \"main-menu\" est un menu PAR DÉFAUT du store (Shopify : « the handle for default menus can't be updated »). Ce refus n'est pas contournable. Le titre de ce menu reste modifiable. Aucune modification."
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMenu($id: ID!) {\n      menu(id: $id) {\n        id handle title isDefault\n        items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Menu/340712882501"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menu": {
+            "id": "gid://shopify/Menu/340712882501",
+            "handle": "main-menu",
+            "title": "Menu principal",
+            "isDefault": true,
+            "items": [
+              {
+                "id": "gid://shopify/MenuItem/870871925061",
+                "title": "Guides",
+                "type": "PAGE",
+                "url": "/pages/guides-bikepacking",
+                "resourceId": "gid://shopify/Page/725115011397",
+                "tags": [],
+                "items": [
+                  {
+                    "id": "gid://shopify/MenuItem/876917719365",
+                    "title": "Sacoches & rangement",
+                    "type": "ARTICLE",
+                    "url": "/blogs/guides/comment-choisir-ses-sacoches-de-bikepacking",
+                    "resourceId": "gid://shopify/Article/751345140037",
+                    "tags": [],
+                    "items": []
+                  },
+                  {
+                    "id": "gid://shopify/MenuItem/876917752133",
+                    "title": "Bivouac et autonomie",
+                    "type": "ARTICLE",
+                    "url": "/blogs/guides/partir-en-bivouac-a-velo-la-check-list-complete",
+                    "resourceId": "gid://shopify/Article/751345172805",
+                    "tags": [],
+                    "items": []
+                  },
+                  {
+                    "id": "gid://shopify/MenuItem/876917784901",
+                    "title": "Itinéraires en France",
+                    "type": "ARTICLE",
+                    "url": "/blogs/guides/ou-partir-en-bikepacking-en-france",
+                    "resourceId": "gid://shopify/Article/751644475717",
+                    "tags": [],
+                    "items": []
+                  },
+                  {
+                    "id": "gid://shopify/MenuItem/876917817669",
+                    "title": "Vêtements & garde-robe",
+                    "type": "ARTICLE",
+                    "url": "/blogs/guides/shabiller-pour-le-cyclotourisme-longue-distance",
+                    "resourceId": "gid://shopify/Article/751345205573",
+                    "tags": [],
+                    "items": []
+                  },
+                  {
+                    "id": "gid://shopify/MenuItem/876917850437",
+                    "title": "Outils & réparation",
+                    "type": "ARTICLE",
+                    "url": "/blogs/guides/kit-de-reparation-velo-lessentiel-pour-partir-en-autonomie",
+                    "resourceId": "gid://shopify/Article/751345107269",
+                    "tags": [],
+                    "items": []
+                  },
+                  {
+                    "id": "gid://shopify/MenuItem/876917883205",
+                    "title": "Électronique & navigation",
+                    "type": "ARTICLE",
+                    "url": "/blogs/guides/gps-velo-vs-application-telephone-que-choisir-en-bikepacking",
+                    "resourceId": "gid://shopify/Article/751644082501",
+                    "tags": [],
+                    "items": []
+                  },
+                  {
+                    "id": "gid://shopify/MenuItem/876917915973",
+                    "title": "Hydratation & eau",
+                    "type": "ARTICLE",
+                    "url": "/blogs/guides/gourde-ou-poche-a-eau-comment-shydrater-a-velo",
+                    "resourceId": "gid://shopify/Article/751644213573",
+                    "tags": [],
+                    "items": []
+                  },
+                  {
+                    "id": "gid://shopify/MenuItem/876917948741",
+                    "title": "Débuter en bikepacking",
+                    "type": "ARTICLE",
+                    "url": "/blogs/guides/comment-bien-preparer-mon-premier-voyage-en-bikepacking",
+                    "resourceId": "gid://shopify/Article/751345336645",
+                    "tags": [],
+                    "items": []
+                  }
+                ]
+              },
+              {
+                "id": "gid://shopify/MenuItem/870871892293",
+                "title": "Sacoches et rangements",
+                "type": "COLLECTION",
+                "url": "/collections/sacoches-et-rangements",
+                "resourceId": "gid://shopify/Collection/693235974469",
+                "tags": [],
+                "items": []
+              },
+              {
+                "id": "gid://shopify/MenuItem/873900998981",
+                "title": "Couchage et Bivouac",
+                "type": "COLLECTION",
+                "url": "/collections/couchage-et-bivouac",
+                "resourceId": "gid://shopify/Collection/693235941701",
+                "tags": [],
+                "items": []
+              },
+              {
+                "id": "gid://shopify/MenuItem/873901031749",
+                "title": "Vêtements cyclisme",
+                "type": "COLLECTION",
+                "url": "/collections/vetements-cyclisme",
+                "resourceId": "gid://shopify/Collection/693232206149",
+                "tags": [],
+                "items": []
+              },
+              {
+                "id": "gid://shopify/MenuItem/873901064517",
+                "title": "Outils et réparation vélo",
+                "type": "COLLECTION",
+                "url": "/collections/outils-et-reparation-velo",
+                "resourceId": "gid://shopify/Collection/693232075077",
+                "tags": [],
+                "items": []
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

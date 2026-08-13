@@ -1,0 +1,53 @@
+{
+  "tool": "delete_menu",
+  "toolInput": {
+    "menu_id": "gid://shopify/Menu/344830673221",
+    "confirm_non_empty_deletion": false
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "delete_menu refusé pour \"[test-lot3-cassette] renamed throwaway menu\" (test-lot3-cassette-2026-08-14) — 1 raison(s), aucune suppression :\n1. ce menu porte 1 item(s) de premier niveau (1 au total, sous-menus compris) : suppression refusée sauf appel explicite avec confirm_non_empty_deletion: true. « Porte des items » est un indice d'usage, pas une preuve — un thème référence ses menus par handle, ce que le connecteur ne peut pas vérifier."
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMenu($id: ID!) {\n      menu(id: $id) {\n        id handle title isDefault\n        items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Menu/344830673221"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menu": {
+            "id": "gid://shopify/Menu/344830673221",
+            "handle": "test-lot3-cassette-2026-08-14",
+            "title": "[test-lot3-cassette] renamed throwaway menu",
+            "isDefault": false,
+            "items": [
+              {
+                "id": "gid://shopify/MenuItem/880184721733",
+                "title": "[test-lot3-cassette] R2",
+                "type": "HTTP",
+                "url": "https://example.com/test-lot3-cassette-r2",
+                "resourceId": null,
+                "tags": [],
+                "items": []
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

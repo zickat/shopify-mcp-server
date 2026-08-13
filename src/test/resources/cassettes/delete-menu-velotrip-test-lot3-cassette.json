@@ -1,0 +1,70 @@
+{
+  "tool": "delete_menu",
+  "toolInput": {
+    "menu_id": "gid://shopify/Menu/344830673221",
+    "confirm_non_empty_deletion": true
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Menu \"[test-lot3-cassette] renamed throwaway menu\" (test-lot3-cassette-2026-08-14) supprimé définitivement — 1 item(s) détruit(s) avec lui, sous-menus compris. Cette suppression est IRRÉVERSIBLE côté Shopify.\n\nInstantané complet du menu supprimé — seule copie restante, et seul plan de reconstruction (à rejouer par create_menu puis add_menu_item) :\n\n▸ [test-lot3-cassette] renamed throwaway menu (handle: test-lot3-cassette-2026-08-14) — id: gid://shopify/Menu/344830673221\n    1. [test-lot3-cassette] R2 → URL https://example.com/test-lot3-cassette-r2 — item_id: gid://shopify/MenuItem/880184721733"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMenu($id: ID!) {\n      menu(id: $id) {\n        id handle title isDefault\n        items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Menu/344830673221"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menu": {
+            "id": "gid://shopify/Menu/344830673221",
+            "handle": "test-lot3-cassette-2026-08-14",
+            "title": "[test-lot3-cassette] renamed throwaway menu",
+            "isDefault": false,
+            "items": [
+              {
+                "id": "gid://shopify/MenuItem/880184721733",
+                "title": "[test-lot3-cassette] R2",
+                "type": "HTTP",
+                "url": "https://example.com/test-lot3-cassette-r2",
+                "resourceId": null,
+                "tags": [],
+                "items": []
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation DeleteMenu($id: ID!) {\n            menuDelete(id: $id) {\n              deletedMenuId\n              userErrors { field message }\n            }\n          }",
+        "variables": {
+          "id": "gid://shopify/Menu/344830673221"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menuDelete": {
+            "deletedMenuId": "gid://shopify/Menu/344830673221",
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

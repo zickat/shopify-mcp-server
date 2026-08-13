@@ -1,0 +1,62 @@
+{
+  "tool": "delete_menu",
+  "toolInput": {
+    "menu_id": "gid://shopify/Menu/340712915269",
+    "confirm_non_empty_deletion": true
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "delete_menu refusé pour \"Menu du pied de page\" (footer) — 1 raison(s), aucune suppression :\n1. \"footer\" est un menu PAR DÉFAUT du store (Shopify : « default menus can't be deleted ») — suppression refusée dans TOUS les cas, jamais contournée par confirm_non_empty_deletion. C'est la navigation d'en-tête ou de pied de page de la boutique."
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMenu($id: ID!) {\n      menu(id: $id) {\n        id handle title isDefault\n        items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id title type url resourceId tags items { id } } } } }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Menu/340712915269"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "menu": {
+            "id": "gid://shopify/Menu/340712915269",
+            "handle": "footer",
+            "title": "Menu du pied de page",
+            "isDefault": true,
+            "items": [
+              {
+                "id": "gid://shopify/MenuItem/869032591685",
+                "title": "Rechercher",
+                "type": "SEARCH",
+                "url": "/search",
+                "resourceId": null,
+                "tags": [],
+                "items": []
+              },
+              {
+                "id": "gid://shopify/MenuItem/875594187077",
+                "title": "Contact",
+                "type": "PAGE",
+                "url": "/pages/contact",
+                "resourceId": "gid://shopify/Page/725026308421",
+                "tags": [],
+                "items": []
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
