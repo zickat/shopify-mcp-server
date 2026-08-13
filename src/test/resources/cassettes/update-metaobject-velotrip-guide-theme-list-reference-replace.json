@@ -1,0 +1,122 @@
+{
+  "tool": "update_metaobject",
+  "toolInput": {
+    "metaobject_id": "gid://shopify/Metaobject/632457756997",
+    "fields": [
+      {
+        "key": "articles",
+        "value": "[\"gid://shopify/Article/751644082501\"]"
+      }
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Metaobject gid://shopify/Metaobject/632457756997 (type: guide_theme) mis à jour.\n  - articles: [\"gid://shopify/Article/751644082501\"]"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetMetaobjectBeforeUpdate($id: ID!) {\n          metaobject(id: $id) { id type fields { key value } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/632457756997"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "id": "gid://shopify/Metaobject/632457756997",
+            "type": "guide_theme",
+            "fields": [
+              {
+                "key": "title",
+                "value": "[test-lot4-cassette] throwaway guide theme"
+              },
+              {
+                "key": "articles",
+                "value": "[\"gid://shopify/Article/751345140037\"]"
+              },
+              {
+                "key": "pillar_article",
+                "value": null
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query MetaobjectDefinitionFieldTypes($type: String!) {\n      metaobjectDefinitionByType(type: $type) {\n        fieldDefinitions { key type { name } }\n      }\n    }",
+        "variables": {
+          "type": "guide_theme"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobjectDefinitionByType": {
+            "fieldDefinitions": [
+              {
+                "key": "title",
+                "type": {
+                  "name": "single_line_text_field"
+                }
+              },
+              {
+                "key": "articles",
+                "type": {
+                  "name": "list.article_reference"
+                }
+              },
+              {
+                "key": "pillar_article",
+                "type": {
+                  "name": "article_reference"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation UpdateMetaobject($id: ID!, $metaobject: MetaobjectUpdateInput!) {\n      metaobjectUpdate(id: $id, metaobject: $metaobject) {\n        metaobject { id }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/632457756997",
+          "metaobject": {
+            "fields": [
+              {
+                "key": "articles",
+                "value": "[\"gid://shopify/Article/751644082501\"]"
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobjectUpdate": {
+            "metaobject": {
+              "id": "gid://shopify/Metaobject/632457756997"
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "tool": "delete_metaobject",
+  "toolInput": {
+    "metaobject_id": "gid://shopify/Metaobject/620090196293",
+    "confirm_referenced_deletion": false
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "delete_metaobject refusé pour gid://shopify/Metaobject/620090196293 (type: guide_theme) : référencé par : Page \"(ressource non résolue)\" via custom.themes; Article \"Gourde ou poche à eau : comment s'hydrater à vélo\" (gid://shopify/Article/751644213573) via custom.guide_theme; Article \"Filtrer et traiter l'eau en bikepacking\" (gid://shopify/Article/751644246341) via custom.guide_theme; Article \"Poche à eau vélo : contenance et entretien\" (gid://shopify/Article/751644279109) via custom.guide_theme. Appeler à nouveau avec confirm_referenced_deletion: true pour forcer la suppression malgré cette référence (ou cette incertitude de détection)."
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetMetaobjectBeforeDelete($id: ID!) {\n          metaobject(id: $id) { id type fields { key value } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/620090196293"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "id": "gid://shopify/Metaobject/620090196293",
+            "type": "guide_theme",
+            "fields": [
+              {
+                "key": "title",
+                "value": "Hydratation & eau"
+              },
+              {
+                "key": "articles",
+                "value": "[\"gid://shopify/Article/751644213573\",\"gid://shopify/Article/751644246341\",\"gid://shopify/Article/751644279109\"]"
+              },
+              {
+                "key": "pillar_article",
+                "value": "gid://shopify/Article/751644213573"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchMetaobjectReferences($id: ID!) {\n      metaobject(id: $id) {\n        referencedBy(first: 50) {\n          edges {\n            node {\n              key\n              namespace\n              referencer {\n                __typename\n                ... on Product { id title }\n                ... on Collection { id title }\n                ... on Article { id title }\n                ... on Metaobject { id type }\n              }\n            }\n          }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Metaobject/620090196293"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobject": {
+            "referencedBy": {
+              "edges": [
+                {
+                  "node": {
+                    "key": "themes",
+                    "namespace": "custom",
+                    "referencer": {
+                      "__typename": "Page"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "key": "guide_theme",
+                    "namespace": "custom",
+                    "referencer": {
+                      "__typename": "Article",
+                      "id": "gid://shopify/Article/751644213573",
+                      "title": "Gourde ou poche à eau : comment s'hydrater à vélo"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "key": "guide_theme",
+                    "namespace": "custom",
+                    "referencer": {
+                      "__typename": "Article",
+                      "id": "gid://shopify/Article/751644246341",
+                      "title": "Filtrer et traiter l'eau en bikepacking"
+                    }
+                  }
+                },
+                {
+                  "node": {
+                    "key": "guide_theme",
+                    "namespace": "custom",
+                    "referencer": {
+                      "__typename": "Article",
+                      "id": "gid://shopify/Article/751644279109",
+                      "title": "Poche à eau vélo : contenance et entretien"
+                    }
+                  }
+                }
+              ],
+              "pageInfo": {
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

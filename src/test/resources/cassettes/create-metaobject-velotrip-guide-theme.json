@@ -1,0 +1,98 @@
+{
+  "tool": "create_metaobject",
+  "toolInput": {
+    "type": "guide_theme",
+    "fields": [
+      {
+        "key": "title",
+        "value": "[test-lot4-cassette] throwaway guide theme"
+      },
+      {
+        "key": "articles",
+        "value": "[\"gid://shopify/Article/751345140037\"]"
+      }
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Metaobject gid://shopify/Metaobject/632457756997 (type: guide_theme) créé.\n  - title: [test-lot4-cassette] throwaway guide theme\n  - articles: [\"gid://shopify/Article/751345140037\"]"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query MetaobjectDefinitionFieldTypes($type: String!) {\n      metaobjectDefinitionByType(type: $type) {\n        fieldDefinitions { key type { name } }\n      }\n    }",
+        "variables": {
+          "type": "guide_theme"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobjectDefinitionByType": {
+            "fieldDefinitions": [
+              {
+                "key": "title",
+                "type": {
+                  "name": "single_line_text_field"
+                }
+              },
+              {
+                "key": "articles",
+                "type": {
+                  "name": "list.article_reference"
+                }
+              },
+              {
+                "key": "pillar_article",
+                "type": {
+                  "name": "article_reference"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation CreateMetaobject($metaobject: MetaobjectCreateInput!) {\n      metaobjectCreate(metaobject: $metaobject) {\n        metaobject { id }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "metaobject": {
+            "type": "guide_theme",
+            "fields": [
+              {
+                "key": "title",
+                "value": "[test-lot4-cassette] throwaway guide theme"
+              },
+              {
+                "key": "articles",
+                "value": "[\"gid://shopify/Article/751345140037\"]"
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobjectCreate": {
+            "metaobject": {
+              "id": "gid://shopify/Metaobject/632457756997"
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}
