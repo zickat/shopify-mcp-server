@@ -1,0 +1,79 @@
+{
+  "tool": "update_seo",
+  "toolInput": {
+    "resource_type": "product",
+    "resource_id": "gid://shopify/Product/16095198478661",
+    "seo_title": "[test-lot4-cassette] SEO non restaurable a vide - voir LOT4-05"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Ressource product \"ZZ TEST cobaye — ne pas vendre\" — SEO mis à jour :\n- meta title : \"[test-lot4-cassette] SEO non restaurable a vide - voir LOT4-05\"  (modifié)\n- meta description : \"[test-lot4-cassette] Description SEO de test\"  (inchangé)\n(content_status non modifié — une retouche SEO ne remet pas la fiche à review.)"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query GetResourceSeo($id: ID!) {\n      node(id: $id) {\n        __typename\n        ... on Product    { title seo { title description } }\n        ... on Collection { title seo { title description } }\n        ... on Article {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n        ... on Page {\n          title\n          titleTag: metafield(namespace: \"global\", key: \"title_tag\") { value }\n          descriptionTag: metafield(namespace: \"global\", key: \"description_tag\") { value }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Product/16095198478661"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "node": {
+            "__typename": "[REDACTED by D37 cassette allowlist — undeclared field \"node.__typename\"]",
+            "title": "[REDACTED by D37 cassette allowlist — undeclared field \"node.title\"]",
+            "seo": {
+              "title": "[REDACTED by D37 cassette allowlist — undeclared field \"node.seo.title\"]",
+              "description": "[REDACTED by D37 cassette allowlist — undeclared field \"node.seo.description\"]"
+            }
+          }
+        }
+      },
+      "redactedResponseFields": [
+        "node.__typename",
+        "node.title",
+        "node.seo.title",
+        "node.seo.description"
+      ]
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation UpdateProductSeo($input: ProductInput!) {\n        productUpdate(input: $input) { product { id } userErrors { field message } }\n      }",
+        "variables": {
+          "input": {
+            "id": "gid://shopify/Product/16095198478661",
+            "seo": {
+              "title": "[test-lot4-cassette] SEO non restaurable a vide - voir LOT4-05",
+              "description": "[test-lot4-cassette] Description SEO de test"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "productUpdate": {
+            "product": {
+              "id": "[REDACTED by D37 cassette allowlist — undeclared field \"productUpdate.product.id\"]"
+            },
+            "userErrors": []
+          }
+        }
+      },
+      "redactedResponseFields": [
+        "productUpdate.product.id"
+      ]
+    }
+  ]
+}
