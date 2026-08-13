@@ -3,7 +3,7 @@
   "toolInput": {
     "resource_type": "product",
     "resource_id": "gid://shopify/Product/16095198478661",
-    "reason": "LOT5-05 — capture de cassette de mutation pour mark_blocked (feu vert 2026-08-14, borne)"
+    "reason": "LOT5-05 re-capture apres filtre D37 final (feu vert 2026-08-14, geste idempotent, cobaye deja blocked)"
   },
   "toolOutput": {
     "content": [
@@ -13,7 +13,7 @@
       },
       {
         "type": "text",
-        "text": "Ressource product (gid://shopify/Product/16095198478661) marquée bloquée. Raison à restituer à l'appelant : LOT5-05 — capture de cassette de mutation pour mark_blocked (feu vert 2026-08-14, borne)"
+        "text": "Ressource product (gid://shopify/Product/16095198478661) marquée bloquée. Raison à restituer à l'appelant : LOT5-05 re-capture apres filtre D37 final (feu vert 2026-08-14, geste idempotent, cobaye deja blocked)"
       }
     ]
   },
@@ -40,18 +40,14 @@
           "metafieldsSet": {
             "metafields": [
               {
-                "id": "[REDACTED by D37 cassette allowlist — undeclared field \"metafieldsSet.metafields.[].id\"]",
-                "key": "[REDACTED by D37 cassette allowlist — undeclared field \"metafieldsSet.metafields.[].key\"]"
+                "id": "gid://shopify/Metafield/199672089903429",
+                "key": "content_status"
               }
             ],
             "userErrors": []
           }
         }
-      },
-      "redactedResponseFields": [
-        "metafieldsSet.metafields.[].id",
-        "metafieldsSet.metafields.[].key"
-      ]
+      }
     }
   ]
 }
