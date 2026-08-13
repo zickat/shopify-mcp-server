@@ -1,0 +1,125 @@
+{
+  "tool": "unpublish_resource",
+  "toolInput": {
+    "resource_type": "product",
+    "resource_id": "gid://shopify/Product/16095198478661"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Produit \"ZZ TEST cobaye — ne pas vendre\" dépublié : retiré du canal Online Store (1 → 0 canal(aux)). Statut natif inchangé (reste ACTIVE) — le produit n'est plus visible sur le storefront."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query ProductUnpublishState($id: ID!) {\n          product(id: $id) { id title resourcePublicationsCount { count } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Product/16095198478661"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "product": {
+            "id": "[REDACTED by D37 cassette allowlist — undeclared field \"product.id\"]",
+            "title": "[REDACTED by D37 cassette allowlist — undeclared field \"product.title\"]",
+            "resourcePublicationsCount": {
+              "count": 0
+            }
+          }
+        }
+      },
+      "redactedResponseFields": [
+        "product.id",
+        "product.title",
+        "product.resourcePublicationsCount.count"
+      ]
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query OnlineStorePublication { publications(first: 10) { edges { node { id name } } } }",
+        "variables": {}
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "publications": {
+            "edges": [
+              {
+                "node": {
+                  "id": "[REDACTED by D37 cassette allowlist — undeclared field \"publications.edges[].node.id\"]",
+                  "name": "[REDACTED by D37 cassette allowlist — undeclared field \"publications.edges[].node.name\"]"
+                }
+              },
+              {
+                "node": {
+                  "id": "[REDACTED by D37 cassette allowlist — undeclared field \"publications.edges[].node.id\"]",
+                  "name": "[REDACTED by D37 cassette allowlist — undeclared field \"publications.edges[].node.name\"]"
+                }
+              },
+              {
+                "node": {
+                  "id": "[REDACTED by D37 cassette allowlist — undeclared field \"publications.edges[].node.id\"]",
+                  "name": "[REDACTED by D37 cassette allowlist — undeclared field \"publications.edges[].node.name\"]"
+                }
+              },
+              {
+                "node": {
+                  "id": "[REDACTED by D37 cassette allowlist — undeclared field \"publications.edges[].node.id\"]",
+                  "name": "[REDACTED by D37 cassette allowlist — undeclared field \"publications.edges[].node.name\"]"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "redactedResponseFields": [
+        "publications.edges[].node.id",
+        "publications.edges[].node.name",
+        "publications.edges[].node.id",
+        "publications.edges[].node.name",
+        "publications.edges[].node.id",
+        "publications.edges[].node.name",
+        "publications.edges[].node.id",
+        "publications.edges[].node.name"
+      ]
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation UnpublishProductFromOnlineStore($id: ID!, $input: [PublicationInput!]!) {\n          publishableUnpublish(id: $id, input: $input) {\n            publishable { ... on Product { id } }\n            userErrors { field message }\n          }\n        }",
+        "variables": {
+          "id": "gid://shopify/Product/16095198478661",
+          "input": [
+            {
+              "publicationId": "gid://shopify/Publication/355822338373"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "publishableUnpublish": {
+            "publishable": {
+              "id": "[REDACTED by D37 cassette allowlist — undeclared field \"publishableUnpublish.publishable.id\"]"
+            },
+            "userErrors": []
+          }
+        }
+      },
+      "redactedResponseFields": [
+        "publishableUnpublish.publishable.id"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "tool": "publish_resource",
+  "toolInput": {
+    "resource_type": "product",
+    "resource_id": "gid://shopify/Product/16095198478661"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Produit \"ZZ TEST cobaye — ne pas vendre\" publié : statut ACTIVE, content_status retiré, déjà publié sur Online Store, aucune action supplémentaire."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query ProductPublishState($id: ID!) {\n          product(id: $id) { id title status resourcePublicationsCount { count } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Product/16095198478661"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "product": {
+            "id": "[REDACTED by D37 cassette allowlist — undeclared field \"product.id\"]",
+            "title": "[REDACTED by D37 cassette allowlist — undeclared field \"product.title\"]",
+            "status": "ACTIVE",
+            "resourcePublicationsCount": {
+              "count": 0
+            }
+          }
+        }
+      },
+      "redactedResponseFields": [
+        "product.id",
+        "product.title",
+        "product.resourcePublicationsCount.count"
+      ]
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation ActivateProduct($product: ProductUpdateInput!) {\n          productUpdate(product: $product) {\n            product { id }\n            userErrors { field message }\n          }\n        }",
+        "variables": {
+          "product": {
+            "id": "gid://shopify/Product/16095198478661",
+            "status": "ACTIVE"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "productUpdate": {
+            "product": {
+              "id": "[REDACTED by D37 cassette allowlist — undeclared field \"productUpdate.product.id\"]"
+            },
+            "userErrors": []
+          }
+        }
+      },
+      "redactedResponseFields": [
+        "productUpdate.product.id"
+      ]
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation DeleteMetafields($metafields: [MetafieldIdentifierInput!]!) {\n      metafieldsDelete(metafields: $metafields) {\n        deletedMetafields { key }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "metafields": [
+            {
+              "ownerId": "gid://shopify/Product/16095198478661",
+              "namespace": "custom",
+              "key": "content_status"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metafieldsDelete": {
+            "deletedMetafields": [
+              null
+            ],
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}
