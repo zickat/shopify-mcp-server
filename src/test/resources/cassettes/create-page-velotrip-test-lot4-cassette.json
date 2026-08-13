@@ -1,0 +1,51 @@
+{
+  "tool": "create_page",
+  "toolInput": {
+    "title": "[test-lot4-cassette] throwaway page",
+    "body": "<p>Page jetable créée pour LOT4-09 (capture de cassettes de mutation). Aucun contenu réel — supprimée en fin de cycle.</p>",
+    "handle": "test-lot4-cassette-2026-08-13",
+    "publish": false
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Page \"[test-lot4-cassette] throwaway page\" créée (test-lot4-cassette-2026-08-13, gid://shopify/Page/727010378053) — isPublished: false.\nCréée en brouillon — utiliser publish_page après relecture pour la mettre en ligne."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation CreatePage($page: PageCreateInput!) {\n          pageCreate(page: $page) {\n            page { id title handle isPublished }\n            userErrors { field message }\n          }\n        }",
+        "variables": {
+          "page": {
+            "title": "[test-lot4-cassette] throwaway page",
+            "body": "<p>Page jetable créée pour LOT4-09 (capture de cassettes de mutation). Aucun contenu réel — supprimée en fin de cycle.</p>",
+            "handle": "test-lot4-cassette-2026-08-13",
+            "isPublished": false
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "pageCreate": {
+            "page": {
+              "id": "gid://shopify/Page/727010378053",
+              "title": "[test-lot4-cassette] throwaway page",
+              "handle": "test-lot4-cassette-2026-08-13",
+              "isPublished": false
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

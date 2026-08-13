@@ -1,0 +1,68 @@
+{
+  "tool": "update_page",
+  "toolInput": {
+    "page_id": "gid://shopify/Page/727010378053",
+    "title": "[test-lot4-cassette] throwaway page (updated)"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Page \"[test-lot4-cassette] throwaway page (updated)\" (gid://shopify/Page/727010378053) mise à jour — champs modifiés : title."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchPageNative($id: ID!) {\n      page(id: $id) { id title handle isPublished body }\n    }",
+        "variables": {
+          "id": "gid://shopify/Page/727010378053"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "page": {
+            "id": "gid://shopify/Page/727010378053",
+            "title": "[test-lot4-cassette] throwaway page",
+            "handle": "test-lot4-cassette-2026-08-13",
+            "isPublished": false,
+            "body": "<p>Page jetable créée pour LOT4-09 (capture de cassettes de mutation). Aucun contenu réel — supprimée en fin de cycle.</p>"
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation UpdatePage($id: ID!, $page: PageUpdateInput!) {\n          pageUpdate(id: $id, page: $page) {\n            page { id title handle isPublished }\n            userErrors { field message }\n          }\n        }",
+        "variables": {
+          "id": "gid://shopify/Page/727010378053",
+          "page": {
+            "title": "[test-lot4-cassette] throwaway page (updated)"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "pageUpdate": {
+            "page": {
+              "id": "gid://shopify/Page/727010378053",
+              "title": "[test-lot4-cassette] throwaway page (updated)",
+              "handle": "test-lot4-cassette-2026-08-13",
+              "isPublished": false
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

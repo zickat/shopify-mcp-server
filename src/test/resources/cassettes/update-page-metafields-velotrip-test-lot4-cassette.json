@@ -1,0 +1,82 @@
+{
+  "tool": "update_page_metafields",
+  "toolInput": {
+    "page_id": "gid://shopify/Page/727010378053",
+    "metafields": [
+      {
+        "key": "test_lot4_cassette_marker",
+        "type": "single_line_text_field",
+        "value": "[test-lot4-cassette] marker value"
+      }
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Page \"[test-lot4-cassette] throwaway page (updated)\" mise à jour — 1 metafield(s) custom.* écrit(s) :\n- test_lot4_cassette_marker: [test-lot4-cassette] marker value (single_line_text_field)"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query FetchPageMetafields($id: ID!) {\n      page(id: $id) {\n        id\n        title\n        metafields(namespace: \"custom\", first: 50) {\n          edges { node { key type value } }\n          pageInfo { hasNextPage }\n        }\n      }\n    }",
+        "variables": {
+          "id": "gid://shopify/Page/727010378053"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "page": {
+            "id": "gid://shopify/Page/727010378053",
+            "title": "[test-lot4-cassette] throwaway page (updated)",
+            "metafields": {
+              "edges": [],
+              "pageInfo": {
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation SetMetafields($metafields: [MetafieldsSetInput!]!) {\n      metafieldsSet(metafields: $metafields) {\n        metafields { id key }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "metafields": [
+            {
+              "ownerId": "gid://shopify/Page/727010378053",
+              "namespace": "custom",
+              "key": "test_lot4_cassette_marker",
+              "type": "single_line_text_field",
+              "value": "[test-lot4-cassette] marker value"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metafieldsSet": {
+            "metafields": [
+              {
+                "id": "gid://shopify/Metafield/199671230103877",
+                "key": "test_lot4_cassette_marker"
+              }
+            ],
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

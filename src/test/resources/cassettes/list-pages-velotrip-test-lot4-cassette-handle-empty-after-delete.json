@@ -1,0 +1,42 @@
+{
+  "tool": "list_pages",
+  "toolInput": {
+    "query": "handle:test-lot4-cassette-*"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Aucune page trouvée pour ce filtre."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query ListPages($query: String, $cursor: String) {\n            pages(first: 50, after: $cursor, query: $query) {\n              pageInfo { hasNextPage endCursor }\n              edges { node { id title handle } }\n            }\n          }",
+        "variables": {
+          "query": "handle:test-lot4-cassette-*",
+          "cursor": null
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "pages": {
+            "pageInfo": {
+              "hasNextPage": false,
+              "endCursor": null
+            },
+            "edges": []
+          }
+        }
+      }
+    }
+  ]
+}
