@@ -4,7 +4,7 @@
 #
 # Usage :
 #   docker compose up -d        # démarre Mongo en arrière-plan
-#   cp .env.example .env        # MONGODB_URI par défaut pointe déjà sur localhost:27017
+#   cp .env.example .env        # MONGODB_URI par défaut pointe déjà sur localhost:27018
 #   set -a; source .env; set +a
 #   mvn spring-boot:run
 #   docker compose down         # arrête Mongo (ajouter -v pour aussi effacer les données)
@@ -12,6 +12,12 @@
 # Image épinglée en 7.0 (pas `:latest`), même choix et même justification que
 # WithMongoDBContainer.kt (LOT0-03) : dernière branche majeure stable au 2026-08-07, compatible
 # avec mongodb-driver-kotlin-sync 5.8.0 (géré par le BOM Boot 4.1, D14).
+#
+# Port hôte 27018, PAS 27017 (corrigé le 2026-08-13, LOT0-09 revérifié) — `mongo-lot0`, le Mongo de
+# PRODUCTION (D20, hors de ce compose, géré par `deploy/`), tient déjà le 27017 sur cet hôte. Une
+# première tentative de `docker compose up -d` avec 27017 a échoué avec « port is already allocated » :
+# constaté en l'exécutant, pas supposé. Le port interne du conteneur reste 27017 (seul le mapping
+# hôte change) — rien à changer côté `mongosh` lancé DANS le conteneur.
 
 services:
   mongodb:
@@ -19,7 +25,7 @@ services:
     container_name: shopify-mcp-server-mongodb-dev
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - shopify-mcp-server-mongodb-dev-data:/data/db
     healthcheck:

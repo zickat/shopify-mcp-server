@@ -1,9 +1,8 @@
 name: CI
 
-# Ce dépôt n'a pas encore de remote (2026-08-07) — ce workflow ne s'exécute donc nulle part pour
-# l'instant. Il est écrit maintenant pour ne pas laisser le lot 0 sans CI documentée ; il prendra
-# effet dès que `shopify-mcp-server` sera poussé sur un remote GitHub (voir progress.md, LOT0-09,
-# pour l'argumentaire du choix GitHub Actions plutôt qu'une alternative).
+# Actif depuis que `shopify-mcp-server` a été poussé sur `origin` (github.com/zickat/shopify-mcp-server) —
+# corrigé le 2026-08-13, ce commentaire disait encore « pas de remote » en référence au 2026-08-07.
+# Voir progress.md, LOT0-09, pour l'argumentaire du choix GitHub Actions plutôt qu'une alternative.
 
 on:
   push:
