@@ -1,0 +1,148 @@
+{
+  "tool": "update_collection_products",
+  "toolInput": {
+    "collection_id": "gid://shopify/Collection/697563316549",
+    "add_product_ids": [],
+    "remove_product_ids": [
+      "gid://shopify/Product/16095198478661"
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Collection \"[test-lot5-cassette] throwaway collection 2026-08-13\" mise à jour :\n- 1 produit(s) retiré(s) (confirmé) : ZZ TEST cobaye — ne pas vendre"
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query LookupProducts($ids: [ID!]!) {\n      nodes(ids: $ids) {\n        ... on Product { id title status productType tags }\n      }\n    }",
+        "variables": {
+          "ids": [
+            "gid://shopify/Product/16095198478661"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "nodes": [
+            {
+              "id": "gid://shopify/Product/16095198478661",
+              "title": "ZZ TEST cobaye — ne pas vendre",
+              "status": "DRAFT",
+              "productType": "Cobaye de test",
+              "tags": [
+                "cobaye-2026-08",
+                "ne-pas-vendre",
+                "type-et-tags-a-ecraser",
+                "zz-test"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query CollectionMembership($id: ID!) {\n          collection(id: $id) {\n            id\n            title\n            products(first: 250) { pageInfo { hasNextPage } nodes { id title } }\n          }\n        }",
+        "variables": {
+          "id": "gid://shopify/Collection/697563316549"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collection": {
+            "id": "gid://shopify/Collection/697563316549",
+            "title": "[test-lot5-cassette] throwaway collection 2026-08-13",
+            "products": {
+              "pageInfo": {
+                "hasNextPage": false
+              },
+              "nodes": [
+                {
+                  "id": "gid://shopify/Product/15991818912069",
+                  "title": "Sacoche de guidon Velotrip 1,7L convertible en bandoulière"
+                },
+                {
+                  "id": "gid://shopify/Product/15996131180869",
+                  "title": "Sacoche de guidon isolante Velotrip — porte-gourde et rangement vélo"
+                },
+                {
+                  "id": "gid://shopify/Product/16095198478661",
+                  "title": "ZZ TEST cobaye — ne pas vendre"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation RemoveProductsFromCollection($id: ID!, $productIds: [ID!]!) {\n              collectionRemoveProducts(id: $id, productIds: $productIds) {\n                job { id done }\n                userErrors { field message }\n              }\n            }",
+        "variables": {
+          "id": "gid://shopify/Collection/697563316549",
+          "productIds": [
+            "gid://shopify/Product/16095198478661"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collectionRemoveProducts": {
+            "job": {
+              "id": "gid://shopify/Job/21113bf2-7088-4d16-a2bd-6193db439bff",
+              "done": false
+            },
+            "userErrors": []
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query CollectionMembershipReread($id: ID!) {\n                collection(id: $id) { id title products(first: 250) { pageInfo { hasNextPage } nodes { id title } } }\n              }",
+        "variables": {
+          "id": "gid://shopify/Collection/697563316549"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collection": {
+            "id": "gid://shopify/Collection/697563316549",
+            "title": "[test-lot5-cassette] throwaway collection 2026-08-13",
+            "products": {
+              "pageInfo": {
+                "hasNextPage": false
+              },
+              "nodes": [
+                {
+                  "id": "gid://shopify/Product/15991818912069",
+                  "title": "Sacoche de guidon Velotrip 1,7L convertible en bandoulière"
+                },
+                {
+                  "id": "gid://shopify/Product/15996131180869",
+                  "title": "Sacoche de guidon isolante Velotrip — porte-gourde et rangement vélo"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+    "tool": "set_collection_hero_image",
+    "toolInput": {
+        "collection_id": "gid://shopify/Collection/697563316549",
+        "format": "desktop",
+        "image_base64": "iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAEUlEQVR4nGP4z3ACjhiI4wAA5yIccU0JZ+0AAAAASUVORK5CYII=",
+        "image_mime_type": "image/png",
+        "alt_text": "[test-lot5-cassette] image hero de test, sans valeur, jetable"
+    },
+    "toolOutput": {
+        "content": [
+            {
+                "type": "text",
+                "text": "Boutique : velotrip"
+            },
+            {
+                "type": "text",
+                "text": "Image hero desktop définie pour la collection \"[test-lot5-cassette] throwaway collection 2026-08-13\" (gid://shopify/Collection/697563316549).\n- Fichier créé : gid://shopify/MediaImage/74152741404997 (statut : UPLOADED)\n- Metafield écrit : custom.hero_image_desktop\n- Priorité active : cette collection affiche désormais cette image en desktop (repli symétrique sur l'autre format si non renseigné ; repli sur le réglage de section du template tant qu'aucun des deux metafields hero n'est renseigné)."
+            }
+        ]
+    },
+    "calls": [
+        {
+            "sink": "shopify_admin_graphql",
+            "request": {
+                "query": "query CollectionHeroLookup($id: ID!) {\n          collection(id: $id) { id title }\n        }",
+                "variables": {
+                    "id": "gid://shopify/Collection/697563316549"
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "collection": {
+                        "id": "gid://shopify/Collection/697563316549",
+                        "title": "[test-lot5-cassette] throwaway collection 2026-08-13"
+                    }
+                }
+            }
+        },
+        {
+            "sink": "shopify_admin_graphql",
+            "request": {
+                "query": "mutation StageUpload($input: [StagedUploadInput!]!) {\n      stagedUploadsCreate(input: $input) {\n        stagedTargets { url resourceUrl parameters { name value } }\n        userErrors { field message }\n      }\n    }",
+                "variables": {
+                    "input": [
+                        {
+                            "resource": "IMAGE",
+                            "filename": "gid-shopify-collection-697563316549-hero.png",
+                            "mimeType": "image/png",
+                            "httpMethod": "POST",
+                            "fileSize": "74"
+                        }
+                    ]
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "stagedUploadsCreate": {
+                        "stagedTargets": [
+                            {
+                                "url": "https://shopify-staged-uploads.storage.googleapis.com/",
+                                "resourceUrl": "https://shopify-staged-uploads.storage.googleapis.com/tmp/107458036037/files/63274e3a-b95e-43d7-9eaf-5474f4339336/gid-shopify-collection-697563316549-hero.png",
+                                "parameters": [
+                                    {
+                                        "name": "Content-Type",
+                                        "value": "image/png"
+                                    },
+                                    {
+                                        "name": "success_action_status",
+                                        "value": "201"
+                                    },
+                                    {
+                                        "name": "acl",
+                                        "value": "private"
+                                    },
+                                    {
+                                        "name": "key",
+                                        "value": "tmp/107458036037/files/63274e3a-b95e-43d7-9eaf-5474f4339336/gid-shopify-collection-697563316549-hero.png"
+                                    },
+                                    {
+                                        "name": "x-goog-date",
+                                        "value": "20260813T215015Z"
+                                    },
+                                    {
+                                        "name": "x-goog-credential",
+                                        "value": "merchant-assets@shopify-tiers.iam.gserviceaccount.com/20260813/auto/storage/goog4_request"
+                                    },
+                                    {
+                                        "name": "x-goog-algorithm",
+                                        "value": "GOOG4-RSA-SHA256"
+                                    },
+                                    {
+                                        "name": "x-goog-signature",
+                                        "value": "[REDACTED — D19, live GCS pre-signed upload token, not a fixture value]"
+                                    },
+                                    {
+                                        "name": "policy",
+                                        "value": "[REDACTED — D19, live GCS pre-signed upload token, not a fixture value]"
+                                    }
+                                ]
+                            }
+                        ],
+                        "userErrors": []
+                    }
+                }
+            }
+        },
+        {
+            "sink": "staged_upload",
+            "request": {
+                "url": "https://shopify-staged-uploads.storage.googleapis.com/",
+                "filename": "gid-shopify-collection-697563316549-hero.png",
+                "mime": "image/png"
+            },
+            "response": {
+                "status": 201,
+                "resourceUrl": "https://shopify-staged-uploads.storage.googleapis.com/tmp/107458036037/files/63274e3a-b95e-43d7-9eaf-5474f4339336/gid-shopify-collection-697563316549-hero.png"
+            }
+        },
+        {
+            "sink": "shopify_admin_graphql",
+            "request": {
+                "query": "mutation CreateFile($files: [FileCreateInput!]!) {\n      fileCreate(files: $files) {\n        files { id fileStatus }\n        userErrors { field message }\n      }\n    }",
+                "variables": {
+                    "files": [
+                        {
+                            "originalSource": "https://shopify-staged-uploads.storage.googleapis.com/tmp/107458036037/files/63274e3a-b95e-43d7-9eaf-5474f4339336/gid-shopify-collection-697563316549-hero.png",
+                            "contentType": "IMAGE",
+                            "alt": "[test-lot5-cassette] image hero de test, sans valeur, jetable"
+                        }
+                    ]
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "fileCreate": {
+                        "files": [
+                            {
+                                "id": "gid://shopify/MediaImage/74152741404997",
+                                "fileStatus": "UPLOADED"
+                            }
+                        ],
+                        "userErrors": []
+                    }
+                }
+            }
+        },
+        {
+            "sink": "shopify_admin_graphql",
+            "request": {
+                "query": "mutation SetMetafields($metafields: [MetafieldsSetInput!]!) {\n      metafieldsSet(metafields: $metafields) {\n        metafields { id key }\n        userErrors { field message }\n      }\n    }",
+                "variables": {
+                    "metafields": [
+                        {
+                            "ownerId": "gid://shopify/Collection/697563316549",
+                            "namespace": "custom",
+                            "key": "hero_image_desktop",
+                            "type": "file_reference",
+                            "value": "gid://shopify/MediaImage/74152741404997"
+                        }
+                    ]
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "metafieldsSet": {
+                        "metafields": [
+                            {
+                                "id": "gid://shopify/Metafield/199671476977989",
+                                "key": "hero_image_desktop"
+                            }
+                        ],
+                        "userErrors": []
+                    }
+                }
+            }
+        }
+    ]
+}

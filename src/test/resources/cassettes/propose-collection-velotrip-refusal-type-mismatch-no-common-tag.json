@@ -1,0 +1,74 @@
+{
+  "tool": "propose_collection",
+  "toolInput": {
+    "title": "[test-lot5-cassette] type mismatch refusal",
+    "product_ids": [
+      "gid://shopify/Product/16050711822661",
+      "gid://shopify/Product/16050713526597"
+    ],
+    "summary": "test",
+    "intro_text": "test",
+    "faq": [
+      {
+        "question": "test?",
+        "answer": "test."
+      }
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "insufficient_material : Les produits fournis n'ont ni le même productType (Outils et réparation, Vêtements cyclisme) ni de tag commun à tous — le critère de segmentation ne serait pas explicite/vérifiable (cf. architecture.md, décision \"Collections — critère de segmentation\"). Regrouper des produits de catégories différentes sans usage transverse partagé serait un rapprochement arbitraire, pas une collection cohérente."
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query LookupProducts($ids: [ID!]!) {\n      nodes(ids: $ids) {\n        ... on Product { id title status productType tags }\n      }\n    }",
+        "variables": {
+          "ids": [
+            "gid://shopify/Product/16050711822661",
+            "gid://shopify/Product/16050713526597"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "nodes": [
+            {
+              "id": "gid://shopify/Product/16050711822661",
+              "title": "Antivol chaîne vélo 0,6 m — acier allié, noyau cuivre, gaine anti-rayure",
+              "status": "ACTIVE",
+              "productType": "Outils et réparation",
+              "tags": [
+                "accessoire",
+                "antivol",
+                "sécurité"
+              ]
+            },
+            {
+              "id": "gid://shopify/Product/16050713526597",
+              "title": "Doudoune homme légère à duvet — compressible, pochette de transport incluse",
+              "status": "ACTIVE",
+              "productType": "Vêtements cyclisme",
+              "tags": [
+                "doudoune",
+                "hiver",
+                "vêtement"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

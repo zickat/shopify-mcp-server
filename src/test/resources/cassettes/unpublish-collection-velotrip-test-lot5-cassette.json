@@ -1,0 +1,106 @@
+{
+  "tool": "unpublish_collection",
+  "toolInput": {
+    "collection_id": "gid://shopify/Collection/697563316549"
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Collection \"[test-lot5-cassette] throwaway collection 2026-08-13\" dépubliée : retirée du canal Online Store (1 → 0 canal(aux))."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query CollectionUnpublishState($id: ID!) {\n          collection(id: $id) { id title resourcePublicationsCount { count } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Collection/697563316549"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collection": {
+            "id": "gid://shopify/Collection/697563316549",
+            "title": "[test-lot5-cassette] throwaway collection 2026-08-13",
+            "resourcePublicationsCount": {
+              "count": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query OnlineStorePublication { publications(first: 10) { edges { node { id name } } } }",
+        "variables": {}
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "publications": {
+            "edges": [
+              {
+                "node": {
+                  "id": "gid://shopify/Publication/355822338373",
+                  "name": "Online Store"
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Publication/355822371141",
+                  "name": "Point of Sale"
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Publication/355822403909",
+                  "name": "Shop"
+                }
+              },
+              {
+                "node": {
+                  "id": "gid://shopify/Publication/358773424453",
+                  "name": "Google & YouTube"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation UnpublishCollectionFromOnlineStore($id: ID!, $input: [PublicationInput!]!) {\n          publishableUnpublish(id: $id, input: $input) {\n            publishable { ... on Collection { id } }\n            userErrors { field message }\n          }\n        }",
+        "variables": {
+          "id": "gid://shopify/Collection/697563316549",
+          "input": [
+            {
+              "publicationId": "gid://shopify/Publication/355822338373"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "publishableUnpublish": {
+            "publishable": {
+              "id": "gid://shopify/Collection/697563316549"
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

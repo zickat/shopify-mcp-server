@@ -1,0 +1,98 @@
+{
+  "tool": "update_collection_products",
+  "toolInput": {
+    "collection_id": "gid://shopify/Collection/697563316549",
+    "add_product_ids": [],
+    "remove_product_ids": [
+      "gid://shopify/Product/15991818912069"
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "update_collection_products refusé : ce retrait ferait descendre la collection \"[test-lot5-cassette] throwaway collection 2026-08-13\" à 1 produit(s) restant(s) — une collection existe pour aider à choisir entre plusieurs produits (garde-fou plancher : 2 minimum). Aucune modification appliquée."
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query LookupProducts($ids: [ID!]!) {\n      nodes(ids: $ids) {\n        ... on Product { id title status productType tags }\n      }\n    }",
+        "variables": {
+          "ids": [
+            "gid://shopify/Product/15991818912069"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "nodes": [
+            {
+              "id": "gid://shopify/Product/15991818912069",
+              "title": "Sacoche de guidon Velotrip 1,7L convertible en bandoulière",
+              "status": "ACTIVE",
+              "productType": "Sacoche de guidon",
+              "tags": [
+                "bandoulière",
+                "bikepacking",
+                "convertible",
+                "cyclotourisme",
+                "cylindrique",
+                "deperlant",
+                "gravel",
+                "guidon-velo",
+                "polyester-pu",
+                "route",
+                "réfléchissant",
+                "sacoche-de-guidon",
+                "sacoches-rangement",
+                "VTT"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query CollectionMembership($id: ID!) {\n          collection(id: $id) {\n            id\n            title\n            products(first: 250) { pageInfo { hasNextPage } nodes { id title } }\n          }\n        }",
+        "variables": {
+          "id": "gid://shopify/Collection/697563316549"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collection": {
+            "id": "gid://shopify/Collection/697563316549",
+            "title": "[test-lot5-cassette] throwaway collection 2026-08-13",
+            "products": {
+              "pageInfo": {
+                "hasNextPage": false
+              },
+              "nodes": [
+                {
+                  "id": "gid://shopify/Product/15991818912069",
+                  "title": "Sacoche de guidon Velotrip 1,7L convertible en bandoulière"
+                },
+                {
+                  "id": "gid://shopify/Product/15996131180869",
+                  "title": "Sacoche de guidon isolante Velotrip — porte-gourde et rangement vélo"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

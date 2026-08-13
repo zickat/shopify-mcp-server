@@ -1,0 +1,176 @@
+{
+  "tool": "propose_collection",
+  "toolInput": {
+    "title": "[test-lot5-cassette] throwaway collection 2026-08-13",
+    "product_ids": [
+      "gid://shopify/Product/15991818912069",
+      "gid://shopify/Product/15996131180869"
+    ],
+    "summary": "[test-lot5-cassette] Collection jetable pour capture de cassettes LOT5-11 — aucun contenu réel.",
+    "intro_text": "[test-lot5-cassette] Contenu de test, sans valeur éditoriale — supprimée en fin de session.",
+    "faq": [
+      {
+        "question": "[test-lot5-cassette] Question de test ?",
+        "answer": "[test-lot5-cassette] Réponse de test."
+      }
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Collection proposée avec succès : \"[test-lot5-cassette] throwaway collection 2026-08-13\" (test-lot5-cassette-throwaway-collection-2026-08-13, gid://shopify/Collection/697563316549).\n- 2 produit(s) : Sacoche de guidon Velotrip 1,7L convertible en bandoulière, Sacoche de guidon isolante Velotrip — porte-gourde et rangement vélo\n- Critère de segmentation : Sacoche de guidon\n- 1 question(s) FAQ créées et liées\n- Statut : à review (content_status: to_review) — non publiée sur Online Store, utiliser publish_collection après validation humaine."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query LookupProducts($ids: [ID!]!) {\n      nodes(ids: $ids) {\n        ... on Product { id title status productType tags }\n      }\n    }",
+        "variables": {
+          "ids": [
+            "gid://shopify/Product/15991818912069",
+            "gid://shopify/Product/15996131180869"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "nodes": [
+            {
+              "id": "gid://shopify/Product/15991818912069",
+              "title": "Sacoche de guidon Velotrip 1,7L convertible en bandoulière",
+              "status": "ACTIVE",
+              "productType": "Sacoche de guidon",
+              "tags": [
+                "bandoulière",
+                "bikepacking",
+                "convertible",
+                "cyclotourisme",
+                "cylindrique",
+                "deperlant",
+                "gravel",
+                "guidon-velo",
+                "polyester-pu",
+                "route",
+                "réfléchissant",
+                "sacoche-de-guidon",
+                "sacoches-rangement",
+                "VTT"
+              ]
+            },
+            {
+              "id": "gid://shopify/Product/15996131180869",
+              "title": "Sacoche de guidon isolante Velotrip — porte-gourde et rangement vélo",
+              "status": "ACTIVE",
+              "productType": "Sacoche de guidon",
+              "tags": [
+                "accessoire cintre",
+                "bikepacking",
+                "cyclotourisme",
+                "etanche",
+                "gravel",
+                "isolation thermique",
+                "porte-gourde velo",
+                "sacoche guidon",
+                "VTT"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation CreateMetaobject($metaobject: MetaobjectCreateInput!) {\n      metaobjectCreate(metaobject: $metaobject) {\n        metaobject { id }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "metaobject": {
+            "type": "faq_item",
+            "fields": [
+              {
+                "key": "question",
+                "value": "[test-lot5-cassette] Question de test ?"
+              },
+              {
+                "key": "answer",
+                "value": "[test-lot5-cassette] Réponse de test."
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metaobjectCreate": {
+            "metaobject": {
+              "id": "gid://shopify/Metaobject/632461066565"
+            },
+            "userErrors": []
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation CreateCollection($input: CollectionInput!) {\n            collectionCreate(input: $input) {\n              collection { id handle }\n              userErrors { field message }\n            }\n          }",
+        "variables": {
+          "input": {
+            "title": "[test-lot5-cassette] throwaway collection 2026-08-13",
+            "products": [
+              "gid://shopify/Product/15991818912069",
+              "gid://shopify/Product/15996131180869"
+            ],
+            "sortOrder": "MANUAL",
+            "metafields": [
+              {
+                "namespace": "custom",
+                "key": "summary",
+                "type": "single_line_text_field",
+                "value": "[test-lot5-cassette] Collection jetable pour capture de cassettes LOT5-11 — aucun contenu réel."
+              },
+              {
+                "namespace": "custom",
+                "key": "intro_text",
+                "type": "rich_text_field",
+                "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"[test-lot5-cassette] Contenu de test, sans valeur éditoriale — supprimée en fin de session.\"}]}]}"
+              },
+              {
+                "namespace": "custom",
+                "key": "faq",
+                "type": "list.metaobject_reference",
+                "value": "[\"gid://shopify/Metaobject/632461066565\"]"
+              },
+              {
+                "namespace": "custom",
+                "key": "content_status",
+                "type": "single_line_text_field",
+                "value": "to_review"
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collectionCreate": {
+            "collection": {
+              "id": "gid://shopify/Collection/697563316549",
+              "handle": "test-lot5-cassette-throwaway-collection-2026-08-13"
+            },
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

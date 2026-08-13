@@ -1,0 +1,104 @@
+{
+  "tool": "update_collection_content",
+  "toolInput": {
+    "collection_id": "gid://shopify/Collection/697563316549",
+    "summary": "[test-lot5-cassette] Nouveau summary de test, mise à jour partielle."
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Collection \"[test-lot5-cassette] throwaway collection 2026-08-13\" mise à jour.\n- Champs modifiés : summary\n- Appartenance produit : inchangée (relève de update_collection_products)\n⚠️ Cette collection était déjà publiée — elle repasse en content_status: to_review. Utiliser publish_collection après validation humaine pour que le nouveau contenu soit à nouveau immédiatement visible."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query CollectionContentState($id: ID!) {\n          collection(id: $id) { id title resourcePublicationsCount { count } }\n        }",
+        "variables": {
+          "id": "gid://shopify/Collection/697563316549"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collection": {
+            "id": "gid://shopify/Collection/697563316549",
+            "title": "[test-lot5-cassette] throwaway collection 2026-08-13",
+            "resourcePublicationsCount": {
+              "count": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation SetMetafields($metafields: [MetafieldsSetInput!]!) {\n      metafieldsSet(metafields: $metafields) {\n        metafields { id key }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "metafields": [
+            {
+              "ownerId": "gid://shopify/Collection/697563316549",
+              "namespace": "custom",
+              "key": "summary",
+              "type": "single_line_text_field",
+              "value": "[test-lot5-cassette] Nouveau summary de test, mise à jour partielle."
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metafieldsSet": {
+            "metafields": [
+              {
+                "id": "gid://shopify/Metafield/199671460528453",
+                "key": "summary"
+              }
+            ],
+            "userErrors": []
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation SetMetafields($metafields: [MetafieldsSetInput!]!) {\n      metafieldsSet(metafields: $metafields) {\n        metafields { id key }\n        userErrors { field message }\n      }\n    }",
+        "variables": {
+          "metafields": [
+            {
+              "ownerId": "gid://shopify/Collection/697563316549",
+              "namespace": "custom",
+              "key": "content_status",
+              "type": "single_line_text_field",
+              "value": "to_review"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "metafieldsSet": {
+            "metafields": [
+              {
+                "id": "gid://shopify/Metafield/199671466590533",
+                "key": "content_status"
+              }
+            ],
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

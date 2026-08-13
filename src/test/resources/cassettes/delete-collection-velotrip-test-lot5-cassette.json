@@ -1,0 +1,75 @@
+{
+  "tool": "delete_collection",
+  "toolInput": {
+    "collection_id": "gid://shopify/Collection/697563316549",
+    "confirm_out_of_scope_deletion": false
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "Collection \"[test-lot5-cassette] throwaway collection 2026-08-13\" (test-lot5-cassette-throwaway-collection-2026-08-13) supprimée définitivement — contenait 2 produit(s). Les faq_item qu'elle référençait ne sont PAS supprimés automatiquement (orphelins gérables via list_metaobjects/delete_metaobject)."
+      }
+    ]
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query CollectionDeleteState($id: ID!) {\n          collection(id: $id) {\n            id\n            title\n            handle\n            resourcePublicationsCount { count }\n            productsCount { count }\n            summary: metafield(namespace: \"custom\", key: \"summary\") { value }\n            intro_text: metafield(namespace: \"custom\", key: \"intro_text\") { value }\n            faq: metafield(namespace: \"custom\", key: \"faq\") { value }\n          }\n        }",
+        "variables": {
+          "id": "gid://shopify/Collection/697563316549"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collection": {
+            "id": "gid://shopify/Collection/697563316549",
+            "title": "[test-lot5-cassette] throwaway collection 2026-08-13",
+            "handle": "test-lot5-cassette-throwaway-collection-2026-08-13",
+            "resourcePublicationsCount": {
+              "count": 0
+            },
+            "productsCount": {
+              "count": 2
+            },
+            "summary": {
+              "value": "[test-lot5-cassette] Nouveau summary de test, mise à jour partielle."
+            },
+            "intro_text": {
+              "value": "{\"type\":\"root\",\"children\":[{\"type\":\"paragraph\",\"children\":[{\"type\":\"text\",\"value\":\"[test-lot5-cassette] Contenu de test, sans valeur éditoriale — supprimée en fin de session.\"}]}]}"
+            },
+            "faq": {
+              "value": "[\"gid://shopify/Metaobject/632461066565\"]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "mutation DeleteCollection($input: CollectionDeleteInput!) {\n          collectionDelete(input: $input) {\n            deletedCollectionId\n            userErrors { field message }\n          }\n        }",
+        "variables": {
+          "input": {
+            "id": "gid://shopify/Collection/697563316549"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collectionDelete": {
+            "deletedCollectionId": "gid://shopify/Collection/697563316549",
+            "userErrors": []
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "tool": "delete_collection",
+  "toolInput": {
+    "collection_id": "gid://shopify/Collection/692391772485",
+    "confirm_out_of_scope_deletion": false
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "delete_collection refusé pour \"Page d’accueil\" (2 raison(s)) :\n1. probablement une collection legacy hors périmètre du pipeline automatisé (aucun champ custom.* — cf. dette catalog-tech-debt-oauth-collections) : suppression refusée sauf appel explicite avec confirm_out_of_scope_deletion: true, ou action manuelle dans l'admin Shopify après vérification humaine\n2. publiée sur 2 canal(aux) — suppression refusée dans tous les cas (jamais contourné par confirm_out_of_scope_deletion) : utiliser unpublish_collection d'abord"
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query CollectionDeleteState($id: ID!) {\n          collection(id: $id) {\n            id\n            title\n            handle\n            resourcePublicationsCount { count }\n            productsCount { count }\n            summary: metafield(namespace: \"custom\", key: \"summary\") { value }\n            intro_text: metafield(namespace: \"custom\", key: \"intro_text\") { value }\n            faq: metafield(namespace: \"custom\", key: \"faq\") { value }\n          }\n        }",
+        "variables": {
+          "id": "gid://shopify/Collection/692391772485"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "collection": {
+            "id": "gid://shopify/Collection/692391772485",
+            "title": "Page d’accueil",
+            "handle": "frontpage",
+            "resourcePublicationsCount": {
+              "count": 2
+            },
+            "productsCount": {
+              "count": 1
+            },
+            "summary": null,
+            "intro_text": null,
+            "faq": null
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "tool": "propose_collection",
+  "toolInput": {
+    "title": "[test-lot5-cassette] single product refusal",
+    "product_ids": [
+      "gid://shopify/Product/15991818912069"
+    ],
+    "summary": "test",
+    "intro_text": "test",
+    "faq": [
+      {
+        "question": "test?",
+        "answer": "test."
+      }
+    ]
+  },
+  "toolOutput": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Boutique : velotrip"
+      },
+      {
+        "type": "text",
+        "text": "insufficient_material : Un seul produit fourni (Sacoche de guidon Velotrip 1,7L convertible en bandoulière) — une collection existe pour aider à choisir entre plusieurs produits (cf. skill enrichir-catalogue §FAQ Collection), pas pour un produit unique."
+      }
+    ],
+    "isError": true
+  },
+  "calls": [
+    {
+      "sink": "shopify_admin_graphql",
+      "request": {
+        "query": "query LookupProducts($ids: [ID!]!) {\n      nodes(ids: $ids) {\n        ... on Product { id title status productType tags }\n      }\n    }",
+        "variables": {
+          "ids": [
+            "gid://shopify/Product/15991818912069"
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "nodes": [
+            {
+              "id": "gid://shopify/Product/15991818912069",
+              "title": "Sacoche de guidon Velotrip 1,7L convertible en bandoulière",
+              "status": "ACTIVE",
+              "productType": "Sacoche de guidon",
+              "tags": [
+                "bandoulière",
+                "bikepacking",
+                "convertible",
+                "cyclotourisme",
+                "cylindrique",
+                "deperlant",
+                "gravel",
+                "guidon-velo",
+                "polyester-pu",
+                "route",
+                "réfléchissant",
+                "sacoche-de-guidon",
+                "sacoches-rangement",
+                "VTT"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
