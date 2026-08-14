@@ -1,6 +1,6 @@
 package com.zickat.shopifymcpserver.seo.api.mcp
 
-import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.tool_dispatch.exposed_interface.RoutedToolPipeline
 import com.zickat.shopifymcpserver.seo.domain.UpdateSeoUseCase
 import com.zickat.shopifymcpserver.seo.domain.models.SeoResourceType
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase

@@ -1,6 +1,6 @@
 package com.zickat.shopifymcpserver.catalog_status.api.mcp
 
-import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.tool_dispatch.exposed_interface.RoutedToolPipeline
 import com.zickat.shopifymcpserver.catalog_status.domain.SearchResourcesUseCase
 import com.zickat.shopifymcpserver.catalog_status.domain.models.SearchResourceType
 import com.zickat.shopifymcpserver.catalog_status.domain.models.SearchStatusFilter

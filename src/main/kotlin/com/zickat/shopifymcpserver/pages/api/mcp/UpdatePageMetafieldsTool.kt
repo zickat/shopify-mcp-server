@@ -1,6 +1,6 @@
 package com.zickat.shopifymcpserver.pages.api.mcp
 
-import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.tool_dispatch.exposed_interface.RoutedToolPipeline
 import com.zickat.shopifymcpserver.pages.domain.PageMetafieldInput
 import com.zickat.shopifymcpserver.pages.domain.UpdatePageMetafieldsUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase

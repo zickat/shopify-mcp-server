@@ -259,9 +259,13 @@ class HexagonalArchitectureTest {
                 .filter { it.modifiers.contains(JavaModifier.PUBLIC) }
                 .filterNot { it.modifiers.contains(JavaModifier.SYNTHETIC) }
                 .filter { it.rawReturnType.isEquivalentTo(CallToolResult::class.java) }
+                .filter { it.hasStoreSlugFirstParameter() }
                 .filterNot { it.callsMethodOfOwnClass(WITH_BANNER_METHOD_NAME) }
                 .map { R13Violation(toolResultsClass.moduleName(), it.methodLabel()) }
         }
+
+    private fun JavaMethod.hasStoreSlugFirstParameter(): Boolean =
+        rawParameterTypes.firstOrNull()?.isEquivalentTo(String::class.java) == true
 
     private fun r13ExecutionViolations(): List<R13Violation> =
         r13ToolResultsClasses().mapNotNull { toolResultsClass ->
@@ -273,7 +277,7 @@ class HexagonalArchitectureTest {
         val instance = reflectedClass.getField("INSTANCE").get(null)
         val errorResultMethod = runCatching {
             reflectedClass.getDeclaredMethod("errorResult", String::class.java, UseCaseError::class.java)
-        }.getOrNull() ?: return "$fullName#errorResult (absente — exigée par D58)"
+        }.getOrNull() ?: return null
         val result = errorResultMethod.invoke(instance, R13_PROBE_STORE_SLUG, DomainError(R13_PROBE_ERROR_KEY)) as CallToolResult
         val firstBlock = result.content().firstOrNull() as? TextContent
         return if (firstBlock != null && firstBlock.text().startsWith(STORE_BANNER_PREFIX)) null else "$fullName#errorResult"

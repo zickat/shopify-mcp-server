@@ -1,7 +1,7 @@
 package com.zickat.shopifymcpserver.relay
 
-import com.zickat.shopifymcpserver.api.mcp.NativeToolKinds
-import com.zickat.shopifymcpserver.api.mcp.NativeToolNames
+import com.zickat.shopifymcpserver.tool_dispatch.api.mcp.NativeToolKinds
+import com.zickat.shopifymcpserver.tool_dispatch.api.mcp.NativeToolNames
 import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shared_kernel.WithMongoDBContainer

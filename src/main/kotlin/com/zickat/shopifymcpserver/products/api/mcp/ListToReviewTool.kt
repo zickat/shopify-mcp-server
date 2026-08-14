@@ -1,6 +1,6 @@
 package com.zickat.shopifymcpserver.products.api.mcp
 
-import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.tool_dispatch.exposed_interface.RoutedToolPipeline
 import com.zickat.shopifymcpserver.products.domain.ListToReviewUseCase
 import com.zickat.shopifymcpserver.products.domain.models.ToReviewResourceType
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
