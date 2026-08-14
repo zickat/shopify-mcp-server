@@ -9,6 +9,7 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
+import com.zickat.shopifymcpserver.tenancy.exposed_interface.slugFor
 import io.modelcontextprotocol.json.McpJsonMapper
 import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper
 import io.modelcontextprotocol.server.McpServerFeatures

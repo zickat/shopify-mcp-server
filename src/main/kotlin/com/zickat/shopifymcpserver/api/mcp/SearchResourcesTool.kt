@@ -8,6 +8,7 @@ import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
+import com.zickat.shopifymcpserver.tenancy.exposed_interface.slugFor
 import io.modelcontextprotocol.server.McpSyncServerExchange
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult
 import org.springframework.ai.mcp.annotation.McpTool

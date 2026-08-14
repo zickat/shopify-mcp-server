@@ -16,14 +16,7 @@ import com.zickat.shopifymcpserver.pages.domain.UpdatePageResult
 import com.zickat.shopifymcpserver.shared_kernel.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
-import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult
-
-fun AccessExposedService.slugFor(identityId: String, storeId: String): String =
-    listGrantedStores(identityId).fold({ emptyList() }, { it })
-        .firstOrNull { it.storeId == storeId }
-        ?.slug
-        ?: storeId
 
 object PageToolResults {
 

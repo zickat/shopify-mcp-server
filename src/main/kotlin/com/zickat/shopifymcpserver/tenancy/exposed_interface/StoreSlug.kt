@@ -1,6 +1,8 @@
-package com.zickat.shopifymcpserver.api.mcp
+@file:NamedInterface("exposed_interface")
 
-import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
+package com.zickat.shopifymcpserver.tenancy.exposed_interface
+
+import org.springframework.modulith.NamedInterface
 
 fun AccessExposedService.slugFor(identityId: String, storeId: String): String =
     listGrantedStores(identityId).fold({ emptyList() }, { it })
