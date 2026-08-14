@@ -21,6 +21,7 @@ data class GrantEntity(
     val role: String,
     @Contextual val grantedBy: ObjectId,
     val createdAt: Instant,
+    val expiresAt: Instant?,
     val revokedAt: Instant?,
 ) {
     companion object {
@@ -33,6 +34,7 @@ data class GrantEntity(
             role = domain.role.wireValue,
             grantedBy = ObjectId(domain.grantedBy),
             createdAt = domain.createdAt,
+            expiresAt = domain.expiresAt,
             revokedAt = domain.revokedAt,
         )
     }
@@ -45,6 +47,7 @@ data class GrantEntity(
             role = role,
             grantedBy = grantedBy.toHexString(),
             createdAt = createdAt,
+            expiresAt = expiresAt,
             revokedAt = revokedAt,
         )
     }

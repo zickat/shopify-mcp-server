@@ -1,8 +1,11 @@
 package com.zickat.shopifymcpserver.tenancy
 
+import com.zickat.shopifymcpserver.tenancy.domain.models.GrantRole
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import io.kotest.matchers.shouldBe
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Test
 
@@ -56,6 +59,36 @@ interface GrantRepositoryReferentialIntegrityTest {
         val identityId = registerExistingIdentity()
         val storeId = registerStore(archived = false)
         val grant = GrantFixtures().withIdentityId(identityId).withStoreId(storeId).withGrantedBy(identityId).build()
+
+        repository.save(grant).isRight() shouldBe true
+    }
+
+    @Test
+    fun `should reject an operator grant with no expiresAt`() {
+        val identityId = registerExistingIdentity()
+        val storeId = registerStore(archived = false)
+        val grant = GrantFixtures().withIdentityId(identityId).withStoreId(storeId).withGrantedBy(identityId)
+            .withRole(GrantRole.OPERATOR).withExpiresAt(null).build()
+
+        repository.save(grant).isLeft() shouldBe true
+    }
+
+    @Test
+    fun `should reject a viewer grant that carries an expiresAt`() {
+        val identityId = registerExistingIdentity()
+        val storeId = registerStore(archived = false)
+        val grant = GrantFixtures().withIdentityId(identityId).withStoreId(storeId).withGrantedBy(identityId)
+            .withRole(GrantRole.VIEWER).withExpiresAt(Clock.System.now() + 1.hours).build()
+
+        repository.save(grant).isLeft() shouldBe true
+    }
+
+    @Test
+    fun `should accept an operator grant that carries an expiresAt`() {
+        val identityId = registerExistingIdentity()
+        val storeId = registerStore(archived = false)
+        val grant = GrantFixtures().withIdentityId(identityId).withStoreId(storeId).withGrantedBy(identityId)
+            .withRole(GrantRole.OPERATOR).withExpiresAt(Clock.System.now() + 1.hours).build()
 
         repository.save(grant).isRight() shouldBe true
     }

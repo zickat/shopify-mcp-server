@@ -11,6 +11,7 @@ import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 import org.junit.jupiter.api.Test
 
 class AccessResolutionUseCaseTest {
@@ -126,6 +127,34 @@ class AccessResolutionUseCaseTest {
     }
 
     @Test
+    fun `an operator grant whose expiration has already passed is refused — expiry is checked, not only revocation`() {
+        val storeId = registerStore()
+        val identityId = resolveIdentity()
+        grantRepository.save(
+            GrantFixtures().withIdentityId(identityId).withStoreId(StoreId(storeId)).withRole(GrantRole.OPERATOR)
+                .withGrantedBy(identityId).withExpiresAt(Clock.System.now() - 1.hours).build(),
+        )
+
+        val result = useCase.resolve(issuer, subject, storeId)
+
+        result.shouldBeLeft().shouldBeInstanceOf<ForbiddenError>()
+    }
+
+    @Test
+    fun `an operator grant whose expiration is still ahead resolves normally`() {
+        val storeId = registerStore()
+        val identityId = resolveIdentity()
+        grantRepository.save(
+            GrantFixtures().withIdentityId(identityId).withStoreId(StoreId(storeId)).withRole(GrantRole.OPERATOR)
+                .withGrantedBy(identityId).withExpiresAt(Clock.System.now() + 1.hours).build(),
+        )
+
+        val result = useCase.resolve(issuer, subject, storeId)
+
+        result.shouldBeRight().user.role shouldBe AccessRole.OPERATOR
+    }
+
+    @Test
     fun `an unknown storeId is refused with the same error as a missing grant — no store enumeration`() {
         val identityId = resolveIdentity()
         val realStoreId = registerStore()
@@ -184,6 +213,19 @@ class AccessResolutionUseCaseTest {
 
         val afterRevocation = useCase.listGrantedStores(identityId).shouldBeRight()
         afterRevocation shouldBe emptyList()
+    }
+
+    @Test
+    fun `listGrantedStores should not return a store whose operator grant has expired`() {
+        val identityId = resolveIdentity()
+        val storeId = registerStore()
+        grantOn(storeId, GrantRole.OPERATOR, identityId)
+        val grantId = grantRepository.store.values.single { it.identityId == identityId }.id
+        grantRepository.store[grantId.value] = grantRepository.store.getValue(grantId.value).copy(expiresAt = Clock.System.now() - 1.hours)
+
+        val result = useCase.listGrantedStores(identityId).shouldBeRight()
+
+        result shouldBe emptyList()
     }
 
     @Test

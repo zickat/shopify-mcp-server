@@ -9,7 +9,10 @@ data class Grant(
     val role: GrantRole,
     val grantedBy: String,
     val createdAt: Instant,
+    val expiresAt: Instant?,
     val revokedAt: Instant?,
 ) {
     val isActive: Boolean get() = revokedAt == null
+
+    fun isUsable(now: Instant): Boolean = isActive && (expiresAt == null || now < expiresAt)
 }

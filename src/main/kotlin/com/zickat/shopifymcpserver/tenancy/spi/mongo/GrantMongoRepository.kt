@@ -11,6 +11,7 @@ import com.zickat.shopifymcpserver.shared_kernel.toObjectIdOrNull
 import com.zickat.shopifymcpserver.tenancy.domain.models.Grant
 import com.zickat.shopifymcpserver.tenancy.domain.models.GrantId
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
+import com.zickat.shopifymcpserver.tenancy.domain.models.expiresAtViolation
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
 import org.bson.types.ObjectId
@@ -35,6 +36,9 @@ class GrantMongoRepository(
             ?: return NotFoundError("grant.store.not.found").left()
         if (store.isArchived) {
             return DomainError("grant.store.archived", mapOf("storeId" to grant.storeId.value)).left()
+        }
+        grant.role.expiresAtViolation(grant.expiresAt)?.let { messageKey ->
+            return DomainError(messageKey, mapOf("role" to grant.role.wireValue)).left()
         }
 
         return try {

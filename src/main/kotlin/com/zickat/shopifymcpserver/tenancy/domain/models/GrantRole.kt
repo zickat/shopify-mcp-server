@@ -6,6 +6,7 @@ import arrow.core.right
 import com.zickat.shopifymcpserver.shared_kernel.AccessRole
 import com.zickat.shopifymcpserver.shared_kernel.DomainError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import kotlinx.datetime.Instant
 
 enum class GrantRole(val wireValue: String) {
     VIEWER("viewer"),
@@ -22,4 +23,9 @@ enum class GrantRole(val wireValue: String) {
 fun GrantRole.toAccessRole(): AccessRole = when (this) {
     GrantRole.VIEWER -> AccessRole.VIEWER
     GrantRole.OPERATOR -> AccessRole.OPERATOR
+}
+
+fun GrantRole.expiresAtViolation(expiresAt: Instant?): String? = when (this) {
+    GrantRole.OPERATOR -> if (expiresAt == null) "grant.expires.at.required" else null
+    GrantRole.VIEWER -> if (expiresAt != null) "grant.expires.at.forbidden" else null
 }

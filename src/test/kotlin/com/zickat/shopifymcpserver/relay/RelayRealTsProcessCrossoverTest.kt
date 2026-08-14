@@ -28,6 +28,7 @@ import java.time.Instant
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -249,6 +250,7 @@ class RelayRealTsProcessCrossoverTest : WithMongoDBContainer() {
                 role = GrantRole.OPERATOR,
                 grantedBy = identityId,
                 createdAt = Clock.System.now(),
+                expiresAt = Clock.System.now() + 1.hours,
                 revokedAt = null,
             ),
         ).shouldBeRight()

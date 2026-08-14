@@ -14,6 +14,7 @@ import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.models.toAccessRole
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
+import kotlin.time.Clock
 import org.springframework.stereotype.Component
 
 @Component
@@ -21,6 +22,7 @@ class AccessResolutionUseCase(
     private val identityExposedService: IdentityExposedService,
     private val grantRepository: GrantRepository,
     private val storeRepository: StoreRepository,
+    private val clock: Clock = Clock.System,
 ) {
     fun resolve(issuer: String, subject: String, storeId: String): Either<UseCaseError, AccessContext> = either {
         val identityId = identityExposedService.resolve(issuer, subject).bind()
@@ -35,7 +37,7 @@ class AccessResolutionUseCase(
         }
 
         val grant = grantRepository.findActiveByIdentityAndStore(identityId, StoreId(storeId)).orNullIfNotFound().bind()
-        if (grant == null) {
+        if (grant == null || !grant.isUsable(clock.now())) {
             raise(accessDenied(storeId))
         }
 
@@ -49,8 +51,9 @@ class AccessResolutionUseCase(
         if (!identityExposedService.isActive(identityId)) {
             emptyList()
         } else {
+            val now = clock.now()
             val grants = grantRepository.findAllActiveByIdentity(identityId).bind()
-            grants.mapNotNull { grant -> storeRepository.findById(grant.storeId).orNullIfNotFound().bind() }
+            grants.filter { it.isUsable(now) }.mapNotNull { grant -> storeRepository.findById(grant.storeId).orNullIfNotFound().bind() }
         }
     }
 

@@ -10,6 +10,7 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.tenancy.domain.models.Grant
 import com.zickat.shopifymcpserver.tenancy.domain.models.GrantId
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
+import com.zickat.shopifymcpserver.tenancy.domain.models.expiresAtViolation
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
 
@@ -30,6 +31,9 @@ class GrantFakeRepository(
             ?: return NotFoundError("grant.store.not.found").left()
         if (storeEntity.isArchived) {
             return DomainError("grant.store.archived", mapOf("storeId" to grant.storeId.value)).left()
+        }
+        grant.role.expiresAtViolation(grant.expiresAt)?.let { messageKey ->
+            return DomainError(messageKey, mapOf("role" to grant.role.wireValue)).left()
         }
         if (grant.revokedAt == null) {
             val duplicate = store.values.any {

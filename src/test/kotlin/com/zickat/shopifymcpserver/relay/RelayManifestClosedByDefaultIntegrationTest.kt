@@ -27,6 +27,7 @@ import java.io.File
 import java.time.Instant
 import java.util.Date
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -249,6 +250,7 @@ class RelayManifestClosedByDefaultIntegrationTest : WithMongoDBContainer() {
                 role = role,
                 grantedBy = identityId,
                 createdAt = Clock.System.now(),
+                expiresAt = if (role == GrantRole.OPERATOR) Clock.System.now() + 1.hours else null,
                 revokedAt = null,
             ),
         ).shouldBeRight()
