@@ -323,7 +323,6 @@ class HexagonalArchitectureTest {
         private val NOT_YET_REALIGNED: Set<String> = setOf(
             "api",
             "audit",
-            "collections",
             "identity",
             "menus",
             "products",
