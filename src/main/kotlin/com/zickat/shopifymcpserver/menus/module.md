@@ -7,7 +7,7 @@ leur arbre d'items complet, jusqu'à 4 niveaux. C'est le quatrième module desce
 proche de `redirects` sur la partie câblée (1 outil, 1 use case), mais il porte une question que les
 trois précédents n'avaient pas : quatre fichiers de domaine sans consommateur en production, du
 travail commencé pour un lot de mutation de menus (`catalog-plugin-oauth-tenancy`, lot 3) et laissé en
-jachère avant ce chantier. **Ce module reste dans `NOT_YET_REALIGNED` à l'issue de cette descente** —
+jachère avant ce chantier. **Ce module reste exempté à l'issue de cette descente** —
 voir « Pourquoi le cliquet ne sort pas » ci-dessous.
 
 ## Use cases
@@ -73,7 +73,7 @@ rattacher créerait un port avec des méthodes qu'aucun use case n'appelle — l
 intention » que D42 proscrit. Ce n'est pas une dette à nettoyer, c'est du capital en attente de portage
 — **ne pas proposer de « faire le ménage » ici sans réouvrir le lot 3.**
 
-**Et c'est ce qui empêche `menus` de sortir de `NOT_YET_REALIGNED` : deux de ces quatre fichiers
+**Et c'est ce qui maintient `menus` exempté : deux de ces quatre fichiers
 violent R2 (`domainHasNoWireFormatDependency`).**
 
 - `MenuWriteDiff.kt` importe `kotlinx.serialization.json.*` pour sérialiser un item en `JsonObject`
@@ -89,7 +89,7 @@ Réécrire ces deux fichiers pour ne plus dépendre de `kotlinx.serialization.js
 (retyper leurs entrées/sorties), pas un déplacement de fichier — et ce n'est pas le mandat de cette
 tâche : ces fichiers ne sont câblés à aucun use case, les toucher maintenant, c'est concevoir à l'aveugle
 l'API du lot 3 avant que ses outils MCP existent. **Signalé au Tech Lead/CTO plutôt que contourné** :
-`menus` reste dans `NOT_YET_REALIGNED` jusqu'à ce que le lot 3 soit repris (et purifie ces fichiers à
+`menus` reste exempté jusqu'à ce que le lot 3 soit repris (et purifie ces fichiers à
 cette occasion, avec la connaissance réelle de ce que ses outils MCP exigent), ou jusqu'à ce qu'une
 décision explicite tranche de les purifier hors mandat.
 
@@ -150,3 +150,15 @@ partagés. **`invalidGidType` n'est pas dupliqué ici** : `ListMenusTool` ne val
 (ses deux paramètres sont une requête de recherche et une profondeur d'affichage). **`slugFor` est
 importé directement depuis `tenancy.exposed_interface`**, comme sur `seo`/`redirects` — jamais sa
 propre copie.
+
+## Où vit cette dette depuis `BE-25`
+
+`NOT_YET_REALIGNED` est **vide** depuis `BE-25`. La dette de `menus` a été déplacée dans
+`DEFERRED_TO_OTHER_INITIATIVE` (`D63`) — une `Map` module → motif, et non un `Set`, **pour qu'on ne
+puisse pas y déposer un module sans écrire pourquoi et chez qui**. Son entrée :
+
+    "menus" to "lot 3 — oauth-tenancy, suspendu"
+
+La distinction n'est pas cosmétique : `NOT_YET_REALIGNED` portait la dette **de ce chantier**, que ce
+chantier pouvait solder. Celle-ci ne lui appartient pas — elle sera soldée par le lot 3, quand il
+reprendra. Un critère d'achèvement mécanique qui attend une autre initiative n'est plus mécanique.
