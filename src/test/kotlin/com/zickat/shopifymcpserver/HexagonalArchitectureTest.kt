@@ -4,7 +4,9 @@ import arrow.core.Either
 import com.tngtech.archunit.core.domain.JavaClass
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage
 import com.tngtech.archunit.core.domain.JavaClasses
+import com.tngtech.archunit.core.domain.JavaCodeUnit
 import com.tngtech.archunit.core.domain.JavaMethod
+import com.tngtech.archunit.core.domain.JavaMethodCall
 import com.tngtech.archunit.core.domain.JavaModifier
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption
@@ -92,7 +94,7 @@ class HexagonalArchitectureTest {
     @Test
     fun everyModuleHasAModuleMd() {
         r11ViolatingModules()
-            .filterNot { it in NOT_YET_REALIGNED }
+            .filterNot { it in EXEMPTED }
             .shouldBeEmpty()
     }
 
@@ -104,7 +106,7 @@ class HexagonalArchitectureTest {
     @Test
     fun everyToolResultsRendersTheStoreBanner() {
         r13Violations()
-            .filterNot { it.module in NOT_YET_REALIGNED }
+            .filterNot { it.module in EXEMPTED }
             .map { it.label }
             .shouldBeEmpty()
     }
@@ -112,6 +114,11 @@ class HexagonalArchitectureTest {
     @Test
     fun raiseBlocksHaveNoLabelledReturn() {
         r14Violations().shouldBeEmpty()
+    }
+
+    @Test
+    fun transportOnlyDomainsNeverOpenTheWireFormat() {
+        r15ViolatingClasses().fullNames().shouldBeEmpty()
     }
 
     @Test
@@ -124,7 +131,7 @@ class HexagonalArchitectureTest {
             r11ViolatingModules() +
             r13ViolatingModules()
 
-        (NOT_YET_REALIGNED - stillViolatingModules).shouldBeEmpty()
+        (EXEMPTED - stillViolatingModules).shouldBeEmpty()
     }
 
     private fun r1ViolatingClasses(): List<JavaClass> =
@@ -134,7 +141,24 @@ class HexagonalArchitectureTest {
     private fun r2ViolatingClasses(): List<JavaClass> =
         classes.filter { it.layerName() == DOMAIN_LAYER }
             .filterNot { it.moduleName() == "shopify" }
+            .filterNot { it.moduleName() in WIRE_FORMAT_TRANSPORT_ONLY }
             .filter { it.hasDependencyInAnyPackage(WIRE_FORMAT_PACKAGE) }
+
+    private fun r15ViolatingClasses(): List<JavaClass> =
+        classes.filter { it.moduleName() in WIRE_FORMAT_TRANSPORT_ONLY }
+            .filter { it.layerName() == DOMAIN_LAYER }
+            .filter { it.opensTheWireFormat() }
+
+    private fun JavaClass.opensTheWireFormat(): Boolean =
+        methodCallsFromSelf.any { it.opensTheWireFormat() } ||
+            fieldAccessesFromSelf.any { resideInAPackage(WIRE_FORMAT_PACKAGE).test(it.target.owner) }
+
+    private fun JavaMethodCall.opensTheWireFormat(): Boolean =
+        resideInAPackage(WIRE_FORMAT_PACKAGE).test(target.owner) && !origin.isGeneratedDataClassMember()
+
+    private fun JavaCodeUnit.isGeneratedDataClassMember(): Boolean =
+        (name in DATA_CLASS_GENERATED_METHOD_NAMES || DATA_CLASS_COMPONENT_METHOD_PATTERN.matches(name)) &&
+            owner.reflect().kotlin.isData
 
     private fun r3ViolatingClasses(): List<JavaClass> =
         classes.filter { it.layerName() == SPI_LAYER }
@@ -297,7 +321,7 @@ class HexagonalArchitectureTest {
         return rawInterfaces.any { it.moduleName() == ownModule && it.layerName() == EXPOSED_INTERFACE_LAYER }
     }
 
-    private fun List<JavaClass>.unexemptedOnly(): List<JavaClass> = filterNot { it.moduleName() in NOT_YET_REALIGNED }
+    private fun List<JavaClass>.unexemptedOnly(): List<JavaClass> = filterNot { it.moduleName() in EXEMPTED }
 
     private fun List<JavaClass>.modules(): Set<String> = mapNotNull { it.moduleName() }.toSet()
 
@@ -317,12 +341,17 @@ class HexagonalArchitectureTest {
         private const val EXPOSED_INTERFACE_MODEL_PATTERN = "..exposed_interface.model.."
         private const val WIRE_FORMAT_PACKAGE = "kotlinx.serialization.json.."
 
+        private val WIRE_FORMAT_TRANSPORT_ONLY: Set<String> = setOf("relay")
+
         private const val STORE_BANNER_PREFIX = "Boutique : "
         private const val WITH_BANNER_METHOD_NAME = "withBanner"
         private const val R13_PROBE_STORE_SLUG = "r13-probe-store"
         private const val R13_PROBE_ERROR_KEY = "r13.probe.error"
 
         private val LABELLED_RAISE_RETURN_PATTERN = Regex("""return@(either|option|nullable|result|ior)\b""")
+
+        private val DATA_CLASS_GENERATED_METHOD_NAMES = setOf("equals", "hashCode", "toString", "copy")
+        private val DATA_CLASS_COMPONENT_METHOD_PATTERN = Regex("""component\d+""")
 
         private val FRAMEWORK_PACKAGES = arrayOf(
             "org.springframework..",
@@ -339,10 +368,13 @@ class HexagonalArchitectureTest {
         private val CROSS_CUTTING_VIEW_MODULES = emptySet<String>()
         private val CATALOG_FAMILY_ALLOWED = setOf("shared_kernel", "shopify")
 
-        private val NOT_YET_REALIGNED: Set<String> = setOf(
-            "menus",
-            "relay",
+        private val NOT_YET_REALIGNED: Set<String> = emptySet()
+
+        private val DEFERRED_TO_OTHER_INITIATIVE: Map<String, String> = mapOf(
+            "menus" to "lot 3 — oauth-tenancy, suspendu",
         )
+
+        private val EXEMPTED: Set<String> = NOT_YET_REALIGNED + DEFERRED_TO_OTHER_INITIATIVE.keys
 
         private val importedClasses: JavaClasses by lazy {
             ClassFileImporter()
