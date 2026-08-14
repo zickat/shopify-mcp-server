@@ -2,6 +2,7 @@ package com.zickat.shopifymcpserver.seo.domain
 
 import com.zickat.shopifymcpserver.api.mcp.McpToolResults
 import com.zickat.shopifymcpserver.seo.domain.models.SeoResourceType
+import com.zickat.shopifymcpserver.seo.spi.shopify.SeoShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteCall
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
@@ -85,7 +86,7 @@ class UpdateSeoUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return UpdateSeoUseCase(gateway) to mockServer
+        return UpdateSeoUseCase(SeoShopifyRepository(gateway)) to mockServer
     }
 
     private fun replayAndAssert(
