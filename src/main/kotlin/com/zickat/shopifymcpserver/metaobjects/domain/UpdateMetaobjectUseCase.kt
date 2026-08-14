@@ -13,13 +13,14 @@ class UpdateMetaobjectUseCase(
 
     fun execute(storeId: String, metaobjectId: String, fields: List<MetaobjectFieldInput>): Either<UseCaseError, UpdateMetaobjectResult> = either {
         val before = metaobjectsRepository.getBeforeUpdate(storeId, metaobjectId).bind()
-            ?: return@either UpdateMetaobjectResult.notFound(metaobjectId)
-
-        when (val outcome = metaobjectsRepository.update(storeId, metaobjectId, before.type, fields).bind()) {
-            is MetaobjectWriteOutcome.Success ->
-                UpdateMetaobjectResult.updated(metaobjectId, before.type, fields.map { MetaobjectFieldValue(it.key, it.value) })
-            is MetaobjectWriteOutcome.Failed ->
-                UpdateMetaobjectResult.failed(metaobjectId, outcome.detail)
+        when {
+            before == null -> UpdateMetaobjectResult.notFound(metaobjectId)
+            else -> when (val outcome = metaobjectsRepository.update(storeId, metaobjectId, before.type, fields).bind()) {
+                is MetaobjectWriteOutcome.Success ->
+                    UpdateMetaobjectResult.updated(metaobjectId, before.type, fields.map { MetaobjectFieldValue(it.key, it.value) })
+                is MetaobjectWriteOutcome.Failed ->
+                    UpdateMetaobjectResult.failed(metaobjectId, outcome.detail)
+            }
         }
     }
 }

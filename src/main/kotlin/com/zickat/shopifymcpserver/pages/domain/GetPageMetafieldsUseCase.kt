@@ -11,8 +11,9 @@ class GetPageMetafieldsUseCase(
 
     fun execute(storeId: String, pageId: String, keys: List<String>?): Either<UseCaseError, GetPageMetafieldsResult> = either {
         val snapshot = pageRepository.metafields(storeId, pageId).bind()
-            ?: return@either GetPageMetafieldsResult.notFound(pageId)
-
-        GetPageMetafieldsResult.found(snapshot.title, snapshot.metafields, keys, snapshot.truncated)
+        when {
+            snapshot == null -> GetPageMetafieldsResult.notFound(pageId)
+            else -> GetPageMetafieldsResult.found(snapshot.title, snapshot.metafields, keys, snapshot.truncated)
+        }
     }
 }

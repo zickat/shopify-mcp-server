@@ -34,20 +34,24 @@ class SeoShopifyRepository(
         seoTitle: String?,
         seoDescription: String?,
     ): Either<UseCaseError, SeoWriteOutcome> = either {
-        val fetched = fetchSnapshot(storeId, resourceType, resourceId).bind() ?: return@either SeoWriteOutcome.NotFound
+        val fetched = fetchSnapshot(storeId, resourceType, resourceId).bind()
+        when {
+            fetched == null -> SeoWriteOutcome.NotFound
+            else -> {
+                val finalTitle = seoTitle ?: fetched.metaTitle
+                val finalDescription = seoDescription ?: fetched.metaDescription
 
-        val finalTitle = seoTitle ?: fetched.metaTitle
-        val finalDescription = seoDescription ?: fetched.metaDescription
+                val writeErrors = when (resourceType.mechanism) {
+                    SeoMechanism.NATIVE -> writeNativeSeo(storeId, resourceType.typename, resourceId, finalTitle, finalDescription).bind()
+                    SeoMechanism.METAFIELD -> writeMetafieldSeo(storeId, resourceId, seoTitle, seoDescription).bind()
+                }
 
-        val writeErrors = when (resourceType.mechanism) {
-            SeoMechanism.NATIVE -> writeNativeSeo(storeId, resourceType.typename, resourceId, finalTitle, finalDescription).bind()
-            SeoMechanism.METAFIELD -> writeMetafieldSeo(storeId, resourceId, seoTitle, seoDescription).bind()
-        }
-
-        if (writeErrors.isNotEmpty()) {
-            SeoWriteOutcome.Failed(ShopifyUserErrors.format(writeErrors))
-        } else {
-            SeoWriteOutcome.Updated(fetched.title, finalTitle, finalDescription)
+                if (writeErrors.isNotEmpty()) {
+                    SeoWriteOutcome.Failed(ShopifyUserErrors.format(writeErrors))
+                } else {
+                    SeoWriteOutcome.Updated(fetched.title, finalTitle, finalDescription)
+                }
+            }
         }
     }
 

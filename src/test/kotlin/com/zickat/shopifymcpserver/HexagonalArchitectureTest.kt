@@ -110,6 +110,11 @@ class HexagonalArchitectureTest {
     }
 
     @Test
+    fun raiseBlocksHaveNoLabelledReturn() {
+        r14Violations().shouldBeEmpty()
+    }
+
+    @Test
     fun exemptionListContainsNoAlreadyCleanModule() {
         val stillViolatingModules = r1ViolatingClasses().modules() +
             r2ViolatingClasses().modules() +
@@ -269,6 +274,18 @@ class HexagonalArchitectureTest {
     private fun moduleMdExists(module: String): Boolean =
         File("src/main/kotlin/$BASE_PACKAGE_PATH/$module/module.md").isFile
 
+    private fun r14Violations(): List<String> =
+        File("src/main/kotlin/$BASE_PACKAGE_PATH")
+            .walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .flatMap { it.labelledRaiseReturnLocations() }
+            .toList()
+
+    private fun File.labelledRaiseReturnLocations(): List<String> =
+        readLines().mapIndexedNotNull { index, line ->
+            "$path:${index + 1}".takeIf { LABELLED_RAISE_RETURN_PATTERN.containsMatchIn(line) }
+        }
+
     private fun JavaClass.hasDependencyInAnyPackage(vararg patterns: String): Boolean =
         directDependenciesFromSelf.any { dependency -> patterns.any { resideInAPackage(it).test(dependency.targetClass) } }
 
@@ -304,6 +321,8 @@ class HexagonalArchitectureTest {
         private const val WITH_BANNER_METHOD_NAME = "withBanner"
         private const val R13_PROBE_STORE_SLUG = "r13-probe-store"
         private const val R13_PROBE_ERROR_KEY = "r13.probe.error"
+
+        private val LABELLED_RAISE_RETURN_PATTERN = Regex("""return@(either|option|nullable|result|ior)\b""")
 
         private val FRAMEWORK_PACKAGES = arrayOf(
             "org.springframework..",

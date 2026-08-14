@@ -13,20 +13,21 @@ class DeleteMetaobjectUseCase(
 
     fun execute(storeId: String, metaobjectId: String, confirmReferencedDeletion: Boolean): Either<UseCaseError, DeleteMetaobjectResult> = either {
         val before = metaobjectsRepository.getBeforeDelete(storeId, metaobjectId).bind()
-            ?: return@either DeleteMetaobjectResult.notFound(metaobjectId)
-
-        val referenceStatus = metaobjectsRepository.referenceStatus(storeId, metaobjectId).bind()
-        val orphan = referenceStatus?.let(::isOrphan) ?: false
-
-        if (!orphan && !confirmReferencedDeletion) {
-            return@either DeleteMetaobjectResult.refused(metaobjectId, before.type, referenceStatus)
-        }
-
-        when (val outcome = metaobjectsRepository.delete(storeId, metaobjectId).bind()) {
-            MetaobjectDeleteOutcome.Deleted ->
-                DeleteMetaobjectResult.deleted(metaobjectId, before.type, before.fields, referenceStatus)
-            is MetaobjectDeleteOutcome.Failed ->
-                DeleteMetaobjectResult.failed(metaobjectId, outcome.detail)
+        when {
+            before == null -> DeleteMetaobjectResult.notFound(metaobjectId)
+            else -> {
+                val referenceStatus = metaobjectsRepository.referenceStatus(storeId, metaobjectId).bind()
+                val orphan = referenceStatus?.let(::isOrphan) ?: false
+                when {
+                    !orphan && !confirmReferencedDeletion -> DeleteMetaobjectResult.refused(metaobjectId, before.type, referenceStatus)
+                    else -> when (val outcome = metaobjectsRepository.delete(storeId, metaobjectId).bind()) {
+                        MetaobjectDeleteOutcome.Deleted ->
+                            DeleteMetaobjectResult.deleted(metaobjectId, before.type, before.fields, referenceStatus)
+                        is MetaobjectDeleteOutcome.Failed ->
+                            DeleteMetaobjectResult.failed(metaobjectId, outcome.detail)
+                    }
+                }
+            }
         }
     }
 }

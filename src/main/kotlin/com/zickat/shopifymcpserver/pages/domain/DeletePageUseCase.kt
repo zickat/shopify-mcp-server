@@ -11,11 +11,13 @@ class DeletePageUseCase(
 ) {
 
     fun execute(storeId: String, pageId: String): Either<UseCaseError, DeletePageResult> = either {
-        val before = pageRepository.get(storeId, pageId).bind() ?: return@either DeletePageResult.notFound(pageId)
-
-        when (val outcome = pageRepository.delete(storeId, pageId).bind()) {
-            is PageDeleteOutcome.Deleted -> DeletePageResult.deleted(before.title, before.handle)
-            is PageDeleteOutcome.Failed -> DeletePageResult.failed(pageId, outcome.detail)
+        val before = pageRepository.get(storeId, pageId).bind()
+        when {
+            before == null -> DeletePageResult.notFound(pageId)
+            else -> when (val outcome = pageRepository.delete(storeId, pageId).bind()) {
+                is PageDeleteOutcome.Deleted -> DeletePageResult.deleted(before.title, before.handle)
+                is PageDeleteOutcome.Failed -> DeletePageResult.failed(pageId, outcome.detail)
+            }
         }
     }
 }

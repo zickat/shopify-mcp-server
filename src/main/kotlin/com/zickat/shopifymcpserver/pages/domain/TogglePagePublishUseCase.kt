@@ -11,15 +11,14 @@ class TogglePagePublishUseCase(
 ) {
 
     fun execute(storeId: String, pageId: String, target: Boolean): Either<UseCaseError, TogglePagePublishResult> = either {
-        val before = pageRepository.get(storeId, pageId).bind() ?: return@either TogglePagePublishResult.notFound(pageId)
-
-        if (before.isPublished == target) {
-            return@either TogglePagePublishResult.noOp(before.title, target, before.isPublished)
-        }
-
-        when (val outcome = pageRepository.setPublished(storeId, pageId, target).bind()) {
-            is PageWriteOutcome.Success -> TogglePagePublishResult.toggled(outcome.page.title, target, outcome.page.isPublished)
-            is PageWriteOutcome.Failed -> TogglePagePublishResult.failed(pageId, outcome.detail)
+        val before = pageRepository.get(storeId, pageId).bind()
+        when {
+            before == null -> TogglePagePublishResult.notFound(pageId)
+            before.isPublished == target -> TogglePagePublishResult.noOp(before.title, target, before.isPublished)
+            else -> when (val outcome = pageRepository.setPublished(storeId, pageId, target).bind()) {
+                is PageWriteOutcome.Success -> TogglePagePublishResult.toggled(outcome.page.title, target, outcome.page.isPublished)
+                is PageWriteOutcome.Failed -> TogglePagePublishResult.failed(pageId, outcome.detail)
+            }
         }
     }
 }
