@@ -124,6 +124,13 @@ mcp:
 # `DeleteMetaobjectTool` s'enregistrent sous ces trois noms, même conflit de `SyncToolSpecification`
 # au démarrage sinon. 22 en NATIF désormais, 58 en RELAIS — total inchangé (80).
 #
+# LOT4-10 — `create_page`/`update_page`/`publish_page`/`unpublish_page`/`delete_page`/
+# `update_page_metafields` basculent NATIF pour la même raison mécanique que les lots précédents :
+# `CreatePageTool`/`UpdatePageTool`/`TogglePagePublishTool` (les deux noms publish_page/
+# unpublish_page)/`DeletePageTool`/`UpdatePageMetafieldsTool` s'enregistrent sous ces six noms, même
+# conflit de `SyncToolSpecification` au démarrage sinon. 28 en NATIF désormais, 52 en RELAIS — total
+# inchangé (80).
+#
 # LOT2-23 (D31) — `generate_product_images`/`generate_cross_product_image`/`generate_editorial_scene`/
 # `retouch_editorial_image` basculent `kind: READ` → `kind: MUTATION`. `route` reste `RELAIS` pour les
 # quatre — ce n'est pas un portage, c'est une correction de classification : chacun émet
@@ -170,7 +177,7 @@ relay:
       route: NATIF
       kind: MUTATION
     - tool-name: create_page
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: create_redirect
       route: NATIF
@@ -188,7 +195,7 @@ relay:
       route: NATIF
       kind: MUTATION
     - tool-name: delete_page
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: detach_from_guide_theme
       route: RELAIS
@@ -272,7 +279,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: publish_page
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: publish_resource
       route: NATIF
@@ -332,7 +339,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: unpublish_page
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: unpublish_resource
       route: NATIF
@@ -362,10 +369,10 @@ relay:
       route: NATIF
       kind: MUTATION
     - tool-name: update_page
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: update_page_metafields
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: update_seo
       route: NATIF

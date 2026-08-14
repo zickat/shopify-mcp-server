@@ -689,7 +689,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `tools list exposes exactly the 80 real tools — 22 native and 58 relayed, no duplicate name`() {
+    fun `tools list exposes exactly the 80 real tools — 28 native and 52 relayed, no duplicate name`() {
         val storeId = registerStore()
         val subject = "operator-tools-list-count"
         val identityId = resolveIdentity(subject)
@@ -727,6 +727,10 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "create_metaobject"
         names shouldContain "update_metaobject"
         names shouldContain "delete_metaobject"
+        names shouldContain "create_page"
+        names shouldContain "update_page"
+        names shouldContain "delete_page"
+        names shouldContain "update_page_metafields"
     }
 
     @Test
@@ -774,7 +778,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
             .toMap()
 
         val relayedNames = relayGateway.relayedTools().map { it.toolName }.filterNot { it in nativeToolNames.names }
-        relayedNames shouldHaveSize 58
+        relayedNames shouldHaveSize 52
 
         relayedNames.forEach { toolName ->
             val exposedInputSchema = toolsByName[toolName]?.get("inputSchema")
@@ -1595,6 +1599,467 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
 
         val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
         val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "delete_metaobject" }
+        checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
+    }
+
+    @Test
+    fun `create_page (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-create-page"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "create_page",
+            mapOf("title" to "T", "body" to "<p>x</p>"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "create_page" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on create_page" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `create_page without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-create-page")
+        val subject = "operator-create-page-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "create_page",
+            mapOf("title" to "T", "body" to "<p>x</p>"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-create-page"
+    }
+
+    @Test
+    fun `update_page (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-update-page"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_page",
+            mapOf("page_id" to "gid://shopify/Page/1", "title" to "New title"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_page" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on update_page" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `update_page without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-update-page")
+        val subject = "operator-update-page-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_page",
+            mapOf("page_id" to "gid://shopify/Page/1", "title" to "New title"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-update-page"
+    }
+
+    @Test
+    fun `update_page refuses a page_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-update-page-wrong-type")
+        val subject = "operator-update-page-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_page",
+            mapOf("page_id" to "gid://shopify/Article/1", "title" to "New title"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "page_id invalide"
+        combined shouldContain "Page"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_page" }
+        checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
+    }
+
+    @Test
+    fun `publish_page (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-publish-page"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "publish_page",
+            mapOf("page_id" to "gid://shopify/Page/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "publish_page" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on publish_page" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `publish_page without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-publish-page")
+        val subject = "operator-publish-page-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "publish_page",
+            mapOf("page_id" to "gid://shopify/Page/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-publish-page"
+    }
+
+    @Test
+    fun `unpublish_page (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-unpublish-page"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "unpublish_page",
+            mapOf("page_id" to "gid://shopify/Page/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "unpublish_page" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on unpublish_page" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `unpublish_page without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-unpublish-page")
+        val subject = "operator-unpublish-page-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "unpublish_page",
+            mapOf("page_id" to "gid://shopify/Page/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-unpublish-page"
+    }
+
+    @Test
+    fun `publish_page refuses a page_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-publish-page-wrong-type")
+        val subject = "operator-publish-page-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "publish_page",
+            mapOf("page_id" to "gid://shopify/Article/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "page_id invalide"
+        combined shouldContain "Page"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "publish_page" }
+        checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
+    }
+
+    @Test
+    fun `delete_page (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-delete-page"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "delete_page",
+            mapOf("page_id" to "gid://shopify/Page/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "delete_page" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on delete_page" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `delete_page without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-delete-page")
+        val subject = "operator-delete-page-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "delete_page",
+            mapOf("page_id" to "gid://shopify/Page/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-delete-page"
+    }
+
+    @Test
+    fun `delete_page refuses a page_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-delete-page-wrong-type")
+        val subject = "operator-delete-page-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "delete_page",
+            mapOf("page_id" to "gid://shopify/Article/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "page_id invalide"
+        combined shouldContain "Page"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "delete_page" }
+        checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
+    }
+
+    @Test
+    fun `update_page_metafields (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-update-page-metafields"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_page_metafields",
+            mapOf(
+                "page_id" to "gid://shopify/Page/1",
+                "metafields" to listOf(mapOf("key" to "themes", "type" to "single_line_text_field", "value" to "x")),
+            ),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_page_metafields" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on update_page_metafields" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `update_page_metafields without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-update-page-metafields")
+        val subject = "operator-update-page-metafields-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_page_metafields",
+            mapOf(
+                "page_id" to "gid://shopify/Page/1",
+                "metafields" to listOf(mapOf("key" to "themes", "type" to "single_line_text_field", "value" to "x")),
+            ),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-update-page-metafields"
+    }
+
+    @Test
+    fun `update_page_metafields refuses a page_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-update-page-metafields-wrong-type")
+        val subject = "operator-update-page-metafields-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_page_metafields",
+            mapOf(
+                "page_id" to "gid://shopify/Article/1",
+                "metafields" to listOf(mapOf("key" to "themes", "type" to "single_line_text_field", "value" to "x")),
+            ),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "page_id invalide"
+        combined shouldContain "Page"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_page_metafields" }
         checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
     }
 }

@@ -14,7 +14,7 @@ class NativeToolKindsTest : WithMongoDBContainer() {
     private lateinit var nativeToolKinds: NativeToolKinds
 
     @Test
-    fun `derives the real kind of each of the twenty-two native tools from their own ToolUseCase`() {
+    fun `derives the real kind of each of the twenty-eight native tools from their own ToolUseCase`() {
         nativeToolKinds.kinds shouldBe mapOf(
             "list_stores" to UseCaseKind.READ,
             "use_store" to UseCaseKind.READ,
@@ -38,6 +38,12 @@ class NativeToolKindsTest : WithMongoDBContainer() {
             "create_metaobject" to UseCaseKind.MUTATION,
             "update_metaobject" to UseCaseKind.MUTATION,
             "delete_metaobject" to UseCaseKind.MUTATION,
+            "create_page" to UseCaseKind.MUTATION,
+            "update_page" to UseCaseKind.MUTATION,
+            "publish_page" to UseCaseKind.MUTATION,
+            "unpublish_page" to UseCaseKind.MUTATION,
+            "delete_page" to UseCaseKind.MUTATION,
+            "update_page_metafields" to UseCaseKind.MUTATION,
         )
     }
 }

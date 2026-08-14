@@ -12,9 +12,19 @@ import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.GetMetaob
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.ListMetaobjectsResult
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.UpdateMetaobjectOutcome
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.UpdateMetaobjectResult
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.CreatePageOutcome
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.CreatePageResult
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.DeletePageOutcome
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.DeletePageResult
 import com.zickat.shopifymcpserver.pages.exposed_interface.model.GetPageMetafieldsOutcome
 import com.zickat.shopifymcpserver.pages.exposed_interface.model.GetPageMetafieldsResult
 import com.zickat.shopifymcpserver.pages.exposed_interface.model.ListPagesResult
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.TogglePagePublishOutcome
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.TogglePagePublishResult
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.UpdatePageMetafieldsOutcome
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.UpdatePageMetafieldsResult
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.UpdatePageOutcome
+import com.zickat.shopifymcpserver.pages.exposed_interface.model.UpdatePageResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentOutcome
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetRawContentOutcome
@@ -205,6 +215,58 @@ object McpToolResults {
                 withBanner(storeSlug, "Page introuvable : ${result.pageId}", isError = true)
             GetPageMetafieldsOutcome.FOUND ->
                 withBanner(storeSlug, requireNotNull(result.text))
+        }
+
+    fun createPageResult(storeSlug: String, result: CreatePageResult): CallToolResult =
+        when (result.outcome) {
+            CreatePageOutcome.CREATED ->
+                withBanner(storeSlug, requireNotNull(result.text))
+            CreatePageOutcome.FAILED ->
+                withBanner(storeSlug, "Échec de la création de la Page \"${result.title}\" : ${result.failureDetail}", isError = true)
+        }
+
+    fun updatePageResult(storeSlug: String, result: UpdatePageResult): CallToolResult =
+        when (result.outcome) {
+            UpdatePageOutcome.UPDATED, UpdatePageOutcome.NO_OP ->
+                withBanner(storeSlug, requireNotNull(result.text))
+            UpdatePageOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Page introuvable : ${result.pageId}", isError = true)
+            UpdatePageOutcome.FAILED ->
+                withBanner(storeSlug, "Échec de la mise à jour de la Page \"${result.pageId}\" : ${result.failureDetail}", isError = true)
+        }
+
+    fun togglePagePublishResult(storeSlug: String, result: TogglePagePublishResult): CallToolResult =
+        when (result.outcome) {
+            TogglePagePublishOutcome.TOGGLED, TogglePagePublishOutcome.NO_OP ->
+                withBanner(storeSlug, requireNotNull(result.text))
+            TogglePagePublishOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Page introuvable : ${result.pageId}", isError = true)
+            TogglePagePublishOutcome.FAILED ->
+                withBanner(storeSlug, "Échec de la publication/dépublication de la Page ${result.pageId} : ${result.failureDetail}", isError = true)
+        }
+
+    fun updatePageMetafieldsResult(storeSlug: String, result: UpdatePageMetafieldsResult): CallToolResult =
+        when (result.outcome) {
+            UpdatePageMetafieldsOutcome.UPDATED ->
+                withBanner(storeSlug, requireNotNull(result.text))
+            UpdatePageMetafieldsOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Page introuvable : ${result.pageId}", isError = true)
+            UpdatePageMetafieldsOutcome.FAILED ->
+                withBanner(
+                    storeSlug,
+                    "Échec de la mise à jour des metafields de la Page ${result.pageId} : ${result.failureDetail}",
+                    isError = true,
+                )
+        }
+
+    fun deletePageResult(storeSlug: String, result: DeletePageResult): CallToolResult =
+        when (result.outcome) {
+            DeletePageOutcome.DELETED ->
+                withBanner(storeSlug, requireNotNull(result.text))
+            DeletePageOutcome.NOT_FOUND ->
+                withBanner(storeSlug, "Page introuvable : ${result.pageId}", isError = true)
+            DeletePageOutcome.FAILED ->
+                withBanner(storeSlug, "Échec de la suppression de la Page ${result.pageId} : ${result.failureDetail}", isError = true)
         }
 
     fun searchProductsResult(storeSlug: String, result: SearchProductsResult): CallToolResult =
