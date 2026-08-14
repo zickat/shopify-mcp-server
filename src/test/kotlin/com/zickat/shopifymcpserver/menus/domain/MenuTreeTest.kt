@@ -11,20 +11,6 @@ import org.junit.jupiter.api.Test
 class MenuTreeTest {
 
     @Test
-    fun `normalizeItems should turn a raw N4 node without an items key into an empty list without throwing`() {
-        // given
-        val normalized = MenuTree.normalizeItems(MenuTreeFixtures.rawTree())
-
-        // when
-        val n4Path = MenuTree.findItemPath(normalized, gid(504))
-
-        // then
-        n4Path.shouldNotBeNull()
-        n4Path.last().items shouldBe emptyList()
-        MenuTree.maxDepth(normalized) shouldBe 4
-    }
-
-    @Test
     fun `findItemPath should return the root-to-node chain and depth at N1, N2 and N3`() {
         // given
         val t = MenuTreeFixtures.tree()
@@ -64,17 +50,16 @@ class MenuTreeTest {
     }
 
     @Test
-    fun `MENU_ITEMS_TREE fragment should re-emit exactly 4 levels and carry the N5 sentinel`() {
+    fun `maxDepth should return the deepest normalized branch, N4 included`() {
         // given
-        val fields = "id title type url resourceId tags"
+        val t = MenuTreeFixtures.tree()
 
         // when
-        val fieldOccurrences = MENU_ITEMS_TREE.split(fields).size - 1
-        val nestings = MENU_ITEMS_TREE.split("items {").size - 1
+        val n4Path = MenuTree.findItemPath(t, gid(504))
 
         // then
-        fieldOccurrences shouldBe 4
-        nestings shouldBe 4
-        MENU_ITEMS_TREE shouldContain "items { id }"
+        n4Path.shouldNotBeNull()
+        n4Path.last().items shouldBe emptyList()
+        MenuTree.maxDepth(t) shouldBe 4
     }
 }

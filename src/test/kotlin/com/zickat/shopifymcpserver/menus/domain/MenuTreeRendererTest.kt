@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.menus.domain
 
 import com.zickat.shopifymcpserver.menus.domain.models.MenuNode
+import com.zickat.shopifymcpserver.menus.spi.shopify.MenusGraphQL
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
@@ -40,7 +41,7 @@ class MenuTreeRendererTest {
         render.hiddenByDepth shouldBe 5
 
         // and
-        val sentinel = MenuTreeRenderer.renderMenuTree(MenuTree.normalizeItems(MenuTreeFixtures.rawTreeWithSentinel()), 4)
+        val sentinel = MenuTreeRenderer.renderMenuTree(MenusGraphQL.normalizeItems(MenuTreeFixtures.rawTreeWithSentinel()), 4)
         sentinel.hasUnreadableDepth shouldBe true
         sentinel.hiddenByDepth shouldBe 0
     }

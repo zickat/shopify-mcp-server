@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.menus.domain
 
 import com.zickat.shopifymcpserver.menus.domain.models.MenuItemNode
+import com.zickat.shopifymcpserver.menus.spi.shopify.MenusGraphQL
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -83,7 +84,7 @@ object MenuTreeFixtures {
         }
     }
 
-    fun tree(): List<MenuItemNode> = MenuTree.normalizeItems(rawTree())
+    fun tree(): List<MenuItemNode> = MenusGraphQL.normalizeItems(rawTree())
 
     val ALL_IDS: List<String> = listOf(501, 502, 503, 504, 505, 506, 507).map(::gid)
 }

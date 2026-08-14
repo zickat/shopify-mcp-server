@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.menus.domain
+package com.zickat.shopifymcpserver.menus.spi.shopify
 
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -7,7 +7,7 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-object ListMenusUseCaseSyntheticFixtures {
+object MenusGraphQLFixtures {
 
     fun rawItem(id: String, title: String = "Item", items: JsonElement? = null): JsonElement = buildJsonObject {
         put("id", id)

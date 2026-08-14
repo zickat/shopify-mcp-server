@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.menus.exposed_interface.model
+package com.zickat.shopifymcpserver.menus.domain.models
 
 data class ListMenusResult(
     val hadQuery: Boolean,

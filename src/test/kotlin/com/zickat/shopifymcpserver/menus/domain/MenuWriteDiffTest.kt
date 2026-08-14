@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.menus.domain
 
 import com.zickat.shopifymcpserver.menus.domain.MenuTreeFixtures.gid
+import com.zickat.shopifymcpserver.menus.spi.shopify.MenusGraphQL
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -31,16 +32,16 @@ class MenuWriteDiffTest {
         val before = MenuTreeFixtures.tree()
 
         // when / then — faithful round trip: no discrepancy
-        val persisted = MenuTree.normalizeItems(MenuTreeFixtures.rawTree())
+        val persisted = MenusGraphQL.normalizeItems(MenuTreeFixtures.rawTree())
         MenuWriteDiff.diffAfterWrite(before, persisted, emptyList()).shouldBeEmpty()
 
         // when / then — declared removal: no warning
         val declared = MenuTree.collectItemIds(listOf(MenuTree.findItemPath(before, gid(502))!!.last()))
-        val afterRemoval = MenuTree.normalizeItems(MenuTreeFixtures.rawTree()).filterNot { it.id == gid(501) }
+        val afterRemoval = MenusGraphQL.normalizeItems(MenuTreeFixtures.rawTree()).filterNot { it.id == gid(501) }
         MenuWriteDiff.diffAfterWrite(before, afterRemoval, declared + listOf(gid(501), gid(506))).shouldBeEmpty()
 
         // when / then — undeclared loss: one warning naming the id, carrying the pre-write snapshot
-        val lossy = MenuTree.normalizeItems(MenuTreeFixtures.rawTree()).filterNot { it.id == gid(507) }
+        val lossy = MenusGraphQL.normalizeItems(MenuTreeFixtures.rawTree()).filterNot { it.id == gid(507) }
         val warnings = MenuWriteDiff.diffAfterWrite(before, lossy, emptyList())
         warnings shouldHaveSize 1
         warnings[0] shouldContain gid(507)

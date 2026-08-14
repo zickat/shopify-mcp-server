@@ -3,6 +3,7 @@ package com.zickat.shopifymcpserver.menus.domain
 import com.zickat.shopifymcpserver.menus.domain.MenuTreeFixtures.gid
 import com.zickat.shopifymcpserver.menus.domain.models.MenuItemNode
 import com.zickat.shopifymcpserver.menus.domain.models.MenuItemType
+import com.zickat.shopifymcpserver.menus.spi.shopify.MenusGraphQL
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -53,7 +54,7 @@ class MenuIntegrityGuardsTest {
     @Test
     fun `assertNoUnreadableDepth should refuse a tree carrying an N5 sentinel but accept a 4-level tree`() {
         // given
-        val withSentinel = MenuTree.normalizeItems(MenuTreeFixtures.rawTreeWithSentinel())
+        val withSentinel = MenusGraphQL.normalizeItems(MenuTreeFixtures.rawTreeWithSentinel())
         MenuTree.maxDepth(withSentinel) shouldBe 5
 
         // when

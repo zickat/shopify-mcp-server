@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.menus.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
+import com.zickat.shopifymcpserver.menus.api.mcp.MenuToolResults
+import com.zickat.shopifymcpserver.menus.spi.shopify.MenusShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -55,7 +56,7 @@ class ListMenusUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return ListMenusUseCase(gateway) to mockServer
+        return ListMenusUseCase(MenusShopifyRepository(gateway)) to mockServer
     }
 
     private fun replayAndAssert(cassetteResource: String, storeId: String, shopDomain: String, storeSlug: String) {
@@ -72,7 +73,7 @@ class ListMenusUseCaseCassetteReplayTest {
             CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(call, mockServer.takeRequest())
         }
 
-        val rendered = McpToolResults.listMenusResult(storeSlug, result)
+        val rendered = MenuToolResults.listMenusResult(storeSlug, result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 

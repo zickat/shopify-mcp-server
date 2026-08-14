@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.menus.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.menus.exposed_interface.MenusExposedService
+import com.zickat.shopifymcpserver.menus.domain.ListMenusUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 class ListMenusTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val menusExposedService: MenusExposedService,
+    private val listMenusUseCase: ListMenusUseCase,
 ) : HasToolUseCase {
 
     private object ListMenusToolUseCase : ToolUseCase {
@@ -72,9 +72,9 @@ class ListMenusTool(
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            menusExposedService.listMenus(tenant.storeId, query, depth).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { result -> McpToolResults.listMenusResult(slug, result) },
+            listMenusUseCase.execute(tenant.storeId, query, depth).fold(
+                { error -> MenuToolResults.errorResult(slug, error) },
+                { result -> MenuToolResults.listMenusResult(slug, result) },
             )
         }
     }
