@@ -2,9 +2,7 @@ package com.zickat.shopifymcpserver.tenancy.domain
 
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import java.util.concurrent.ConcurrentHashMap
-import org.springframework.stereotype.Component
 
-@Component
 class ActiveStoreSelectionRegistry {
 
     private data class SessionKey(val identityId: String, val sessionId: String)

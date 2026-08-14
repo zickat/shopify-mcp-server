@@ -1,7 +1,7 @@
 package com.zickat.shopifymcpserver.api.mcp
 
 import com.zickat.shopifymcpserver.relay.domain.RelayDispatcher
-import com.zickat.shopifymcpserver.relay.domain.RelayGatewayImpl
+import com.zickat.shopifymcpserver.relay.exposed_interface.RelayGatewayImpl
 import com.zickat.shopifymcpserver.relay.domain.RelayManifest
 import com.zickat.shopifymcpserver.relay.domain.RelayTsClientFake
 import com.zickat.shopifymcpserver.relay.domain.models.RelayManifestEntry

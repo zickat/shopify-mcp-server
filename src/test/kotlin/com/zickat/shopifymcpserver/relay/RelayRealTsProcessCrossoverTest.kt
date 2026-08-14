@@ -233,6 +233,7 @@ class RelayRealTsProcessCrossoverTest : WithMongoDBContainer() {
     fun `real Kotlin server and real TS relay process, wired together over loopback — check_shopify_connection round-trips to actual Shopify`() {
         assumeTrue(credentialsFile.isFile) { "no local Shopify credentials file at $credentialsFile — skipping the real cross-process proof" }
         assumeTrue(tsDistIndex.isFile) { "mcp-shopify-catalog dist/index.js not found at $tsDistIndex — skipping the real cross-process proof" }
+        assumeTrue(System.getenv("CATALOG_MASTER_KEY") != null) { "no CATALOG_MASTER_KEY in the environment — skipping the real cross-process proof (storeCredentialUseCase.store needs a real master key to encrypt the real Shopify secret)" }
 
         val storeId = storeRepository.findBySlug("velotrip").fold(
             { storeRepository.save(StoreFixtures().withSlug("velotrip").build()).shouldBeRight().id.value },

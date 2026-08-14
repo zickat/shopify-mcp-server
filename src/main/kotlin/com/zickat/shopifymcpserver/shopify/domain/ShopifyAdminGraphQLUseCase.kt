@@ -14,9 +14,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.JsonElement
-import org.springframework.stereotype.Component
 
-@Component
 class ShopifyAdminGraphQLUseCase(
     private val vaultExposedService: VaultExposedService,
     private val httpClient: ShopifyAdminHttpClient,

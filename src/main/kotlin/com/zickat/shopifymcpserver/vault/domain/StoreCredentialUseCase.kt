@@ -7,15 +7,13 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.vault.domain.crypto.EnvelopeCrypto
 import com.zickat.shopifymcpserver.vault.domain.models.StoreCredential
 import com.zickat.shopifymcpserver.vault.domain.models.StoreCredentialId
+import com.zickat.shopifymcpserver.shared_kernel.newObjectIdHex
 import com.zickat.shopifymcpserver.vault.domain.repositories.ACTIVE_MASTER_KEY_REF
 import com.zickat.shopifymcpserver.vault.domain.repositories.MasterKeyProvider
 import com.zickat.shopifymcpserver.vault.domain.repositories.StoreCredentialRepository
 import kotlin.time.Clock
-import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 
-@Component
 class StoreCredentialUseCase(
     private val repository: StoreCredentialRepository,
     private val masterKeyProvider: MasterKeyProvider,
@@ -30,7 +28,7 @@ class StoreCredentialUseCase(
         val wrappedDek = encryptLoggingOnlyStoreIdAndStepOnFailure(dek, masterKey, storeId = storeId, step = "wrap").bind()
 
         val credential = StoreCredential(
-            id = StoreCredentialId(ObjectId().toHexString()),
+            id = StoreCredentialId(newObjectIdHex()),
             storeId = storeId,
             ciphertext = ciphertext,
             wrappedDek = wrappedDek,

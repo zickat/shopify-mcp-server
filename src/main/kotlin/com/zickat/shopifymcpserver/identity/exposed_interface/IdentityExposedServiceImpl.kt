@@ -1,10 +1,9 @@
-package com.zickat.shopifymcpserver.identity.spi.mongo
+package com.zickat.shopifymcpserver.identity.exposed_interface
 
 import arrow.core.Either
 import com.zickat.shopifymcpserver.identity.domain.IdentityUseCase
 import com.zickat.shopifymcpserver.identity.domain.models.IdentityId
 import com.zickat.shopifymcpserver.identity.domain.repositories.IdentityRepository
-import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import org.springframework.stereotype.Service
 

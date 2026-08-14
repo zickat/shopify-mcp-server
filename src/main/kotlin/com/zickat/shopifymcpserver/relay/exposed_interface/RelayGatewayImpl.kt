@@ -1,11 +1,8 @@
-package com.zickat.shopifymcpserver.relay.domain
+package com.zickat.shopifymcpserver.relay.exposed_interface
 
 import arrow.core.Either
-import com.zickat.shopifymcpserver.relay.exposed_interface.RelayContentBlockAcl
-import com.zickat.shopifymcpserver.relay.exposed_interface.RelayGateway
-import com.zickat.shopifymcpserver.relay.exposed_interface.RelayToolDescriptor
-import com.zickat.shopifymcpserver.relay.exposed_interface.RelayToolOutcomeAcl
-import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
+import com.zickat.shopifymcpserver.relay.domain.RelayDispatcher
+import com.zickat.shopifymcpserver.relay.domain.RelayManifest
 import com.zickat.shopifymcpserver.shared_kernel.AccessRole
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import kotlinx.serialization.json.JsonElement

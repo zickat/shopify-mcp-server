@@ -1,10 +1,10 @@
-package com.zickat.shopifymcpserver.tenancy.domain
+package com.zickat.shopifymcpserver.tenancy.exposed_interface
 
 import arrow.core.Either
 import com.zickat.shopifymcpserver.shared_kernel.TenantContext
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
-import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
+import com.zickat.shopifymcpserver.tenancy.domain.AccessResolutionUseCase
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.model.GrantedStore
 import org.springframework.stereotype.Service
 

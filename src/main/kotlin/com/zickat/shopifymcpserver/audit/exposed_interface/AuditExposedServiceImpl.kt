@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.audit.domain
+package com.zickat.shopifymcpserver.audit.exposed_interface
 
 import arrow.core.Either
-import com.zickat.shopifymcpserver.audit.exposed_interface.AuditExposedService
+import com.zickat.shopifymcpserver.audit.domain.AuditLogUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import org.springframework.stereotype.Service
 

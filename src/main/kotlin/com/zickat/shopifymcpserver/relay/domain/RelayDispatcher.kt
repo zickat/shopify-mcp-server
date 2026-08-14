@@ -12,9 +12,7 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlinx.serialization.json.JsonElement
-import org.springframework.stereotype.Component
 
-@Component
 class RelayDispatcher(
     private val manifest: RelayManifest,
     private val tsClient: RelayTsClient,

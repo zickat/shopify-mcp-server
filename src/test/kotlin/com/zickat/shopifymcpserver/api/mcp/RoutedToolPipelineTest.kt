@@ -4,11 +4,11 @@ import arrow.core.right
 import com.zickat.shopifymcpserver.api.exposed_interface.AuthenticatedToolPipeline
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
 import com.zickat.shopifymcpserver.audit.AuditLogFakeRepository
-import com.zickat.shopifymcpserver.audit.domain.AuditExposedServiceImpl
+import com.zickat.shopifymcpserver.audit.exposed_interface.AuditExposedServiceImpl
 import com.zickat.shopifymcpserver.audit.domain.AuditLogUseCase
 import com.zickat.shopifymcpserver.identity.IdentityExposedServiceFake
 import com.zickat.shopifymcpserver.relay.domain.RelayDispatcher
-import com.zickat.shopifymcpserver.relay.domain.RelayGatewayImpl
+import com.zickat.shopifymcpserver.relay.exposed_interface.RelayGatewayImpl
 import com.zickat.shopifymcpserver.relay.domain.RelayManifest
 import com.zickat.shopifymcpserver.relay.domain.RelayTsClientFake
 import com.zickat.shopifymcpserver.relay.domain.models.RelayContentBlock

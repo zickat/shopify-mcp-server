@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.vault.spi.mongo
+package com.zickat.shopifymcpserver.vault.exposed_interface
 
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake

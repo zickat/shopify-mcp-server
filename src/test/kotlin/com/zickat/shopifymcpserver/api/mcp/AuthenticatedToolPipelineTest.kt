@@ -4,7 +4,7 @@ import arrow.core.left
 import arrow.core.right
 import com.zickat.shopifymcpserver.api.exposed_interface.AuthenticatedToolPipeline
 import com.zickat.shopifymcpserver.audit.AuditLogFakeRepository
-import com.zickat.shopifymcpserver.audit.domain.AuditExposedServiceImpl
+import com.zickat.shopifymcpserver.audit.exposed_interface.AuditExposedServiceImpl
 import com.zickat.shopifymcpserver.audit.domain.AuditLogUseCase
 import com.zickat.shopifymcpserver.identity.IdentityExposedServiceFake
 import com.zickat.shopifymcpserver.shared_kernel.AccessRole

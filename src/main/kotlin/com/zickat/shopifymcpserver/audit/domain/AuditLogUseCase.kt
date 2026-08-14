@@ -10,12 +10,10 @@ import com.zickat.shopifymcpserver.shared_kernel.ForbiddenError
 import com.zickat.shopifymcpserver.shared_kernel.NotAuthorizedError
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import com.zickat.shopifymcpserver.shared_kernel.newObjectIdHex
 import kotlin.time.Clock
-import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 
-@Component
 class AuditLogUseCase(
     private val repository: AuditLogRepository,
     private val clock: Clock = Clock.System,
@@ -34,7 +32,7 @@ class AuditLogUseCase(
         val (outcome, denialReason) = classify(actionResult)
 
         val entry = AuditLog(
-            id = AuditLogId(ObjectId().toHexString()),
+            id = AuditLogId(newObjectIdHex()),
             identityId = identityId,
             storeId = storeId,
             toolName = toolName,

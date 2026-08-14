@@ -321,15 +321,8 @@ class HexagonalArchitectureTest {
         private val CATALOG_FAMILY_ALLOWED = setOf("shared_kernel", "shopify")
 
         private val NOT_YET_REALIGNED: Set<String> = setOf(
-            "api",
-            "audit",
-            "identity",
             "menus",
             "relay",
-            "shared_kernel",
-            "shopify",
-            "tenancy",
-            "vault",
         )
 
         private val importedClasses: JavaClasses by lazy {

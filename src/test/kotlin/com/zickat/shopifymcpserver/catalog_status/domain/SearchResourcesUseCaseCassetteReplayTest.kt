@@ -7,7 +7,7 @@ import com.zickat.shopifymcpserver.catalog_status.spi.shopify.CatalogStatusShopi
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
-import com.zickat.shopifymcpserver.shopify.domain.ShopifyAdminGatewayImpl
+import com.zickat.shopifymcpserver.shopify.exposed_interface.ShopifyAdminGatewayImpl
 import com.zickat.shopifymcpserver.shopify.domain.ShopifyAdminGraphQLUseCase
 import com.zickat.shopifymcpserver.shopify.spi.http.ShopifyRestClientHttpClient
 import com.zickat.shopifymcpserver.vault.VaultExposedServiceFake

@@ -12,7 +12,7 @@ import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.ShopifyAdminGraphQLRequest
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shopify.ShopifyAdminHttpClientFake
-import com.zickat.shopifymcpserver.shopify.domain.ShopifyAdminGatewayImpl
+import com.zickat.shopifymcpserver.shopify.exposed_interface.ShopifyAdminGatewayImpl
 import com.zickat.shopifymcpserver.shopify.domain.ShopifyAdminGraphQLUseCase
 import com.zickat.shopifymcpserver.tenancy.StoreExposedServiceFake
 import com.zickat.shopifymcpserver.vault.VaultExposedServiceFake

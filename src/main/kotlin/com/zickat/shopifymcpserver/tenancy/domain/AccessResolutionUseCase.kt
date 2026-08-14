@@ -15,9 +15,7 @@ import com.zickat.shopifymcpserver.tenancy.domain.models.toAccessRole
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.GrantRepository
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
 import kotlin.time.Clock
-import org.springframework.stereotype.Component
 
-@Component
 class AccessResolutionUseCase(
     private val identityExposedService: IdentityExposedService,
     private val grantRepository: GrantRepository,

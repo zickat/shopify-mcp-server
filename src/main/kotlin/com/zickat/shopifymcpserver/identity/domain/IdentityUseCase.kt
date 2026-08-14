@@ -9,11 +9,9 @@ import com.zickat.shopifymcpserver.identity.domain.repositories.IdentityReposito
 import com.zickat.shopifymcpserver.shared_kernel.DomainError
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
+import com.zickat.shopifymcpserver.shared_kernel.newObjectIdHex
 import kotlin.time.Clock
-import org.bson.types.ObjectId
-import org.springframework.stereotype.Component
 
-@Component
 class IdentityUseCase(
     private val identityRepository: IdentityRepository,
     private val clock: Clock = Clock.System,
@@ -44,7 +42,7 @@ class IdentityUseCase(
     private fun create(issuer: String, subject: String, displayName: String): Either<UseCaseError, Identity> =
         identityRepository.save(
             Identity(
-                id = IdentityId(ObjectId().toHexString()),
+                id = IdentityId(newObjectIdHex()),
                 issuer = issuer,
                 subject = subject,
                 displayName = displayName,

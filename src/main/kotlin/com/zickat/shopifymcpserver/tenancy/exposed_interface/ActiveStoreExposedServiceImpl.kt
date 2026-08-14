@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.tenancy.domain
+package com.zickat.shopifymcpserver.tenancy.exposed_interface
 
+import com.zickat.shopifymcpserver.tenancy.domain.ActiveStoreSelectionRegistry
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
-import com.zickat.shopifymcpserver.tenancy.exposed_interface.ActiveStoreExposedService
 import org.springframework.stereotype.Service
 
 @Service

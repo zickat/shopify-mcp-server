@@ -1,10 +1,9 @@
-package com.zickat.shopifymcpserver.tenancy.spi.mongo
+package com.zickat.shopifymcpserver.tenancy.exposed_interface
 
 import arrow.core.Either
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.tenancy.domain.models.StoreId
 import com.zickat.shopifymcpserver.tenancy.domain.repositories.StoreRepository
-import com.zickat.shopifymcpserver.tenancy.exposed_interface.StoreExposedService
 import org.springframework.stereotype.Service
 
 @Service
