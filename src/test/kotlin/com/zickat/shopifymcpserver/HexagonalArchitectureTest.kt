@@ -8,7 +8,11 @@ import com.tngtech.archunit.core.domain.JavaMethod
 import com.tngtech.archunit.core.domain.JavaModifier
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption
+import com.zickat.shopifymcpserver.shared_kernel.DomainError
+import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult
+import io.modelcontextprotocol.spec.McpSchema.TextContent
 import org.junit.jupiter.api.Test
 import org.springframework.ai.mcp.annotation.McpTool
 import java.io.File
@@ -98,13 +102,22 @@ class HexagonalArchitectureTest {
     }
 
     @Test
+    fun everyToolResultsRendersTheStoreBanner() {
+        r13Violations()
+            .filterNot { it.module in NOT_YET_REALIGNED }
+            .map { it.label }
+            .shouldBeEmpty()
+    }
+
+    @Test
     fun exemptionListContainsNoAlreadyCleanModule() {
         val stillViolatingModules = r1ViolatingClasses().modules() +
             r2ViolatingClasses().modules() +
             r6bViolatingClasses().modules() +
             r8ViolatingClasses().modules() +
             r10ViolatingClasses().modules() +
-            r11ViolatingModules()
+            r11ViolatingModules() +
+            r13ViolatingModules()
 
         (NOT_YET_REALIGNED - stillViolatingModules).shouldBeEmpty()
     }
@@ -202,6 +215,57 @@ class HexagonalArchitectureTest {
             .filterNot { it.modifiers.contains(JavaModifier.SYNTHETIC) }
             .filterNot { it.rawReturnType.isEquivalentTo(Either::class.java) }
 
+    private fun r13ToolResultsClasses(): List<JavaClass> =
+        classes.filter { it.simpleName.endsWith("ToolResults") }
+            .filter { it.layerName() == API_LAYER }
+            .filter { it.packageName.endsWith(".api.mcp") }
+
+    private fun r13Violations(): List<R13Violation> = r13StructuralViolations() + r13ExecutionViolations()
+
+    private fun r13ViolatingModules(): Set<String> = r13Violations().mapNotNull { it.module }.toSet()
+
+    private fun r13StructuralViolations(): List<R13Violation> =
+        r13ToolResultsClasses().flatMap { toolResultsClass ->
+            toolResultsClass.methods
+                .filter { it.modifiers.contains(JavaModifier.PUBLIC) }
+                .filterNot { it.modifiers.contains(JavaModifier.SYNTHETIC) }
+                .filter { it.rawReturnType.isEquivalentTo(CallToolResult::class.java) }
+                .filterNot { it.callsMethodOfOwnClass(WITH_BANNER_METHOD_NAME) }
+                .map { R13Violation(toolResultsClass.moduleName(), it.methodLabel()) }
+        }
+
+    private fun r13ExecutionViolations(): List<R13Violation> =
+        r13ToolResultsClasses().mapNotNull { toolResultsClass ->
+            toolResultsClass.probeErrorResultBanner()?.let { R13Violation(toolResultsClass.moduleName(), it) }
+        }
+
+    private fun JavaClass.probeErrorResultBanner(): String? {
+        val reflectedClass = reflect()
+        val instance = reflectedClass.getField("INSTANCE").get(null)
+        val errorResultMethod = runCatching {
+            reflectedClass.getDeclaredMethod("errorResult", String::class.java, UseCaseError::class.java)
+        }.getOrNull() ?: return "$fullName#errorResult (absente — exigée par D58)"
+        val result = errorResultMethod.invoke(instance, R13_PROBE_STORE_SLUG, DomainError(R13_PROBE_ERROR_KEY)) as CallToolResult
+        val firstBlock = result.content().firstOrNull() as? TextContent
+        return if (firstBlock != null && firstBlock.text().startsWith(STORE_BANNER_PREFIX)) null else "$fullName#errorResult"
+    }
+
+    private fun JavaMethod.callsMethodOfOwnClass(methodName: String, visited: MutableSet<String> = mutableSetOf()): Boolean {
+        if (!visited.add("${owner.fullName}#$name")) return false
+        return methodCallsFromSelf.any { call ->
+            val target = call.target
+            when {
+                target.owner.fullName != owner.fullName -> false
+                target.name == methodName -> true
+                else -> owner.methods
+                    .firstOrNull { it.name == target.name }
+                    ?.callsMethodOfOwnClass(methodName, visited) == true
+            }
+        }
+    }
+
+    private data class R13Violation(val module: String?, val label: String)
+
     private fun moduleMdExists(module: String): Boolean =
         File("src/main/kotlin/$BASE_PACKAGE_PATH/$module/module.md").isFile
 
@@ -235,6 +299,11 @@ class HexagonalArchitectureTest {
 
         private const val EXPOSED_INTERFACE_MODEL_PATTERN = "..exposed_interface.model.."
         private const val WIRE_FORMAT_PACKAGE = "kotlinx.serialization.json.."
+
+        private const val STORE_BANNER_PREFIX = "Boutique : "
+        private const val WITH_BANNER_METHOD_NAME = "withBanner"
+        private const val R13_PROBE_STORE_SLUG = "r13-probe-store"
+        private const val R13_PROBE_ERROR_KEY = "r13.probe.error"
 
         private val FRAMEWORK_PACKAGES = arrayOf(
             "org.springframework..",
