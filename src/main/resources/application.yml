@@ -119,6 +119,11 @@ mcp:
 # même conflit de `SyncToolSpecification` au démarrage sinon. 19 en NATIF désormais, 61 en RELAIS —
 # total inchangé (80).
 #
+# LOT4-08 — `create_metaobject`/`update_metaobject`/`delete_metaobject` basculent NATIF pour la même
+# raison mécanique que les lots précédents : `CreateMetaobjectTool`/`UpdateMetaobjectTool`/
+# `DeleteMetaobjectTool` s'enregistrent sous ces trois noms, même conflit de `SyncToolSpecification`
+# au démarrage sinon. 22 en NATIF désormais, 58 en RELAIS — total inchangé (80).
+#
 # LOT2-23 (D31) — `generate_product_images`/`generate_cross_product_image`/`generate_editorial_scene`/
 # `retouch_editorial_image` basculent `kind: READ` → `kind: MUTATION`. `route` reste `RELAIS` pour les
 # quatre — ce n'est pas un portage, c'est une correction de classification : chacun émet
@@ -162,7 +167,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: create_metaobject
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: create_page
       route: RELAIS
@@ -180,7 +185,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: delete_metaobject
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: delete_page
       route: RELAIS
@@ -354,7 +359,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: update_metaobject
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: update_page
       route: RELAIS

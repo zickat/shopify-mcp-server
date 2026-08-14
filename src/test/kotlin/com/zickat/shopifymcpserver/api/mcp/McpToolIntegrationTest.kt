@@ -212,7 +212,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     private fun toolsList(token: String, sessionId: String) =
         sendJsonRpcRequestAndParseJsonPayload("""{"jsonrpc":"2.0","id":2,"method":"tools/list"}""", token, sessionId)
 
-    private fun toolsCall(token: String, sessionId: String, toolName: String, arguments: Map<String, String> = emptyMap()): Pair<org.springframework.http.ResponseEntity<String>, Map<String, Any?>?> {
+    private fun toolsCall(token: String, sessionId: String, toolName: String, arguments: Map<String, Any> = emptyMap()): Pair<org.springframework.http.ResponseEntity<String>, Map<String, Any?>?> {
         val argumentsJson = objectMapper.writeValueAsString(arguments)
         return sendJsonRpcRequestAndParseJsonPayload(
             """{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"$toolName","arguments":$argumentsJson}}""",
@@ -689,7 +689,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `tools list exposes exactly the 80 real tools — 19 native and 61 relayed, no duplicate name`() {
+    fun `tools list exposes exactly the 80 real tools — 22 native and 58 relayed, no duplicate name`() {
         val storeId = registerStore()
         val subject = "operator-tools-list-count"
         val identityId = resolveIdentity(subject)
@@ -724,6 +724,9 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "check_shopify_connection"
         names shouldContain "publish_page"
         names shouldContain "unpublish_page"
+        names shouldContain "create_metaobject"
+        names shouldContain "update_metaobject"
+        names shouldContain "delete_metaobject"
     }
 
     @Test
@@ -771,7 +774,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
             .toMap()
 
         val relayedNames = relayGateway.relayedTools().map { it.toolName }.filterNot { it in nativeToolNames.names }
-        relayedNames shouldHaveSize 61
+        relayedNames shouldHaveSize 58
 
         relayedNames.forEach { toolName ->
             val exposedInputSchema = toolsByName[toolName]?.get("inputSchema")
@@ -1367,5 +1370,231 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         isError shouldBe true
         text shouldContain "store.selection.missing"
         text shouldContain "lurelab-list-orphan-products"
+    }
+
+    @Test
+    fun `create_metaobject (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-create-metaobject"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "create_metaobject",
+            mapOf("type" to "faq_item", "fields" to listOf(mapOf("key" to "question", "value" to "x"))),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "create_metaobject" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on create_metaobject" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `create_metaobject without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-create-metaobject")
+        val subject = "operator-create-metaobject-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "create_metaobject",
+            mapOf("type" to "faq_item", "fields" to listOf(mapOf("key" to "question", "value" to "x"))),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-create-metaobject"
+    }
+
+    @Test
+    fun `update_metaobject (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-update-metaobject"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Metaobject/1", "fields" to listOf(mapOf("key" to "question", "value" to "x"))),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_metaobject" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on update_metaobject" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `update_metaobject without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-update-metaobject")
+        val subject = "operator-update-metaobject-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Metaobject/1", "fields" to listOf(mapOf("key" to "question", "value" to "x"))),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-update-metaobject"
+    }
+
+    @Test
+    fun `update_metaobject refuses a metaobject_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-update-metaobject-wrong-type")
+        val subject = "operator-update-metaobject-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Product/1", "fields" to listOf(mapOf("key" to "question", "value" to "x"))),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "metaobject_id invalide"
+        combined shouldContain "Metaobject"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_metaobject" }
+        checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
+    }
+
+    @Test
+    fun `delete_metaobject (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-delete-metaobject"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "delete_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Metaobject/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "delete_metaobject" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on delete_metaobject" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `delete_metaobject without an active store selection is refused, naming the available stores`() {
+        val storeId = registerStore("velotrip-delete-metaobject")
+        val subject = "operator-delete-metaobject-no-selection"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "delete_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Metaobject/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "store.selection.missing"
+        text shouldContain "velotrip-delete-metaobject"
+    }
+
+    @Test
+    fun `delete_metaobject refuses a metaobject_id of the wrong gid type, before reaching Shopify — D27`() {
+        val storeId = registerStore("velotrip-delete-metaobject-wrong-type")
+        val subject = "operator-delete-metaobject-wrong-type"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.OPERATOR)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "delete_metaobject",
+            mapOf("metaobject_id" to "gid://shopify/Product/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, texts) = toolResultTexts(callPayload)
+        isError shouldBe true
+        val combined = texts.joinToString("\n")
+        combined shouldContain "metaobject_id invalide"
+        combined shouldContain "Metaobject"
+        combined shouldNotContain "introuvable"
+        combined shouldNotContain "storeCredential.not.found"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "delete_metaobject" }
+        checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
     }
 }

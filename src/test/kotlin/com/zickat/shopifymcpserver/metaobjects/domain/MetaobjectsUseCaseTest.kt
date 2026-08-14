@@ -16,7 +16,13 @@ class MetaobjectsUseCaseTest {
         val gateway = ShopifyAdminGatewayFake().apply {
             enqueue(json.parseToJsonElement("""{"metaobjectDefinitions":{"pageInfo":{"hasNextPage":false},"edges":[]}}""").right())
         }
-        val service = MetaobjectsExposedServiceImpl(ListMetaobjectsUseCase(gateway), GetMetaobjectUseCase(gateway))
+        val service = MetaobjectsExposedServiceImpl(
+            ListMetaobjectsUseCase(gateway),
+            GetMetaobjectUseCase(gateway),
+            CreateMetaobjectUseCase(gateway),
+            UpdateMetaobjectUseCase(gateway),
+            DeleteMetaobjectUseCase(gateway),
+        )
 
         val result = service.listMetaobjects("store-1", null).shouldBeRight()
 
@@ -28,7 +34,13 @@ class MetaobjectsUseCaseTest {
         val gateway = ShopifyAdminGatewayFake().apply {
             enqueue(json.parseToJsonElement("""{"metaobject":null}""").right())
         }
-        val service = MetaobjectsExposedServiceImpl(ListMetaobjectsUseCase(gateway), GetMetaobjectUseCase(gateway))
+        val service = MetaobjectsExposedServiceImpl(
+            ListMetaobjectsUseCase(gateway),
+            GetMetaobjectUseCase(gateway),
+            CreateMetaobjectUseCase(gateway),
+            UpdateMetaobjectUseCase(gateway),
+            DeleteMetaobjectUseCase(gateway),
+        )
 
         val result = service.getMetaobject("store-1", "gid://shopify/Metaobject/1").shouldBeRight()
 
