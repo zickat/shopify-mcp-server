@@ -37,7 +37,10 @@ object CassetteMockWebServer {
      * cassette's own responses land on the GraphQL calls they were recorded for, not on the token
      * exchange.
      */
-    fun forShopifyAdminGraphQLWithTokenExchange(cassette: Cassette, accessToken: String = "test-access-token"): MockWebServer {
+    fun forShopifyAdminGraphQLWithTokenExchange(cassette: Cassette, accessToken: String = "test-access-token"): MockWebServer =
+        forShopifyAdminGraphQLWithTokenExchange(cassette.calls, accessToken)
+
+    fun forShopifyAdminGraphQLWithTokenExchange(calls: List<CassetteCall>, accessToken: String = "test-access-token"): MockWebServer {
         val server = MockWebServer()
         server.enqueue(
             MockResponse()
@@ -45,7 +48,7 @@ object CassetteMockWebServer {
                 .setHeader("Content-Type", "application/json")
                 .setBody("""{"access_token":"$accessToken"}"""),
         )
-        cassette.calls
+        calls
             .filter { it.sink == SINK_SHOPIFY_ADMIN_GRAPHQL }
             .forEach { server.enqueue(graphQLEnvelopeResponseOf(it)) }
         server.start()

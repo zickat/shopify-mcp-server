@@ -6,13 +6,11 @@ import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedir
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.RequiredRedirectField
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shopify.exposed_interface.ShopifyAdminGateway
+import com.zickat.shopifymcpserver.shopify.exposed_interface.ShopifyUserErrors
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
 import org.springframework.stereotype.Component
 
 @Component
@@ -43,26 +41,12 @@ class CreateRedirectUseCase(
     private fun outcomeFrom(response: JsonElement): CreateRedirectOutcome {
         val payload = (response as? JsonObject)?.get("urlRedirectCreate") as? JsonObject
             ?: return CreateRedirectOutcome.failed("Réponse Shopify inattendue pour urlRedirectCreate.")
-        val userErrors = (payload["userErrors"] as? kotlinx.serialization.json.JsonArray)?.map { it.toShopifyUserError() }.orEmpty()
+        val userErrors = ShopifyUserErrors.parse(payload)
 
         if (userErrors.isEmpty()) return CreateRedirectOutcome.Created
         if (userErrors.any { ALREADY_TAKEN.containsMatchIn(it.message) }) return CreateRedirectOutcome.AlreadyExists
-        return CreateRedirectOutcome.failed(formatUserErrors(userErrors))
+        return CreateRedirectOutcome.failed(ShopifyUserErrors.format(userErrors))
     }
-
-    private fun JsonElement.toShopifyUserError(): ShopifyUserError {
-        val obj = this as? JsonObject
-        val field = (obj?.get("field") as? kotlinx.serialization.json.JsonArray)?.mapNotNull { it.jsonPrimitive.contentOrNull }
-        val message = obj?.get("message")?.jsonPrimitive?.contentOrNull.orEmpty()
-        return ShopifyUserError(field, message)
-    }
-
-    private fun formatUserErrors(errors: List<ShopifyUserError>): String =
-        errors.joinToString(" ; ") { error ->
-            if (!error.field.isNullOrEmpty()) "${error.field.joinToString(".")} : ${error.message}" else error.message
-        }
-
-    private data class ShopifyUserError(val field: List<String>?, val message: String)
 
     companion object {
         private val ALREADY_TAKEN = Regex("path has already been taken", RegexOption.IGNORE_CASE)

@@ -6,9 +6,12 @@ import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedC
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetRawContentResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.ListOrphanProductsResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.ListToReviewResult
+import com.zickat.shopifymcpserver.products.exposed_interface.model.MarkBlockedResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.ProductStatusFilter
+import com.zickat.shopifymcpserver.products.exposed_interface.model.PublishResourceResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.SearchProductsResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.ToReviewResourceType
+import com.zickat.shopifymcpserver.products.exposed_interface.model.UnpublishResourceResult
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import org.springframework.stereotype.Service
 
@@ -19,6 +22,9 @@ class ProductsExposedServiceImpl(
     private val getEnrichedContentUseCase: GetEnrichedContentUseCase,
     private val listToReviewUseCase: ListToReviewUseCase,
     private val listOrphanProductsUseCase: ListOrphanProductsUseCase,
+    private val markBlockedUseCase: MarkBlockedUseCase,
+    private val publishResourceUseCase: PublishResourceUseCase,
+    private val unpublishResourceUseCase: UnpublishResourceUseCase,
 ) : ProductsExposedService {
 
     override fun searchProducts(storeId: String, query: String?, statusFilter: ProductStatusFilter): Either<UseCaseError, SearchProductsResult> =
@@ -35,4 +41,13 @@ class ProductsExposedServiceImpl(
 
     override fun listOrphanProducts(storeId: String): Either<UseCaseError, ListOrphanProductsResult> =
         listOrphanProductsUseCase.execute(storeId)
+
+    override fun markBlocked(storeId: String, resourceId: String): Either<UseCaseError, MarkBlockedResult> =
+        markBlockedUseCase.execute(storeId, resourceId)
+
+    override fun publishResource(storeId: String, resourceId: String): Either<UseCaseError, PublishResourceResult> =
+        publishResourceUseCase.execute(storeId, resourceId)
+
+    override fun unpublishResource(storeId: String, resourceId: String): Either<UseCaseError, UnpublishResourceResult> =
+        unpublishResourceUseCase.execute(storeId, resourceId)
 }
