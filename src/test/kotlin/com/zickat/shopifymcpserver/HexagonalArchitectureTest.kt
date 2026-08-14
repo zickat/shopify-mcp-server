@@ -201,15 +201,11 @@ class HexagonalArchitectureTest {
         classes.filter { clazz ->
             val module = clazz.moduleName()
             module != null &&
-                (module in CATALOG_MODULES || module in CROSS_CUTTING_VIEW_MODULES) &&
+                module in CATALOG_MODULES &&
                 clazz.layerName() in setOf(DOMAIN_LAYER, SPI_LAYER)
         }.filter { clazz ->
             val ownModule = requireNotNull(clazz.moduleName())
-            val allowedModules = if (ownModule in CROSS_CUTTING_VIEW_MODULES) {
-                CATALOG_FAMILY_ALLOWED + CATALOG_MODULES
-            } else {
-                CATALOG_FAMILY_ALLOWED
-            } + ownModule
+            val allowedModules = CATALOG_FAMILY_ALLOWED + ownModule
             clazz.directDependenciesFromSelf.any { dependency ->
                 val targetModule = dependency.targetClass.moduleName()
                 targetModule != null && targetModule !in allowedModules
@@ -369,7 +365,6 @@ class HexagonalArchitectureTest {
         )
 
         private val CATALOG_MODULES = setOf("pages", "products", "seo", "menus", "metaobjects", "redirects", "collections", "catalog_status")
-        private val CROSS_CUTTING_VIEW_MODULES = emptySet<String>()
         private val CATALOG_FAMILY_ALLOWED = setOf("shared_kernel", "shopify")
 
         private val NOT_YET_REALIGNED: Set<String> = emptySet()

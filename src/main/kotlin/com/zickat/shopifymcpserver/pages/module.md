@@ -92,7 +92,7 @@ chaîne intermédiaire.** C'est ce qui les a rendus insensibles au déplacement 
 **`errorResult`, `invalidGidType`, `withBanner` sont dupliqués en `private`/local dans
 `pages/api/mcp/PageToolResults.kt`, volontairement (D58) : ce sont des helpers de rendu MCP pur, et le
 risque de dérive de format entre modules se couvre par une règle ArchUnit (R13, sur le bandeau
-`Boutique : `), pas par du code partagé.** `slugFor` en revanche est **encore** dupliqué au même
+`Boutique : `), pas par du code partagé.** `slugFor` **l'était encore au moment où ce fichier a été écrit** — dupliqué au même
 endroit à ce stade (une extension `AccessExposedService.slugFor` locale à `pages`, identique au
 caractère près à ses copies dans les autres modules) — D58 a tranché qu'il doit remonter dans
 `tenancy/exposed_interface/`, parce qu'il consulte `AccessExposedService` et porte une politique de
@@ -100,3 +100,10 @@ tenancy, pas un format. **Ce déplacement est un lot préalable distinct**, pas 
 un helper qui touche à l'`exposed_interface` d'un autre module n'est pas un helper de rendu, il ne se
 duplique pas — il remonte. Un futur module qui descend son rendu doit reproduire cette distinction dès
 le départ plutôt que de dupliquer `slugFor` une fois de plus.
+
+> **Actualisation (`BE-11`, `D58`).** `slugFor` n'est plus dupliqué nulle part : il vit dans
+> `tenancy/exposed_interface/StoreSlug.kt` et les 26 sites d'appel du dépôt l'importent. Ce n'était pas
+> un helper de rendu mais une **politique de tenancy** — son `?: storeId` décide de ce qu'un agent voit
+> quand un octroi a sauté en cours de session. Les trois vrais helpers de rendu (`withBanner`,
+> `errorResult`, `invalidGidType`) restent, eux, dupliqués en `private` par module : on partage le
+> **contrat** (vérifié par `R13`), pas le code.
