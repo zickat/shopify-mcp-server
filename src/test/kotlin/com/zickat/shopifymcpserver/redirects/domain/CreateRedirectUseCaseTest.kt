@@ -1,126 +1,61 @@
 package com.zickat.shopifymcpserver.redirects.domain
 
+import arrow.core.left
 import arrow.core.right
-import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectOutcome
-import com.zickat.shopifymcpserver.redirects.exposed_interface.model.RequiredRedirectField
-import com.zickat.shopifymcpserver.shopify.ShopifyAdminGatewayFake
+import com.zickat.shopifymcpserver.redirects.RedirectsFakeRepository
+import com.zickat.shopifymcpserver.redirects.domain.models.CreateRedirectOutcome
+import com.zickat.shopifymcpserver.redirects.domain.models.RequiredRedirectField
+import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
+import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
 
 class CreateRedirectUseCaseTest {
 
-    @Test
-    fun `execute should refuse an empty from_path before any Shopify call`() {
-        val gateway = ShopifyAdminGatewayFake()
-        val useCase = CreateRedirectUseCase(gateway)
+    private fun useCase(repository: RedirectsFakeRepository = RedirectsFakeRepository()) = CreateRedirectUseCase(repository)
 
-        val outcome = useCase.execute("store-1", "  ", "/collections/target").shouldBeRight()
+    @Test
+    fun `execute should refuse a blank from_path before calling the repository`() {
+        val repository = RedirectsFakeRepository()
+
+        val outcome = useCase(repository).execute("store-1", "  ", "/collections/target").shouldBeRight()
 
         outcome shouldBe CreateRedirectOutcome.invalidInput(RequiredRedirectField.FROM_PATH)
-        gateway.calls shouldBe emptyList()
+        repository.createCalls shouldHaveSize 0
     }
 
     @Test
-    fun `execute should refuse an empty to_path before any Shopify call`() {
-        val gateway = ShopifyAdminGatewayFake()
-        val useCase = CreateRedirectUseCase(gateway)
+    fun `execute should refuse a blank to_path before calling the repository`() {
+        val repository = RedirectsFakeRepository()
 
-        val outcome = useCase.execute("store-1", "/collections/old", "").shouldBeRight()
+        val outcome = useCase(repository).execute("store-1", "/collections/old", " ").shouldBeRight()
 
         outcome shouldBe CreateRedirectOutcome.invalidInput(RequiredRedirectField.TO_PATH)
-        gateway.calls shouldBe emptyList()
+        repository.createCalls shouldHaveSize 0
     }
 
     @Test
-    fun `execute should return Created and send the path and target as given when Shopify reports no userErrors`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.default = Json.parseToJsonElement(
-            """{"urlRedirectCreate":{"urlRedirect":{"id":"gid://shopify/UrlRedirect/1"},"userErrors":[]}}""",
-        ).right()
-        val useCase = CreateRedirectUseCase(gateway)
+    fun `execute should delegate to the repository and return its outcome untouched when both paths are provided`() {
+        val repository = RedirectsFakeRepository().apply {
+            createResponse = CreateRedirectOutcome.Created.right()
+        }
 
-        val outcome = useCase.execute("store-1", "/collections/old", "/collections/new").shouldBeRight()
+        val outcome = useCase(repository).execute("store-1", "/collections/old", "/collections/new").shouldBeRight()
 
         outcome shouldBe CreateRedirectOutcome.Created
-        gateway.calls.shouldHaveSizeOne()
-        val variables = gateway.calls.single().variables.jsonObject["urlRedirect"]!!.jsonObject
-        variables["path"] shouldBe kotlinx.serialization.json.JsonPrimitive("/collections/old")
-        variables["target"] shouldBe kotlinx.serialization.json.JsonPrimitive("/collections/new")
+        repository.createCalls shouldBe listOf(RedirectsFakeRepository.CreateCall("store-1", "/collections/old", "/collections/new"))
     }
 
     @Test
-    fun `execute should return AlreadyExists without a second mutation when Shopify reports path already taken`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.default = Json.parseToJsonElement(
-            """{"urlRedirectCreate":{"urlRedirect":null,"userErrors":[{"field":["urlRedirect","path"],"message":"Path has already been taken"}]}}""",
-        ).right()
-        val useCase = CreateRedirectUseCase(gateway)
+    fun `execute should propagate a Left when the repository fails technically`() {
+        val repository = RedirectsFakeRepository().apply {
+            createResponse = TechnicalError("shopify.graphql.response.malformed").left()
+        }
 
-        val outcome = useCase.execute("store-1", "/collections/old", "/collections/new").shouldBeRight()
-
-        outcome shouldBe CreateRedirectOutcome.AlreadyExists
-        gateway.calls.shouldHaveSizeOne()
-    }
-
-    @Test
-    fun `execute should match the already-taken message case-insensitively`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.default = Json.parseToJsonElement(
-            """{"urlRedirectCreate":{"urlRedirect":null,"userErrors":[{"field":["urlRedirect","path"],"message":"PATH HAS ALREADY BEEN TAKEN"}]}}""",
-        ).right()
-        val useCase = CreateRedirectUseCase(gateway)
-
-        val outcome = useCase.execute("store-1", "/collections/old", "/collections/new").shouldBeRight()
-
-        outcome shouldBe CreateRedirectOutcome.AlreadyExists
-    }
-
-    @Test
-    fun `execute should return Failed with the formatted detail for any other userErrors`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.default = Json.parseToJsonElement(
-            """{"urlRedirectCreate":{"urlRedirect":null,"userErrors":[
-                {"field":["urlRedirect","target"],"message":"Target is invalid"},
-                {"field":[],"message":"Something else went wrong"}
-            ]}}""",
-        ).right()
-        val useCase = CreateRedirectUseCase(gateway)
-
-        val outcome = useCase.execute("store-1", "/collections/old", "/not-a-real-path").shouldBeRight()
-
-        outcome shouldBe CreateRedirectOutcome.failed(
-            "urlRedirect.target : Target is invalid ; Something else went wrong",
-        )
-    }
-
-    @Test
-    fun `execute should send the exact mutation text the TypeScript tool recorded`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.default = Json.parseToJsonElement(
-            """{"urlRedirectCreate":{"urlRedirect":{"id":"gid://shopify/UrlRedirect/1"},"userErrors":[]}}""",
-        ).right()
-        val useCase = CreateRedirectUseCase(gateway)
-
-        useCase.execute("store-1", "/collections/old", "/collections/new")
-
-        gateway.calls.single().query shouldBe RECORDED_MUTATION
-    }
-
-    private fun List<ShopifyAdminGatewayFake.RecordedCall>.shouldHaveSizeOne(): List<ShopifyAdminGatewayFake.RecordedCall> {
-        size shouldBe 1
-        return this
-    }
-
-    private companion object {
-        val RECORDED_MUTATION =
-            "mutation CreateUrlRedirect(\$urlRedirect: UrlRedirectInput!) {\n" +
-                "      urlRedirectCreate(urlRedirect: \$urlRedirect) {\n" +
-                "        urlRedirect { id }\n" +
-                "        userErrors { field message }\n" +
-                "      }\n" +
-                "    }"
+        useCase(repository).execute("store-1", "/collections/old", "/collections/new").shouldBeLeft()
+            .shouldBeInstanceOf<TechnicalError>().messageKey shouldBe "shopify.graphql.response.malformed"
     }
 }

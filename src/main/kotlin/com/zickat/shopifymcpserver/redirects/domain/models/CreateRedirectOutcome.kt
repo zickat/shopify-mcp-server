@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.redirects.exposed_interface.model
+package com.zickat.shopifymcpserver.redirects.domain.models
 
 enum class CreateRedirectStatus { CREATED, ALREADY_EXISTS, FAILED, INVALID_INPUT }
 

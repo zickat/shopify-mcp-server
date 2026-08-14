@@ -329,7 +329,6 @@ class HexagonalArchitectureTest {
             "menus",
             "metaobjects",
             "products",
-            "redirects",
             "relay",
             "shared_kernel",
             "shopify",

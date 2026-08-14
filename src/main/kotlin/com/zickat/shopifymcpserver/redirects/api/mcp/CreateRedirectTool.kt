@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.redirects.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.redirects.exposed_interface.RedirectsExposedService
+import com.zickat.shopifymcpserver.redirects.domain.CreateRedirectUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 class CreateRedirectTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val redirectsExposedService: RedirectsExposedService,
+    private val createRedirectUseCase: CreateRedirectUseCase,
 ) : HasToolUseCase {
 
     private object CreateRedirectToolUseCase : ToolUseCase {
@@ -55,9 +55,9 @@ class CreateRedirectTool(
             mapOf("from_path" to from_path, "to_path" to to_path),
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            redirectsExposedService.createRedirect(tenant.storeId, from_path, to_path).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { outcome -> McpToolResults.createRedirectResult(slug, from_path, to_path, outcome) },
+            createRedirectUseCase.execute(tenant.storeId, from_path, to_path).fold(
+                { error -> RedirectsToolResults.errorResult(slug, error) },
+                { outcome -> RedirectsToolResults.createRedirectResult(slug, from_path, to_path, outcome) },
             )
         }
 }

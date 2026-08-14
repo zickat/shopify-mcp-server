@@ -1,7 +1,8 @@
 package com.zickat.shopifymcpserver.redirects.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
-import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectOutcome
+import com.zickat.shopifymcpserver.redirects.api.mcp.RedirectsToolResults
+import com.zickat.shopifymcpserver.redirects.domain.models.CreateRedirectOutcome
+import com.zickat.shopifymcpserver.redirects.spi.shopify.RedirectsShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -49,7 +50,7 @@ class CreateRedirectUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return CreateRedirectUseCase(gateway) to mockServer
+        return CreateRedirectUseCase(RedirectsShopifyRepository(gateway)) to mockServer
     }
 
     @Test
@@ -70,7 +71,7 @@ class CreateRedirectUseCaseCassetteReplayTest {
         mockServer.takeRequest()
         CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(cassette.calls.single(), mockServer.takeRequest())
 
-        val rendered = McpToolResults.createRedirectResult(
+        val rendered = RedirectsToolResults.createRedirectResult(
             "velotrip",
             "/collections/test-lot2-cassette-2026-08-07",
             "/collections/outils-et-reparation-velo",
@@ -98,7 +99,7 @@ class CreateRedirectUseCaseCassetteReplayTest {
         mockServer.takeRequest()
         CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(cassette.calls.single(), mockServer.takeRequest())
 
-        val rendered = McpToolResults.createRedirectResult(
+        val rendered = RedirectsToolResults.createRedirectResult(
             "velotrip",
             "/collections/test-lot2-cassette-2026-08-07",
             "/collections/outils-et-reparation-velo",
