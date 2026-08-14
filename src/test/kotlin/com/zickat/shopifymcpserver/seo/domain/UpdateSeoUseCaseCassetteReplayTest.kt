@@ -1,6 +1,6 @@
 package com.zickat.shopifymcpserver.seo.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
+import com.zickat.shopifymcpserver.seo.api.mcp.SeoToolResults
 import com.zickat.shopifymcpserver.seo.domain.models.SeoResourceType
 import com.zickat.shopifymcpserver.seo.spi.shopify.SeoShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
@@ -120,7 +120,7 @@ class UpdateSeoUseCaseCassetteReplayTest {
             CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(call, recorded)
         }
 
-        val rendered = McpToolResults.updateSeoResult("velotrip", resourceType, resourceId, result)
+        val rendered = SeoToolResults.updateSeoResult("velotrip", resourceType, resourceId, result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 

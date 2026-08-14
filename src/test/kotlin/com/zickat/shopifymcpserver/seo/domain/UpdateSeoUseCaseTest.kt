@@ -5,7 +5,6 @@ import arrow.core.right
 import com.zickat.shopifymcpserver.seo.SeoFakeRepository
 import com.zickat.shopifymcpserver.seo.domain.models.SeoResourceType
 import com.zickat.shopifymcpserver.seo.domain.repositories.SeoWriteOutcome
-import com.zickat.shopifymcpserver.seo.exposed_interface.model.UpdateSeoOutcome
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight

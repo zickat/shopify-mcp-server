@@ -4,7 +4,6 @@ import arrow.core.Either
 import arrow.core.raise.either
 import com.zickat.shopifymcpserver.seo.domain.models.SeoResourceType
 import com.zickat.shopifymcpserver.seo.domain.repositories.SeoRepository
-import com.zickat.shopifymcpserver.seo.exposed_interface.model.GetSeoResult
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 
 class GetSeoUseCase(

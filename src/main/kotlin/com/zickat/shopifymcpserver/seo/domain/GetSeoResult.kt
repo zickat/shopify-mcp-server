@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.seo.exposed_interface.model
+package com.zickat.shopifymcpserver.seo.domain
 
 enum class GetSeoOutcome { FOUND, NOT_FOUND }
 

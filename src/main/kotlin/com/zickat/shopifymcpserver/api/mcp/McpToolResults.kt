@@ -28,10 +28,6 @@ import com.zickat.shopifymcpserver.products.exposed_interface.model.UnpublishRes
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectOutcome
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.CreateRedirectStatus
 import com.zickat.shopifymcpserver.redirects.exposed_interface.model.RequiredRedirectField
-import com.zickat.shopifymcpserver.seo.exposed_interface.model.GetSeoOutcome
-import com.zickat.shopifymcpserver.seo.exposed_interface.model.GetSeoResult
-import com.zickat.shopifymcpserver.seo.exposed_interface.model.UpdateSeoOutcome
-import com.zickat.shopifymcpserver.seo.exposed_interface.model.UpdateSeoResult
 import com.zickat.shopifymcpserver.shared_kernel.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
@@ -123,34 +119,12 @@ object McpToolResults {
     fun invalidResourceType(storeSlug: String, value: String): CallToolResult =
         withBanner(storeSlug, "Type de ressource invalide : \"$value\" (attendu \"collection\" ou \"article\").", isError = true)
 
-    fun invalidSeoResourceType(storeSlug: String, value: String): CallToolResult =
-        withBanner(
-            storeSlug,
-            "Type de ressource invalide : \"$value\" (attendu \"product\", \"collection\", \"article\" ou \"page\").",
-            isError = true,
-        )
-
     fun invalidGidType(storeSlug: String, label: String, value: String, expectedType: String): CallToolResult =
         withBanner(
             storeSlug,
             "$label invalide : \"$value\" n'est pas un identifiant $expectedType (attendu gid://shopify/$expectedType/...).",
             isError = true,
         )
-
-    fun getSeoResult(storeSlug: String, resourceType: String, resourceId: String, result: GetSeoResult): CallToolResult =
-        when (result.outcome) {
-            GetSeoOutcome.NOT_FOUND ->
-                withBanner(storeSlug, "Ressource $resourceType introuvable : $resourceId", isError = true)
-            GetSeoOutcome.FOUND ->
-                withBanner(
-                    storeSlug,
-                    "Ressource $resourceType \"${result.title}\" — SEO :\n" +
-                        "- meta title : ${formatSeoValue(result.metaTitle)}\n" +
-                        "- meta description : ${formatSeoValue(result.metaDescription)}",
-                )
-        }
-
-    private fun formatSeoValue(value: String?): String = if (value != null) "\"$value\"" else "non défini"
 
     fun listMetaobjectsResult(storeSlug: String, result: ListMetaobjectsResult): CallToolResult =
         withBanner(storeSlug, result.text)
@@ -279,26 +253,6 @@ object McpToolResults {
             UnpublishResourceOutcome.FAILED ->
                 withBanner(storeSlug, "Échec de la dépublication : ${result.failureDetail}", isError = true)
         }
-
-    fun updateSeoResult(storeSlug: String, resourceType: String, resourceId: String, result: UpdateSeoResult): CallToolResult =
-        when (result.outcome) {
-            UpdateSeoOutcome.NOT_FOUND ->
-                withBanner(storeSlug, "Ressource $resourceType introuvable : $resourceId", isError = true)
-            UpdateSeoOutcome.NO_OP ->
-                withBanner(storeSlug, "Ressource $resourceType ($resourceId) : aucun champ SEO fourni — aucune modification (no-op).")
-            UpdateSeoOutcome.FAILED ->
-                withBanner(storeSlug, "Échec de la mise à jour SEO de $resourceType ($resourceId) : ${result.failureDetail}", isError = true)
-            UpdateSeoOutcome.UPDATED ->
-                withBanner(
-                    storeSlug,
-                    "Ressource $resourceType \"${result.resourceTitle}\" — SEO mis à jour :\n" +
-                        "- meta title : ${formatSeoValue(result.finalMetaTitle)}  ${modifiedLabel(result.titleModified)}\n" +
-                        "- meta description : ${formatSeoValue(result.finalMetaDescription)}  ${modifiedLabel(result.descriptionModified)}\n" +
-                        "(content_status non modifié — une retouche SEO ne remet pas la fiche à review.)",
-                )
-        }
-
-    private fun modifiedLabel(modified: Boolean): String = if (modified) "(modifié)" else "(inchangé)"
 
     private fun invalidRedirectInputMessage(field: RequiredRedirectField): String = when (field) {
         RequiredRedirectField.FROM_PATH -> "Paramètre requis manquant ou vide : from_path (ancien chemin à rediriger)."

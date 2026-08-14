@@ -1,7 +1,8 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.seo.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.seo.exposed_interface.SeoExposedService
+import com.zickat.shopifymcpserver.seo.domain.UpdateSeoUseCase
+import com.zickat.shopifymcpserver.seo.domain.models.SeoResourceType
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service
 class UpdateSeoTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val seoExposedService: SeoExposedService,
+    private val updateSeoUseCase: UpdateSeoUseCase,
 ) : HasToolUseCase {
 
     private object UpdateSeoToolUseCase : ToolUseCase {
@@ -60,25 +61,16 @@ class UpdateSeoTool(
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            val expectedGidType = SEO_RESOURCE_GID_TYPES[resource_type]
+            val parsedResourceType = SeoResourceType.fromToolValue(resource_type)
             when {
-                expectedGidType == null -> McpToolResults.invalidSeoResourceType(slug, resource_type)
-                !resource_id.isGidOfType(expectedGidType) ->
-                    McpToolResults.invalidGidType(slug, "resource_id", resource_id, expectedGidType)
-                else -> seoExposedService.updateSeo(tenant.storeId, resource_type, resource_id, seo_title, seo_description).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.updateSeoResult(slug, resource_type, resource_id, result) },
+                parsedResourceType == null -> SeoToolResults.invalidSeoResourceType(slug, resource_type)
+                !resource_id.isGidOfType(parsedResourceType.gidType) ->
+                    SeoToolResults.invalidGidType(slug, "resource_id", resource_id, parsedResourceType.gidType)
+                else -> updateSeoUseCase.execute(tenant.storeId, parsedResourceType, resource_id, seo_title, seo_description).fold(
+                    { error -> SeoToolResults.errorResult(slug, error) },
+                    { result -> SeoToolResults.updateSeoResult(slug, resource_type, resource_id, result) },
                 )
             }
         }
-    }
-
-    companion object {
-        private val SEO_RESOURCE_GID_TYPES = mapOf(
-            "product" to "Product",
-            "collection" to "Collection",
-            "article" to "Article",
-            "page" to "Page",
-        )
     }
 }
