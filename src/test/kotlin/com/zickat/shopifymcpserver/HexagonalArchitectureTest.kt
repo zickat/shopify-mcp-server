@@ -327,7 +327,6 @@ class HexagonalArchitectureTest {
             "collections",
             "identity",
             "menus",
-            "metaobjects",
             "products",
             "relay",
             "shared_kernel",

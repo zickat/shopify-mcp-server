@@ -2,15 +2,6 @@ package com.zickat.shopifymcpserver.api.mcp
 
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourceType
 import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourcesResult
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.CreateMetaobjectOutcome
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.CreateMetaobjectResult
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.DeleteMetaobjectOutcome
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.DeleteMetaobjectResult
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.GetMetaobjectOutcome
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.GetMetaobjectResult
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.ListMetaobjectsResult
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.UpdateMetaobjectOutcome
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.UpdateMetaobjectResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentOutcome
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetRawContentOutcome
@@ -86,47 +77,6 @@ object McpToolResults {
             "$label invalide : \"$value\" n'est pas un identifiant $expectedType (attendu gid://shopify/$expectedType/...).",
             isError = true,
         )
-
-    fun listMetaobjectsResult(storeSlug: String, result: ListMetaobjectsResult): CallToolResult =
-        withBanner(storeSlug, result.text)
-
-    fun getMetaobjectResult(storeSlug: String, result: GetMetaobjectResult): CallToolResult =
-        when (result.outcome) {
-            GetMetaobjectOutcome.NOT_FOUND ->
-                withBanner(storeSlug, "Metaobject introuvable : ${result.metaobjectId}", isError = true)
-            GetMetaobjectOutcome.FOUND ->
-                withBanner(storeSlug, requireNotNull(result.text))
-        }
-
-    fun createMetaobjectResult(storeSlug: String, result: CreateMetaobjectResult): CallToolResult =
-        when (result.outcome) {
-            CreateMetaobjectOutcome.CREATED ->
-                withBanner(storeSlug, requireNotNull(result.text))
-            CreateMetaobjectOutcome.FAILED ->
-                withBanner(storeSlug, "Échec de la création du metaobject \"${result.type}\" : ${result.failureDetail}", isError = true)
-        }
-
-    fun updateMetaobjectResult(storeSlug: String, result: UpdateMetaobjectResult): CallToolResult =
-        when (result.outcome) {
-            UpdateMetaobjectOutcome.UPDATED ->
-                withBanner(storeSlug, requireNotNull(result.text))
-            UpdateMetaobjectOutcome.NOT_FOUND ->
-                withBanner(storeSlug, "Metaobject introuvable : ${result.metaobjectId}", isError = true)
-            UpdateMetaobjectOutcome.FAILED ->
-                withBanner(storeSlug, "Échec de la mise à jour du metaobject ${result.metaobjectId} : ${result.failureDetail}", isError = true)
-        }
-
-    fun deleteMetaobjectResult(storeSlug: String, result: DeleteMetaobjectResult): CallToolResult =
-        when (result.outcome) {
-            DeleteMetaobjectOutcome.DELETED ->
-                withBanner(storeSlug, requireNotNull(result.text))
-            DeleteMetaobjectOutcome.REFUSED ->
-                withBanner(storeSlug, requireNotNull(result.text), isError = true)
-            DeleteMetaobjectOutcome.NOT_FOUND ->
-                withBanner(storeSlug, "Metaobject introuvable : ${result.metaobjectId}", isError = true)
-            DeleteMetaobjectOutcome.FAILED ->
-                withBanner(storeSlug, "Échec de la suppression du metaobject ${result.metaobjectId} : ${result.text}", isError = true)
-        }
 
     fun searchProductsResult(storeSlug: String, result: SearchProductsResult): CallToolResult =
         withBanner(storeSlug, result.text)

@@ -13,3 +13,5 @@ sealed interface MetaobjectReferenceStatus {
     data class Referenced(val references: List<MetaobjectReferencer>, val truncated: Boolean) : MetaobjectReferenceStatus
     data object Uncertain : MetaobjectReferenceStatus
 }
+
+fun isOrphan(status: MetaobjectReferenceStatus): Boolean = status is MetaobjectReferenceStatus.Orphan

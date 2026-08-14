@@ -1,7 +1,9 @@
-package com.zickat.shopifymcpserver.metaobjects.domain
+package com.zickat.shopifymcpserver.metaobjects.spi.shopify
 
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.MetaobjectFieldInput
+import arrow.core.right
+import com.zickat.shopifymcpserver.metaobjects.domain.MetaobjectFieldInput
 import com.zickat.shopifymcpserver.shared_kernel.DomainError
+import com.zickat.shopifymcpserver.shopify.ShopifyAdminGatewayFake
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
@@ -11,13 +13,13 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Test
 
-class RichTextConversionTest {
+class MetaobjectsRichTextTest {
 
     private val json = Json
 
     @Test
     fun `richTextFromPlainText should convert a single paragraph into a root with one paragraph child made of one text node`() {
-        val lexical = richTextFromPlainText("Simple paragraph.").shouldBeRight()
+        val lexical = MetaobjectsRichText.richTextFromPlainText("Simple paragraph.").shouldBeRight()
 
         val root = json.parseToJsonElement(lexical).jsonObject
         root["type"]?.jsonPrimitive?.content shouldBe "root"
@@ -33,7 +35,7 @@ class RichTextConversionTest {
 
     @Test
     fun `richTextFromPlainText should convert two blank-line separated blocks into two paragraph children`() {
-        val lexical = richTextFromPlainText("First paragraph.\n\nSecond paragraph.").shouldBeRight()
+        val lexical = MetaobjectsRichText.richTextFromPlainText("First paragraph.\n\nSecond paragraph.").shouldBeRight()
 
         val children = json.parseToJsonElement(lexical).jsonObject.getValue("children").jsonArray
         children.size shouldBe 2
@@ -42,7 +44,7 @@ class RichTextConversionTest {
 
     @Test
     fun `richTextFromPlainText should convert a block whose every line starts with dash-space into an unordered list of list-items`() {
-        val lexical = richTextFromPlainText("- First item\n- Second item").shouldBeRight()
+        val lexical = MetaobjectsRichText.richTextFromPlainText("- First item\n- Second item").shouldBeRight()
 
         val block = json.parseToJsonElement(lexical).jsonObject.getValue("children").jsonArray.single().jsonObject
         block["type"]?.jsonPrimitive?.content shouldBe "list"
@@ -57,7 +59,7 @@ class RichTextConversionTest {
 
     @Test
     fun `richTextFromPlainText should convert a markdown link into a link node carrying the validated href, mixed with surrounding text nodes`() {
-        val lexical = richTextFromPlainText("See [our guide](https://example.com/guide) for details.").shouldBeRight()
+        val lexical = MetaobjectsRichText.richTextFromPlainText("See [our guide](https://example.com/guide) for details.").shouldBeRight()
 
         val paragraphChildren = json.parseToJsonElement(lexical).jsonObject
             .getValue("children").jsonArray.single().jsonObject
@@ -80,7 +82,7 @@ class RichTextConversionTest {
 
     @Test
     fun `richTextFromPlainText should reject a non-http(s) link scheme, never building a javascript href`() {
-        val error = richTextFromPlainText("Click [here](javascript:alert(1)).").shouldBeLeft()
+        val error = MetaobjectsRichText.richTextFromPlainText("Click [here](javascript:alert(1)).").shouldBeLeft()
 
         (error as DomainError).messageKey shouldBe "metaobject.richtext.link.scheme.rejected"
     }
@@ -93,7 +95,7 @@ class RichTextConversionTest {
         )
         val fieldTypes = mapOf("title" to "single_line_text_field", "body" to "rich_text_field")
 
-        val converted = convertRichTextFields(fields, fieldTypes).shouldBeRight()
+        val converted = MetaobjectsRichText.convertRichTextFields(fields, fieldTypes).shouldBeRight()
 
         converted.first { it.key == "title" }.value shouldBe "Plain title"
         val bodyValue = converted.first { it.key == "body" }.value
@@ -104,8 +106,37 @@ class RichTextConversionTest {
     fun `convertRichTextFields should pass a field absent from fieldTypes through unchanged`() {
         val fields = listOf(MetaobjectFieldInput("unknown_field", "raw value"))
 
-        val converted = convertRichTextFields(fields, emptyMap()).shouldBeRight()
+        val converted = MetaobjectsRichText.convertRichTextFields(fields, emptyMap()).shouldBeRight()
 
         converted shouldBe fields
+    }
+
+    @Test
+    fun `fetchMetaobjectDefinitionFieldTypes should return an empty map when the type is not defined server-side`() {
+        val gateway = ShopifyAdminGatewayFake().apply {
+            enqueue(json.parseToJsonElement("""{"metaobjectDefinitionByType":null}""").right())
+        }
+
+        val fieldTypes = MetaobjectsRichText.fetchMetaobjectDefinitionFieldTypes(gateway, "store-1", "unknown_type").shouldBeRight()
+
+        fieldTypes shouldBe emptyMap()
+    }
+
+    @Test
+    fun `fetchMetaobjectDefinitionFieldTypes should map every declared field key to its Shopify type name`() {
+        val gateway = ShopifyAdminGatewayFake().apply {
+            enqueue(
+                json.parseToJsonElement(
+                    """{"metaobjectDefinitionByType":{"fieldDefinitions":[
+                        {"key":"title","type":{"name":"single_line_text_field"}},
+                        {"key":"body","type":{"name":"rich_text_field"}}
+                    ]}}""",
+                ).right(),
+            )
+        }
+
+        val fieldTypes = MetaobjectsRichText.fetchMetaobjectDefinitionFieldTypes(gateway, "store-1", "faq_item").shouldBeRight()
+
+        fieldTypes shouldBe mapOf("title" to "single_line_text_field", "body" to "rich_text_field")
     }
 }

@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.metaobjects.exposed_interface.model
+package com.zickat.shopifymcpserver.metaobjects.domain
 
 data class MetaobjectFieldInput(
     val key: String,

@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.metaobjects.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.MetaobjectsExposedService
+import com.zickat.shopifymcpserver.metaobjects.domain.GetMetaobjectUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service
 class GetMetaobjectTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val metaobjectsExposedService: MetaobjectsExposedService,
+    private val getMetaobjectUseCase: GetMetaobjectUseCase,
 ) : HasToolUseCase {
 
     private object GetMetaobjectToolUseCase : ToolUseCase {
@@ -48,11 +48,11 @@ class GetMetaobjectTool(
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             if (!metaobject_id.isGidOfType(METAOBJECT_GID_TYPE)) {
-                McpToolResults.invalidGidType(slug, "metaobject_id", metaobject_id, METAOBJECT_GID_TYPE)
+                MetaobjectToolResults.invalidGidType(slug, "metaobject_id", metaobject_id, METAOBJECT_GID_TYPE)
             } else {
-                metaobjectsExposedService.getMetaobject(tenant.storeId, metaobject_id).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.getMetaobjectResult(slug, result) },
+                getMetaobjectUseCase.execute(tenant.storeId, metaobject_id).fold(
+                    { error -> MetaobjectToolResults.errorResult(slug, error) },
+                    { result -> MetaobjectToolResults.getMetaobjectResult(slug, result) },
                 )
             }
         }

@@ -1,8 +1,8 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.metaobjects.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.MetaobjectsExposedService
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.MetaobjectFieldInput
+import com.zickat.shopifymcpserver.metaobjects.domain.MetaobjectFieldInput
+import com.zickat.shopifymcpserver.metaobjects.domain.UpdateMetaobjectUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service
 class UpdateMetaobjectTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val metaobjectsExposedService: MetaobjectsExposedService,
+    private val updateMetaobjectUseCase: UpdateMetaobjectUseCase,
 ) : HasToolUseCase {
 
     private object UpdateMetaobjectToolUseCase : ToolUseCase {
@@ -63,11 +63,11 @@ class UpdateMetaobjectTool(
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             if (!metaobject_id.isGidOfType(METAOBJECT_GID_TYPE)) {
-                McpToolResults.invalidGidType(slug, "metaobject_id", metaobject_id, METAOBJECT_GID_TYPE)
+                MetaobjectToolResults.invalidGidType(slug, "metaobject_id", metaobject_id, METAOBJECT_GID_TYPE)
             } else {
-                metaobjectsExposedService.updateMetaobject(tenant.storeId, metaobject_id, fields).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.updateMetaobjectResult(slug, result) },
+                updateMetaobjectUseCase.execute(tenant.storeId, metaobject_id, fields).fold(
+                    { error -> MetaobjectToolResults.errorResult(slug, error) },
+                    { result -> MetaobjectToolResults.updateMetaobjectResult(slug, result) },
                 )
             }
         }

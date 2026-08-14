@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.metaobjects.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
+import com.zickat.shopifymcpserver.metaobjects.api.mcp.MetaobjectToolResults
+import com.zickat.shopifymcpserver.metaobjects.spi.shopify.MetaobjectsShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -56,7 +57,8 @@ class GetMetaobjectUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return GetMetaobjectUseCase(gateway) to mockServer
+        val metaobjectsRepository = MetaobjectsShopifyRepository(gateway)
+        return GetMetaobjectUseCase(metaobjectsRepository) to mockServer
     }
 
     private fun replayAndAssert(cassetteResource: String, storeId: String, shopDomain: String, storeSlug: String) {
@@ -74,7 +76,7 @@ class GetMetaobjectUseCaseCassetteReplayTest {
             CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(call, mockServer.takeRequest())
         }
 
-        val rendered = McpToolResults.getMetaobjectResult(storeSlug, result)
+        val rendered = MetaobjectToolResults.getMetaobjectResult(storeSlug, result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 

@@ -1,8 +1,8 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.metaobjects.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.MetaobjectsExposedService
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.MetaobjectFieldInput
+import com.zickat.shopifymcpserver.metaobjects.domain.CreateMetaobjectUseCase
+import com.zickat.shopifymcpserver.metaobjects.domain.MetaobjectFieldInput
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service
 class CreateMetaobjectTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val metaobjectsExposedService: MetaobjectsExposedService,
+    private val createMetaobjectUseCase: CreateMetaobjectUseCase,
 ) : HasToolUseCase {
 
     private object CreateMetaobjectToolUseCase : ToolUseCase {
@@ -62,9 +62,9 @@ class CreateMetaobjectTool(
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            metaobjectsExposedService.createMetaobject(tenant.storeId, type, fields).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { result -> McpToolResults.createMetaobjectResult(slug, result) },
+            createMetaobjectUseCase.execute(tenant.storeId, type, fields).fold(
+                { error -> MetaobjectToolResults.errorResult(slug, error) },
+                { result -> MetaobjectToolResults.createMetaobjectResult(slug, result) },
             )
         }
     }

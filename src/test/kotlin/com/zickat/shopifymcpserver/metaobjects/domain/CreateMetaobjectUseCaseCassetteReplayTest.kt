@@ -1,7 +1,8 @@
 package com.zickat.shopifymcpserver.metaobjects.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
-import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.MetaobjectFieldInput
+import com.zickat.shopifymcpserver.metaobjects.api.mcp.MetaobjectToolResults
+import com.zickat.shopifymcpserver.metaobjects.domain.MetaobjectFieldInput
+import com.zickat.shopifymcpserver.metaobjects.spi.shopify.MetaobjectsShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -57,7 +58,8 @@ class CreateMetaobjectUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return CreateMetaobjectUseCase(gateway) to mockServer
+        val metaobjectsRepository = MetaobjectsShopifyRepository(gateway)
+        return CreateMetaobjectUseCase(metaobjectsRepository) to mockServer
     }
 
     @Test
@@ -79,7 +81,7 @@ class CreateMetaobjectUseCaseCassetteReplayTest {
         mockServer.takeRequest()
         cassette.calls.forEach { call -> CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(call, mockServer.takeRequest()) }
 
-        val rendered = McpToolResults.createMetaobjectResult("velotrip", result)
+        val rendered = MetaobjectToolResults.createMetaobjectResult("velotrip", result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 }
