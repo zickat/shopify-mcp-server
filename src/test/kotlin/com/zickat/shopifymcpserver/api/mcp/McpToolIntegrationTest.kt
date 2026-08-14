@@ -687,7 +687,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `tools list exposes exactly the 80 real tools — 18 native and 62 relayed, no duplicate name`() {
+    fun `tools list exposes exactly the 80 real tools — 19 native and 61 relayed, no duplicate name`() {
         val storeId = registerStore()
         val subject = "operator-tools-list-count"
         val identityId = resolveIdentity(subject)
@@ -769,7 +769,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
             .toMap()
 
         val relayedNames = relayGateway.relayedTools().map { it.toolName }.filterNot { it in nativeToolNames.names }
-        relayedNames shouldHaveSize 62
+        relayedNames shouldHaveSize 61
 
         relayedNames.forEach { toolName ->
             val exposedInputSchema = toolsByName[toolName]?.get("inputSchema")

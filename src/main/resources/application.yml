@@ -113,10 +113,11 @@ mcp:
 # `ListOrphanProductsTool` s'enregistrent sous ces cinq noms, même conflit de `SyncToolSpecification`
 # au démarrage sinon. 15 en NATIF désormais, 65 en RELAIS — total inchangé (80).
 #
-# LOT5-06 — `mark_blocked`/`publish_resource`/`unpublish_resource` basculent NATIF pour la même
-# raison mécanique que les lots précédents : `MarkBlockedTool`/`PublishResourceTool`/
-# `UnpublishResourceTool` s'enregistrent sous ces trois noms, même conflit de `SyncToolSpecification`
-# au démarrage sinon. 18 en NATIF désormais, 62 en RELAIS — total inchangé (80).
+# LOT5-06/LOT4-06 — `mark_blocked`/`publish_resource`/`unpublish_resource`/`update_seo` basculent
+# NATIF pour la même raison mécanique que les lots précédents : `MarkBlockedTool`/
+# `PublishResourceTool`/`UnpublishResourceTool`/`UpdateSeoTool` s'enregistrent sous ces quatre noms,
+# même conflit de `SyncToolSpecification` au démarrage sinon. 19 en NATIF désormais, 61 en RELAIS —
+# total inchangé (80).
 #
 # LOT2-23 (D31) — `generate_product_images`/`generate_cross_product_image`/`generate_editorial_scene`/
 # `retouch_editorial_image` basculent `kind: READ` → `kind: MUTATION`. `route` reste `RELAIS` pour les
@@ -362,7 +363,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: update_seo
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: update_testimonial
       route: RELAIS
