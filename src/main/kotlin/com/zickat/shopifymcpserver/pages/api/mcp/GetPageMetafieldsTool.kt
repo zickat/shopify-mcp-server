@@ -1,6 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.pages.api.mcp
 
-import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.pages.domain.GetPageMetafieldsUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -16,14 +17,14 @@ import org.springframework.stereotype.Service
 class GetPageMetafieldsTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val pagesExposedService: PagesExposedService,
+    private val getPageMetafieldsUseCase: GetPageMetafieldsUseCase,
 ) : HasToolUseCase {
 
-    private object GetPageMetafieldsToolUseCase : ToolUseCase {
+    private object GetPageMetafieldsToolKind : ToolUseCase {
         override val kind = UseCaseKind.READ
     }
 
-    override val toolUseCase: ToolUseCase = GetPageMetafieldsToolUseCase
+    override val toolUseCase: ToolUseCase = GetPageMetafieldsToolKind
 
     @McpTool(
         name = "get_page_metafields",
@@ -51,17 +52,17 @@ class GetPageMetafieldsTool(
 
         return pipeline.runForActiveStore(
             "get_page_metafields",
-            GetPageMetafieldsToolUseCase,
+            GetPageMetafieldsToolKind,
             exchange.sessionId(),
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             if (!page_id.isGidOfType(PAGE_GID_TYPE)) {
-                McpToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
+                PageToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
             } else {
-                pagesExposedService.getPageMetafields(tenant.storeId, page_id, keys).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.getPageMetafieldsResult(slug, result) },
+                getPageMetafieldsUseCase.execute(tenant.storeId, page_id, keys).fold(
+                    { error -> PageToolResults.errorResult(slug, error) },
+                    { result -> PageToolResults.getPageMetafieldsResult(slug, result) },
                 )
             }
         }

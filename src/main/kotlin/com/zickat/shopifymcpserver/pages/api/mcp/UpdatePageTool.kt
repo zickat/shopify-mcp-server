@@ -1,6 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.pages.api.mcp
 
-import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.pages.domain.UpdatePageUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -16,14 +17,14 @@ import org.springframework.stereotype.Service
 class UpdatePageTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val pagesExposedService: PagesExposedService,
+    private val updatePageUseCase: UpdatePageUseCase,
 ) : HasToolUseCase {
 
-    private object UpdatePageToolUseCase : ToolUseCase {
+    private object UpdatePageToolKind : ToolUseCase {
         override val kind = UseCaseKind.MUTATION
     }
 
-    override val toolUseCase: ToolUseCase = UpdatePageToolUseCase
+    override val toolUseCase: ToolUseCase = UpdatePageToolKind
 
     @McpTool(
         name = "update_page",
@@ -55,17 +56,17 @@ class UpdatePageTool(
 
         return pipeline.runForActiveStore(
             "update_page",
-            UpdatePageToolUseCase,
+            UpdatePageToolKind,
             exchange.sessionId(),
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             if (!page_id.isGidOfType(PAGE_GID_TYPE)) {
-                McpToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
+                PageToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
             } else {
-                pagesExposedService.updatePage(tenant.storeId, page_id, title, body, handle).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.updatePageResult(slug, result) },
+                updatePageUseCase.execute(tenant.storeId, page_id, title, body, handle).fold(
+                    { error -> PageToolResults.errorResult(slug, error) },
+                    { result -> PageToolResults.updatePageResult(slug, result) },
                 )
             }
         }

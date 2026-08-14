@@ -1,6 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.pages.api.mcp
 
-import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.pages.domain.CreatePageUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -15,14 +16,14 @@ import org.springframework.stereotype.Service
 class CreatePageTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val pagesExposedService: PagesExposedService,
+    private val createPageUseCase: CreatePageUseCase,
 ) : HasToolUseCase {
 
-    private object CreatePageToolUseCase : ToolUseCase {
+    private object CreatePageToolKind : ToolUseCase {
         override val kind = UseCaseKind.MUTATION
     }
 
-    override val toolUseCase: ToolUseCase = CreatePageToolUseCase
+    override val toolUseCase: ToolUseCase = CreatePageToolKind
 
     @McpTool(
         name = "create_page",
@@ -65,14 +66,14 @@ class CreatePageTool(
 
         return pipeline.runForActiveStore(
             "create_page",
-            CreatePageToolUseCase,
+            CreatePageToolKind,
             exchange.sessionId(),
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            pagesExposedService.createPage(tenant.storeId, title, body, handle, publish).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { result -> McpToolResults.createPageResult(slug, result) },
+            createPageUseCase.execute(tenant.storeId, title, body, handle, publish).fold(
+                { error -> PageToolResults.errorResult(slug, error) },
+                { result -> PageToolResults.createPageResult(slug, result) },
             )
         }
     }

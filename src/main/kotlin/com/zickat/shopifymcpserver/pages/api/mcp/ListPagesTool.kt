@@ -1,6 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.pages.api.mcp
 
-import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.pages.domain.ListPagesUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -15,14 +16,14 @@ import org.springframework.stereotype.Service
 class ListPagesTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val pagesExposedService: PagesExposedService,
+    private val listPagesUseCase: ListPagesUseCase,
 ) : HasToolUseCase {
 
-    private object ListPagesToolUseCase : ToolUseCase {
+    private object ListPagesToolKind : ToolUseCase {
         override val kind = UseCaseKind.READ
     }
 
-    override val toolUseCase: ToolUseCase = ListPagesToolUseCase
+    override val toolUseCase: ToolUseCase = ListPagesToolKind
 
     @McpTool(
         name = "list_pages",
@@ -44,14 +45,14 @@ class ListPagesTool(
 
         return pipeline.runForActiveStore(
             "list_pages",
-            ListPagesToolUseCase,
+            ListPagesToolKind,
             exchange.sessionId(),
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            pagesExposedService.listPages(tenant.storeId, query).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { result -> McpToolResults.listPagesResult(slug, result) },
+            listPagesUseCase.execute(tenant.storeId, query).fold(
+                { error -> PageToolResults.errorResult(slug, error) },
+                { result -> PageToolResults.listPagesResult(slug, result) },
             )
         }
     }

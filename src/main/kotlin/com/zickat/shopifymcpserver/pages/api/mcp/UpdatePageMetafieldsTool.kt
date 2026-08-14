@@ -1,7 +1,8 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.pages.api.mcp
 
-import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
-import com.zickat.shopifymcpserver.pages.exposed_interface.model.PageMetafieldInput
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.pages.domain.PageMetafieldInput
+import com.zickat.shopifymcpserver.pages.domain.UpdatePageMetafieldsUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -17,14 +18,14 @@ import org.springframework.stereotype.Service
 class UpdatePageMetafieldsTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val pagesExposedService: PagesExposedService,
+    private val updatePageMetafieldsUseCase: UpdatePageMetafieldsUseCase,
 ) : HasToolUseCase {
 
-    private object UpdatePageMetafieldsToolUseCase : ToolUseCase {
+    private object UpdatePageMetafieldsToolKind : ToolUseCase {
         override val kind = UseCaseKind.MUTATION
     }
 
-    override val toolUseCase: ToolUseCase = UpdatePageMetafieldsToolUseCase
+    override val toolUseCase: ToolUseCase = UpdatePageMetafieldsToolKind
 
     @McpTool(
         name = "update_page_metafields",
@@ -53,17 +54,17 @@ class UpdatePageMetafieldsTool(
 
         return pipeline.runForActiveStore(
             "update_page_metafields",
-            UpdatePageMetafieldsToolUseCase,
+            UpdatePageMetafieldsToolKind,
             exchange.sessionId(),
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             if (!page_id.isGidOfType(PAGE_GID_TYPE)) {
-                McpToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
+                PageToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
             } else {
-                pagesExposedService.updatePageMetafields(tenant.storeId, page_id, metafields).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.updatePageMetafieldsResult(slug, result) },
+                updatePageMetafieldsUseCase.execute(tenant.storeId, page_id, metafields).fold(
+                    { error -> PageToolResults.errorResult(slug, error) },
+                    { result -> PageToolResults.updatePageMetafieldsResult(slug, result) },
                 )
             }
         }

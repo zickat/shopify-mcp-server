@@ -1,0 +1,616 @@
+[
+  {
+    "description": "Creates a new instance of a metaobject type already defined in the Shopify schema (type is a free string, no allowlist — covers a legacy type like guide_theme). A field declared rich_text_field server-side (e.g. guide_section.body) receives the value as plain text and converts it automatically (paragraphs separated by a blank line, bullet list via \"- \", links \"[text](url)\") — never supply already-built Lexical JSON on these fields. No other redundant validation client-side: Shopify is the sole source of truth on existing definitions, its userErrors are surfaced as-is (unknown type, missing required field, incompatible value...). No editorial-consistency judgment (unlike propose_collection) — delegated to the resource that will reference this metaobject. Not idempotent: calling this again with the same fields creates a new metaobject every time.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "fields": {
+          "description": "Fields to write ({key, value}). A list.*_reference field (e.g. articles) expects a JSON string of a gid array (e.g. \"[\\\"gid://shopify/Article/1\\\"]\"). A rich_text_field field expects plain text, converted automatically — not JSON.",
+          "items": {
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "type": {
+          "description": "Metaobject type, e.g. \"guide_theme\", \"faq_item\" — free string, no allowlist.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "fields"
+      ],
+      "type": "object"
+    },
+    "name": "create_metaobject"
+  },
+  {
+    "description": "Creates a Shopify Page (title + native HTML body, optional handle). DRAFT by default (isPublished: false, always passed explicitly) — on this store a Page created without an explicit status is published by default, so the draft is guaranteed by the code: use publish_page after review to go live. publish: true creates it published directly (explicit request). body is HTML stored AS-IS and rendered on the storefront (no sanitizer client-side — the native admin accepts the same HTML): draft-by-default is the defense in depth. handle is never invented client-side: omitted -> Shopify generates it from the title and the response returns the handle actually assigned; supplied -> used as-is (a conflict surfaces via userErrors). Never writes a custom.* metafield (see update_page_metafields).",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "body": {
+          "description": "Native HTML body of the Page — stored as-is, rendered on the storefront (no client-side sanitizing).",
+          "type": "string"
+        },
+        "handle": {
+          "description": "OPTIONAL — URL handle. Omitted = Shopify generates it from the title (the response returns the real handle). Never slugified/invented client-side.",
+          "type": "string"
+        },
+        "publish": {
+          "description": "OPTIONAL, defaults to false (draft). true = immediate explicit publication. The draft default is guaranteed by the code, never left to Shopify's implicit default.",
+          "type": "boolean"
+        },
+        "title": {
+          "description": "Page title, e.g. \"Shipping and returns\"",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "body"
+      ],
+      "type": "object"
+    },
+    "name": "create_page"
+  },
+  {
+    "description": "Creates an Admin URL redirect from an old public path (from_path) to a new one (to_path), so a broken URL does not fall through to a 404 (deleted collection, reorganized guide/page, after-the-fact fix). Idempotent: recreating a redirect that already exists for this from_path is a success, not an error — but the target is then neither checked nor updated (create only, no target update). Both paths are required. Touches no other resource on the store.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "from_path": {
+          "description": "REQUIRED — old public path to redirect, e.g. \"/collections/old-slug\"",
+          "type": "string"
+        },
+        "to_path": {
+          "description": "REQUIRED — new target path, e.g. \"/collections/new-slug\" or \"/pages/replacement-guide\"",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_path",
+        "to_path"
+      ],
+      "type": "object"
+    },
+    "name": "create_redirect"
+  },
+  {
+    "description": "Permanently deletes a metaobject (metaobjectDelete, irreversible on Shopify, no trash). Refuses BY DEFAULT if the metaobject is still referenced by a resource (Metaobject.referencedBy, exhaustive by construction — never declared orphan out of excess confidence in case of truncation) — explicit override via confirm_referenced_deletion: true. DISTINCT from confirm_out_of_scope_deletion (delete_collection) — orthogonal risk axis (referenced or not, independent of pipeline scope). Never cleans up the resource that referenced the deleted metaobject — explicit warning in the report if the deletion was forced despite an active reference.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "confirm_referenced_deletion": {
+          "description": "true to force deletion of a metaobject still referenced by at least one resource (or whose reference detection is uncertain) — do not confuse with delete_collection's confirm_out_of_scope_deletion. Defaults to false.",
+          "type": "boolean"
+        },
+        "metaobject_id": {
+          "description": "gid://shopify/Metaobject/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metaobject_id"
+      ],
+      "type": "object"
+    },
+    "name": "delete_metaobject"
+  },
+  {
+    "description": "PERMANENTLY deletes a Page (irreversible action — no trash, no restoration client-side). Rereads the Page's existence BEFORE deletion (isError: true if not found, never a silent deletion) and returns its title/handle for traceability. Reserve for Pages that are genuinely obsolete; for a simple temporary storefront removal, use unpublish_page (reversible).",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "page_id": {
+          "description": "gid://shopify/Page/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "type": "object"
+    },
+    "name": "delete_page"
+  },
+  {
+    "description": "Returns the state currently written by the pipeline for a product (title, native descriptionHtml, productType, tags, summary_points, why_recommend, how_to_use, specs, faq, complementary products, review status, original supplier title/description snapshot if already captured, related guide(s) and their origin, \"ideal for\") — call this before retouching a product that is already enriched or already ACTIVE, to judge consistency between a new title and the custom.* content already written, and to retrieve the current body_html without reconstructing it blind. Read-only, never modifies anything, distinct from get_raw_content (raw supplier-sourced sheet).",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "product_id": {
+          "description": "gid://shopify/Product/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_id"
+      ],
+      "type": "object"
+    },
+    "name": "get_enriched_content"
+  },
+  {
+    "description": "Returns the same level of information as a list_metaobjects entry (type, raw fields, orphan/referenced reference status) for a metaobject already identified by its id — avoids going back through a full listing. Read-only.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "metaobject_id": {
+          "description": "gid://shopify/Metaobject/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metaobject_id"
+      ],
+      "type": "object"
+    },
+    "name": "get_metaobject"
+  },
+  {
+    "description": "Returns the custom.* metafields already written on a Page (guide hub or other content page). Without keys: every custom.* metafield found. With keys: filters to the requested keys and explicitly reports each one that is not defined (\"non défini\"), never a silent omission. Read-only.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "keys": {
+          "description": "OPTIONAL — subset of custom.* keys to return (e.g. [\"themes\"]). Omitted = every key found. A requested key absent from the Page is reported \"non défini\", never silently omitted.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "page_id": {
+          "description": "gid://shopify/Page/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "type": "object"
+    },
+    "name": "get_page_metafields"
+  },
+  {
+    "description": "Returns the existing raw material of a product (title, source description, price, images, variant options, variants) — read this before drafting enriched content via enrich_product. Read-only, never modifies anything.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "product_id": {
+          "description": "gid://shopify/Product/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_id"
+      ],
+      "type": "object"
+    },
+    "name": "get_raw_content"
+  },
+  {
+    "description": "Returns the meta title and meta description currently set on a product, collection, guide (article) or page — the SEO pair shown in search results and the browser tab. A field left unset is explicitly reported \"non défini\" (never a silent omission). Read-only. resource_id must be the gid of the type named by resource_type — a gid of a different type is reported as \"resource not found\".",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "resource_id": {
+          "description": "gid://shopify/{Product|Collection|Article|Page}/... — consistent with resource_type.",
+          "type": "string"
+        },
+        "resource_type": {
+          "description": "Resource type: \"product\", \"collection\", \"article\" (guide) or \"page\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id"
+      ],
+      "type": "object"
+    },
+    "name": "get_seo"
+  },
+  {
+    "description": "Lists Shopify navigation menus (header main-menu, footer, others) with, for each one, its FULL ITEM TREE — sub-menus included, up to 4 levels. Each line carries a hierarchical numbering (1., 1.1., 1.1.1. — the LAST segment is the value to pass as position to add_menu_item, the prefix names the parent), the title, the target (type + resourceId, or URL), and the suffix \"— item_id: <gid>\", stable at any depth: the anchor to reuse in add/remove/reorder/update_menu_item. A menu's header carries \", par défaut\" when Shopify protects it (main-menu and footer): it is neither deletable nor renamable by handle. Three caps, all SIGNALLED and never silent: depth (display, default 3) emits \"+N sous-item(s) masqué(s)\" ; 200 lines per menu emits \"N item(s) non affiché(s)\" ; menu pagination is signalled when truncated. A menu with items beyond 4 levels (N5+) carries a warning: it is not editable by any of these tools (rewriting it would drop those items) — this is the only place that cause is visible. Read-only, never isError. No query: every menu. With query: Shopify Admin search syntax — title:*word* and full-text search work ; the handle: filter is NOT supported (returns every menu). Each menu's handle is in the result regardless.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "depth": {
+          "description": "OPTIONAL — display depth of the tree, 1 to 4 (default 3). Purely cosmetic: the read always goes 4 levels deep, this parameter only saves displayed context. What is hidden is ALWAYS counted and announced, never silently truncated.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "query": {
+          "description": "OPTIONAL — Shopify Admin search on menus (e.g. \"title:*footer*\"). Omitted/blank = every menu. Note: \"handle:...\" is NOT a supported filter (returns everything).",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "list_menus"
+  },
+  {
+    "description": "Without type: lists the metaobject definitions present on the store (type, name, instance count) — including types the pipeline neither creates nor consumes itself, to discover a legacy type without knowing it in advance. With type (free-form string, no allowlist): lists every instance of that type with its raw fields and its reference status (orphan / referenced by what), computed via Metaobject.referencedBy (exhaustive by construction, not a catalog scan). Bounded scan, truncation reported explicitly. Read-only.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "type": {
+          "description": "Metaobject type, e.g. \"faq_item\" — free-form string, no allowlist. Omitted = lists the available types with their instance count.",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "list_metaobjects"
+  },
+  {
+    "description": "Returns products (native status ACTIVE or DRAFT, ARCHIVED excluded by default) that belong to NO collection — manual or legacy, no distinction. Useful to spot categorization blind spots in the catalog. Explicitly signals any truncation of the scan (collection side or product side) rather than implying an exhaustive list.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "name": "list_orphan_products"
+  },
+  {
+    "description": "Lists the Pages of the store (id, title, handle). Without query: every Page. With query (Shopify Admin search syntax, e.g. title:*guide*, handle:guide-hub): filters the result. Read-only — discovery tool ahead of get_page_metafields/update_page_metafields, which both require an already-known page_id.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "query": {
+          "description": "OPTIONAL — Shopify Admin search query (e.g. \"title:*guide*\", \"handle:guide-hub\"). Omitted or empty = every Page of the store.",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "list_pages"
+  },
+  {
+    "description": "Lists the stores granted to the caller's identity and names which one is active for this MCP session, if any. Names no secret — store identifiers only. Touches no external system.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "name": "list_stores"
+  },
+  {
+    "description": "Lists resources (product|collection|article) with content_status: to_review.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "resource_type": {
+          "description": "Resource type: \"product\", \"collection\" or \"article\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "resource_type"
+      ],
+      "type": "object"
+    },
+    "name": "list_to_review"
+  },
+  {
+    "description": "Marks a product, collection or guide (article) as blocked (internal pipeline metafield custom.content_status = \"blocked\") — excludes it from the catalog's editorial review workflow without touching its Shopify publication status or visibility. resource_id must be the gid of the type named by resource_type.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "reason": {
+          "description": "REQUIRED — reason for blocking, echoed back in the response for the caller to keep.",
+          "type": "string"
+        },
+        "resource_id": {
+          "description": "gid://shopify/{Product|Collection|Article}/... — consistent with resource_type.",
+          "type": "string"
+        },
+        "resource_type": {
+          "description": "Resource type: \"product\", \"collection\" or \"article\" (guide).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "name": "mark_blocked"
+  },
+  {
+    "description": "Publishes a draft Page (flips isPublished: true via pageUpdate). No-op documented if the Page is already published (no mutation emitted, explicit message). Never touches title/body/handle nor a custom.* metafield — only the visibility status changes.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "page_id": {
+          "description": "gid://shopify/Page/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "type": "object"
+    },
+    "name": "publish_page"
+  },
+  {
+    "description": "Publishes a product: sets its status to ACTIVE, removes the internal pipeline metafield custom.content_status, and — if it was on no sales channel yet — publishes it to the Online Store channel. If already published on a channel, that step is skipped. resource_id must be a Product gid.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "resource_id": {
+          "description": "gid://shopify/Product/...",
+          "type": "string"
+        },
+        "resource_type": {
+          "description": "Resource type — only \"product\" is supported.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id"
+      ],
+      "type": "object"
+    },
+    "name": "publish_resource"
+  },
+  {
+    "description": "Searches products of the catalog by Shopify query (e.g. \"product_type:sacoches\", \"created_at:>=2026-06-01\") and/or by pipeline processing status. Entry point to identify a batch of products to process — never returns content, only enough to identify the products (get_raw_content reads the detail). Pipeline status is always recomputed from a direct read of each product's metafield, never trusted from the Shopify search index (which lags after a write) — only the free-text query itself goes through the index.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "query": {
+          "description": "OPTIONAL Shopify Admin search query on products (e.g. product_type:..., tag:..., title:*word*, created_at:>=YYYY-MM-DD). Leave empty to filter by status only.",
+          "type": "string"
+        },
+        "status_filter": {
+          "description": "untreated (default) = never processed by the pipeline ; to_review ; blocked ; all = every status.",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "search_products"
+  },
+  {
+    "description": "Searches collections or articles (guides) of the catalog by Shopify query and/or by pipeline processing status. Collection/article equivalent of search_products (products stay covered by search_products, not by this tool). Entry point to identify a batch of collections/guides to process — never returns content, only enough to identify the resources.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "query": {
+          "description": "Optional Shopify search query (Admin syntax, e.g. title:*word*, handle:..., created_at:>=YYYY-MM-DD). Leave empty to filter by status only.",
+          "type": "string"
+        },
+        "resource_type": {
+          "description": "Resource type to list: \"collection\" or \"article\".",
+          "type": "string"
+        },
+        "status_filter": {
+          "description": "untreated (default) = never processed by the pipeline ; to_review ; blocked ; all = every status.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "resource_type"
+      ],
+      "type": "object"
+    },
+    "name": "search_resources"
+  },
+  {
+    "description": "Removes a Page from the storefront without deleting it (flips isPublished: false via pageUpdate). No-op documented if the Page is already unpublished. Never touches title/body/handle nor a custom.* metafield — only the visibility status changes. To permanently delete a Page, use delete_page.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "page_id": {
+          "description": "gid://shopify/Page/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "type": "object"
+    },
+    "name": "unpublish_page"
+  },
+  {
+    "description": "Removes a product from the Online Store sales channel. Does not change the product's native status (stays ACTIVE) — only its storefront visibility. No-op if the product is already on no channel. resource_id must be a Product gid.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "resource_id": {
+          "description": "gid://shopify/Product/...",
+          "type": "string"
+        },
+        "resource_type": {
+          "description": "Resource type — only \"product\" is supported.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id"
+      ],
+      "type": "object"
+    },
+    "name": "unpublish_resource"
+  },
+  {
+    "description": "Updates one or more fields of an existing metaobject — partial update: any existing field not mentioned in fields is left unchanged. Rereads the metaobject's existence before any write (isError: true if not found, same guard as delete_metaobject). A list.*_reference field supplied (e.g. articles of a guide_theme) is replaced wholesale by the given value — native Shopify API property, not a merge: call get_metaobject first to compose the full list to write (e.g. drop a dead reference without losing the others). A field declared rich_text_field server-side receives plain text and is converted automatically (paragraphs/bullet list \"- \"/links \"[text](url)\") — never already-built Lexical JSON. No other redundant validation client-side: Shopify's userErrors are surfaced as-is.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "fields": {
+          "description": "Fields to change ({key, value}) — only these fields are written. A list.*_reference field expects the full replacement JSON list, not a merge. A rich_text_field field expects plain text, converted automatically — not JSON.",
+          "items": {
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "metaobject_id": {
+          "description": "gid://shopify/Metaobject/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metaobject_id",
+        "fields"
+      ],
+      "type": "object"
+    },
+    "name": "update_metaobject"
+  },
+  {
+    "description": "Partially updates a Page's native content (title, HTML body, handle) — only the supplied fields are changed, omitted fields stay unchanged. Rereads the Page's existence BEFORE any write (isError: true if not found). The Page's gid stays STABLE across the update (never delete+recreate). Never writes a custom.* metafield — strictly disjoint from update_page_metafields (native content vs custom.*). No field supplied -> no-op (reported). body is HTML stored as-is and rendered on the storefront (no client-side sanitizer).",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "body": {
+          "description": "New HTML body (stored as-is, rendered on the storefront) — omitted = unchanged",
+          "type": "string"
+        },
+        "handle": {
+          "description": "New URL handle — omitted = unchanged",
+          "type": "string"
+        },
+        "page_id": {
+          "description": "gid://shopify/Page/...",
+          "type": "string"
+        },
+        "title": {
+          "description": "New title — omitted = unchanged",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page_id"
+      ],
+      "type": "object"
+    },
+    "name": "update_page"
+  },
+  {
+    "description": "Writes one or more custom.* metafields on a Page. Rereads the Page's existence before any write (isError: true if not found). No redundant type/value validation client-side: Shopify is the sole source of truth, its userErrors are surfaced as-is. A list.*_reference field (e.g. themes) is replaced WHOLESALE by the given value — native Shopify API property, not a merge: read via get_page_metafields first to compose the full list to write. Never touches a native Page field (title/body — out of scope).",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "metafields": {
+          "description": "custom.* metafields to write ({key, type, value}) — implicit custom namespace. For a list.*_reference, value is the full replacement JSON array of gids.",
+          "items": {
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "type",
+              "value"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "page_id": {
+          "description": "gid://shopify/Page/...",
+          "type": "string"
+        }
+      },
+      "required": [
+        "page_id",
+        "metafields"
+      ],
+      "type": "object"
+    },
+    "name": "update_page_metafields"
+  },
+  {
+    "description": "Updates the meta title and/or meta description of a product, collection, guide (article) or page. Either field may be omitted — an omitted field keeps its current value (merge, not erase). Omitting both is a no-op. resource_id must be the gid of the type named by resource_type — a gid of a different type is reported as \"resource not found\". Never changes the resource's editorial pipeline status.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "resource_id": {
+          "description": "gid://shopify/{Product|Collection|Article|Page}/... — consistent with resource_type.",
+          "type": "string"
+        },
+        "resource_type": {
+          "description": "Resource type: \"product\", \"collection\", \"article\" (guide) or \"page\".",
+          "type": "string"
+        },
+        "seo_description": {
+          "description": "OPTIONAL — new meta description. Omitted = keep the current value.",
+          "type": "string"
+        },
+        "seo_title": {
+          "description": "OPTIONAL — new meta title. Omitted = keep the current value.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "resource_type",
+        "resource_id"
+      ],
+      "type": "object"
+    },
+    "name": "update_seo"
+  },
+  {
+    "description": "Selects the store every following tool call in this MCP session will act on. The selection is scoped to this session only — it never leaks to another session of the same identity, and it does not survive a server restart.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "properties": {
+        "store_id": {
+          "description": "The store name, as returned by list_stores — e.g. \"velotrip\". Not an internal id.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "store_id"
+      ],
+      "type": "object"
+    },
+    "name": "use_store"
+  }
+]

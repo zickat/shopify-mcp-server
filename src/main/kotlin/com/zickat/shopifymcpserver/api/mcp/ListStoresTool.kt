@@ -1,5 +1,6 @@
 package com.zickat.shopifymcpserver.api.mcp
 
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind

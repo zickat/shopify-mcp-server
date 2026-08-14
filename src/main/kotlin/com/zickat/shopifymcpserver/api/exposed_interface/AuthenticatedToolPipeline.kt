@@ -1,9 +1,10 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.api.exposed_interface
 
 import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.getOrElse
 import arrow.core.raise.either
+import com.zickat.shopifymcpserver.api.mcp.currentJwtPrincipal
 import com.zickat.shopifymcpserver.audit.exposed_interface.AuditExposedService
 import com.zickat.shopifymcpserver.identity.exposed_interface.IdentityExposedService
 import com.zickat.shopifymcpserver.shared_kernel.ForbiddenError
@@ -16,8 +17,10 @@ import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.shared_kernel.orThrow
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.ActiveStoreExposedService
+import org.springframework.modulith.NamedInterface
 import org.springframework.stereotype.Component
 
+@NamedInterface("exposed_interface")
 @Component
 class AuthenticatedToolPipeline(
     private val identityExposedService: IdentityExposedService,

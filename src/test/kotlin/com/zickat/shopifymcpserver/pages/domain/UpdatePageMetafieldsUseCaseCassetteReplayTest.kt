@@ -1,7 +1,7 @@
 package com.zickat.shopifymcpserver.pages.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
-import com.zickat.shopifymcpserver.pages.exposed_interface.model.PageMetafieldInput
+import com.zickat.shopifymcpserver.pages.api.mcp.PageToolResults
+import com.zickat.shopifymcpserver.pages.spi.shopify.PageShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -57,7 +57,8 @@ class UpdatePageMetafieldsUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return UpdatePageMetafieldsUseCase(gateway) to mockServer
+        val pageRepository = PageShopifyRepository(gateway)
+        return UpdatePageMetafieldsUseCase(pageRepository) to mockServer
     }
 
     @Test
@@ -83,7 +84,7 @@ class UpdatePageMetafieldsUseCaseCassetteReplayTest {
         mockServer.takeRequest()
         cassette.calls.forEach { call -> CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(call, mockServer.takeRequest()) }
 
-        val rendered = McpToolResults.updatePageMetafieldsResult("velotrip", result)
+        val rendered = PageToolResults.updatePageMetafieldsResult("velotrip", result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 }

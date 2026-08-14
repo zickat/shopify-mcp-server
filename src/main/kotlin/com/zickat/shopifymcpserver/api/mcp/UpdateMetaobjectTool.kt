@@ -1,5 +1,6 @@
 package com.zickat.shopifymcpserver.api.mcp
 
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.MetaobjectsExposedService
 import com.zickat.shopifymcpserver.metaobjects.exposed_interface.model.MetaobjectFieldInput
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase

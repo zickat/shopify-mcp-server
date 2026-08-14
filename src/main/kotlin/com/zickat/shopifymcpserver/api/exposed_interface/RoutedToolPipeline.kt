@@ -1,5 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.api.exposed_interface
 
+import com.zickat.shopifymcpserver.api.mcp.relayCallResult
+import com.zickat.shopifymcpserver.api.mcp.toJsonElement
 import com.zickat.shopifymcpserver.relay.exposed_interface.RelayGateway
 import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.NotFoundError
@@ -9,8 +11,10 @@ import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService
 import io.modelcontextprotocol.spec.McpSchema
+import org.springframework.modulith.NamedInterface
 import org.springframework.stereotype.Component
 
+@NamedInterface("exposed_interface")
 @Component
 class RoutedToolPipeline(
     private val pipeline: AuthenticatedToolPipeline,

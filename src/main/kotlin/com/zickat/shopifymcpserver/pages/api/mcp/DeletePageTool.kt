@@ -1,6 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.pages.api.mcp
 
-import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.pages.domain.DeletePageUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -16,14 +17,14 @@ import org.springframework.stereotype.Service
 class DeletePageTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val pagesExposedService: PagesExposedService,
+    private val deletePageUseCase: DeletePageUseCase,
 ) : HasToolUseCase {
 
-    private object DeletePageToolUseCase : ToolUseCase {
+    private object DeletePageToolKind : ToolUseCase {
         override val kind = UseCaseKind.MUTATION
     }
 
-    override val toolUseCase: ToolUseCase = DeletePageToolUseCase
+    override val toolUseCase: ToolUseCase = DeletePageToolKind
 
     @McpTool(
         name = "delete_page",
@@ -42,17 +43,17 @@ class DeletePageTool(
 
         return pipeline.runForActiveStore(
             "delete_page",
-            DeletePageToolUseCase,
+            DeletePageToolKind,
             exchange.sessionId(),
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             if (!page_id.isGidOfType(PAGE_GID_TYPE)) {
-                McpToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
+                PageToolResults.invalidGidType(slug, "page_id", page_id, PAGE_GID_TYPE)
             } else {
-                pagesExposedService.deletePage(tenant.storeId, page_id).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.deletePageResult(slug, result) },
+                deletePageUseCase.execute(tenant.storeId, page_id).fold(
+                    { error -> PageToolResults.errorResult(slug, error) },
+                    { result -> PageToolResults.deletePageResult(slug, result) },
                 )
             }
         }

@@ -10,4 +10,8 @@ class RelayManifest(entries: List<RelayManifestEntry>) {
     fun entryFor(toolName: String): RelayManifestEntry? = byToolName[toolName]
 
     fun relayedTools(): List<RelayManifestEntry> = byToolName.values.filter { it.route == ToolRoute.RELAIS }
+
+    fun toolNames(): Set<String> = byToolName.keys
+
+    fun toolNames(route: ToolRoute): Set<String> = byToolName.values.filter { it.route == route }.map { it.toolName }.toSet()
 }

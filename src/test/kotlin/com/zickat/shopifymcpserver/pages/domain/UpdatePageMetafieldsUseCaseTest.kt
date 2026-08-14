@@ -1,25 +1,21 @@
 package com.zickat.shopifymcpserver.pages.domain
 
 import arrow.core.right
-import com.zickat.shopifymcpserver.pages.exposed_interface.model.PageMetafieldInput
-import com.zickat.shopifymcpserver.pages.exposed_interface.model.UpdatePageMetafieldsOutcome
-import com.zickat.shopifymcpserver.shopify.ShopifyAdminGatewayFake
+import com.zickat.shopifymcpserver.pages.PageFakeRepository
+import com.zickat.shopifymcpserver.pages.domain.repositories.PageMetafieldsWriteOutcome
 import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.json.Json
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 
 class UpdatePageMetafieldsUseCaseTest {
 
-    private val json = Json
-
     @Test
     fun `execute should return NOT_FOUND before any write when the Page does not exist`() {
-        val gateway = ShopifyAdminGatewayFake().apply {
-            enqueue(json.parseToJsonElement("""{"page":null}""").right())
-        }
-        val useCase = UpdatePageMetafieldsUseCase(gateway)
+        val repository = PageFakeRepository()
+        val useCase = UpdatePageMetafieldsUseCase(repository)
 
         val result = useCase.execute(
             "store-1",
@@ -28,24 +24,16 @@ class UpdatePageMetafieldsUseCaseTest {
         ).shouldBeRight()
 
         result.outcome shouldBe UpdatePageMetafieldsOutcome.NOT_FOUND
-        gateway.calls shouldHaveSize 1
+        repository.setMetafieldsCalls.shouldHaveSize(0)
     }
 
     @Test
-    fun `execute should report failure when Shopify returns userErrors`() {
-        val gateway = ShopifyAdminGatewayFake().apply {
-            enqueue(
-                json.parseToJsonElement(
-                    """{"page":{"id":"gid://shopify/Page/1","title":"T","metafields":{"edges":[],"pageInfo":{"hasNextPage":false}}}}""",
-                ).right(),
-            )
-            enqueue(
-                json.parseToJsonElement(
-                    """{"metafieldsSet":{"metafields":null,"userErrors":[{"field":["value"],"message":"invalid"}]}}""",
-                ).right(),
-            )
+    fun `execute should report failure when the repository reports userErrors`() {
+        val repository = PageFakeRepository().apply {
+            metafieldsById["gid://shopify/Page/1"] = PageMetafieldsSnapshot("T", emptyList(), truncated = false)
+            setMetafieldsResponse = PageMetafieldsWriteOutcome.Failed("value : invalid").right()
         }
-        val useCase = UpdatePageMetafieldsUseCase(gateway)
+        val useCase = UpdatePageMetafieldsUseCase(repository)
 
         val result = useCase.execute(
             "store-1",
@@ -54,5 +42,25 @@ class UpdatePageMetafieldsUseCaseTest {
         ).shouldBeRight()
 
         result.outcome shouldBe UpdatePageMetafieldsOutcome.FAILED
+        requireNotNull(result.failureDetail) shouldContain "invalid"
+    }
+
+    @Test
+    fun `execute should update the metafields and report what was written`() {
+        val repository = PageFakeRepository().apply {
+            metafieldsById["gid://shopify/Page/1"] = PageMetafieldsSnapshot("Guides", emptyList(), truncated = false)
+            setMetafieldsResponse = PageMetafieldsWriteOutcome.Updated.right()
+        }
+        val useCase = UpdatePageMetafieldsUseCase(repository)
+
+        val result = useCase.execute(
+            "store-1",
+            "gid://shopify/Page/1",
+            listOf(PageMetafieldInput("summary", "single_line_text_field", "Résumé")),
+        ).shouldBeRight()
+
+        result.outcome shouldBe UpdatePageMetafieldsOutcome.UPDATED
+        result.title shouldBe "Guides"
+        result.metafields.shouldContainExactly(PageMetafieldInput("summary", "single_line_text_field", "Résumé"))
     }
 }

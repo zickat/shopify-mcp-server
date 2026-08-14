@@ -1,6 +1,11 @@
 package com.zickat.shopifymcpserver.api.mcp
 
-import com.zickat.shopifymcpserver.relay.RelayProperties
+import com.zickat.shopifymcpserver.relay.domain.RelayDispatcher
+import com.zickat.shopifymcpserver.relay.domain.RelayGatewayImpl
+import com.zickat.shopifymcpserver.relay.domain.RelayManifest
+import com.zickat.shopifymcpserver.relay.domain.RelayTsClientFake
+import com.zickat.shopifymcpserver.relay.domain.models.RelayManifestEntry
+import com.zickat.shopifymcpserver.relay.exposed_interface.RelayGateway
 import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import io.kotest.assertions.throwables.shouldThrow
@@ -22,13 +27,15 @@ class RelayManifestInvariantRunnerTest {
         .withBean(NativeToolNames::class.java)
         .withBean(RelayManifestInvariantRunner::class.java)
 
-    private fun manifestOf(vararg entries: Pair<String, ToolRoute>) =
-        RelayProperties(manifest = entries.map { (name, route) -> RelayProperties.ManifestEntry(name, route, UseCaseKind.READ) })
+    private fun gatewayOf(vararg entries: Pair<String, ToolRoute>): RelayGateway {
+        val manifest = RelayManifest(entries.map { (name, route) -> RelayManifestEntry(name, route, UseCaseKind.READ) })
+        return RelayGatewayImpl(manifest, RelayDispatcher(manifest, RelayTsClientFake()))
+    }
 
     @Test
     fun `should refuse to start when a manifest NATIF entry has no matching bean`() {
         contextRunner
-            .withBean(RelayProperties::class.java, Supplier { manifestOf("ghost_tool" to ToolRoute.NATIF) })
+            .withBean(RelayGateway::class.java, Supplier { gatewayOf("ghost_tool" to ToolRoute.NATIF) })
             .run { context ->
                 val runner = context.getBean(RelayManifestInvariantRunner::class.java)
                 val failure = shouldThrow<IllegalStateException> { runner.run(DefaultApplicationArguments()) }
@@ -40,7 +47,7 @@ class RelayManifestInvariantRunnerTest {
     fun `should refuse to start when a native bean has no manifest entry at all`() {
         contextRunner
             .withBean(ListStoresFakeBean::class.java)
-            .withBean(RelayProperties::class.java, Supplier { manifestOf() })
+            .withBean(RelayGateway::class.java, Supplier { gatewayOf() })
             .run { context ->
                 val runner = context.getBean(RelayManifestInvariantRunner::class.java)
                 val failure = shouldThrow<IllegalStateException> { runner.run(DefaultApplicationArguments()) }
@@ -52,7 +59,7 @@ class RelayManifestInvariantRunnerTest {
     fun `should start normally when a native bean's manifest entry was switched back to RELAIS`() {
         contextRunner
             .withBean(ListStoresFakeBean::class.java)
-            .withBean(RelayProperties::class.java, Supplier { manifestOf("list_stores" to ToolRoute.RELAIS) })
+            .withBean(RelayGateway::class.java, Supplier { gatewayOf("list_stores" to ToolRoute.RELAIS) })
             .run { context ->
                 context.getBean(RelayManifestInvariantRunner::class.java).run(DefaultApplicationArguments())
             }

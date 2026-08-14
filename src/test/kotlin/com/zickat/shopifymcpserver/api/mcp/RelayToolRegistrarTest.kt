@@ -2,6 +2,7 @@ package com.zickat.shopifymcpserver.api.mcp
 
 import arrow.core.left
 import arrow.core.right
+import com.zickat.shopifymcpserver.api.exposed_interface.AuthenticatedToolPipeline
 import com.zickat.shopifymcpserver.audit.AuditLogFakeRepository
 import com.zickat.shopifymcpserver.audit.domain.AuditExposedServiceImpl
 import com.zickat.shopifymcpserver.audit.domain.AuditLogUseCase
@@ -17,8 +18,8 @@ import com.zickat.shopifymcpserver.relay.exposed_interface.RelayToolDescriptor
 import com.zickat.shopifymcpserver.relay.exposed_interface.ToolRoute
 import com.zickat.shopifymcpserver.shared_kernel.AccessRole
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
-import com.zickat.shopifymcpserver.shared_kernel.TenantContext
 import com.zickat.shopifymcpserver.shared_kernel.TechnicalError
+import com.zickat.shopifymcpserver.shared_kernel.TenantContext
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
 import com.zickat.shopifymcpserver.shared_kernel.UserContext
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.model.GrantedStore
@@ -29,6 +30,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import io.modelcontextprotocol.json.McpJsonMapper
 import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper
+import java.time.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.bson.types.ObjectId
@@ -40,7 +42,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import tools.jackson.databind.json.JsonMapper
-import java.time.Instant
 
 class RelayToolRegistrarTest {
 

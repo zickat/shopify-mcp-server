@@ -1,6 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.pages.api.mcp
 
-import com.zickat.shopifymcpserver.pages.exposed_interface.PagesExposedService
+import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
+import com.zickat.shopifymcpserver.pages.domain.TogglePagePublishUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -21,14 +22,14 @@ import org.springframework.stereotype.Service
 class TogglePagePublishTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val pagesExposedService: PagesExposedService,
+    private val togglePagePublishUseCase: TogglePagePublishUseCase,
 ) : HasToolUseCase {
 
-    private object TogglePagePublishToolUseCase : ToolUseCase {
+    private object TogglePagePublishToolKind : ToolUseCase {
         override val kind = UseCaseKind.MUTATION
     }
 
-    override val toolUseCase: ToolUseCase = TogglePagePublishToolUseCase
+    override val toolUseCase: ToolUseCase = TogglePagePublishToolKind
 
     @McpTool(
         name = "publish_page",
@@ -61,17 +62,17 @@ class TogglePagePublishTool(
 
         return pipeline.runForActiveStore(
             toolName,
-            TogglePagePublishToolUseCase,
+            TogglePagePublishToolKind,
             exchange.sessionId(),
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             if (!pageId.isGidOfType(PAGE_GID_TYPE)) {
-                McpToolResults.invalidGidType(slug, "page_id", pageId, PAGE_GID_TYPE)
+                PageToolResults.invalidGidType(slug, "page_id", pageId, PAGE_GID_TYPE)
             } else {
-                pagesExposedService.togglePagePublish(tenant.storeId, pageId, target).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.togglePagePublishResult(slug, result) },
+                togglePagePublishUseCase.execute(tenant.storeId, pageId, target).fold(
+                    { error -> PageToolResults.errorResult(slug, error) },
+                    { result -> PageToolResults.togglePagePublishResult(slug, result) },
                 )
             }
         }

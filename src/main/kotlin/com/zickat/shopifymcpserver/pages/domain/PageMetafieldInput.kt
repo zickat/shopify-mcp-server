@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.pages.exposed_interface.model
+package com.zickat.shopifymcpserver.pages.domain
 
 data class PageMetafieldInput(
     val key: String,

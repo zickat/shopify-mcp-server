@@ -2,6 +2,7 @@ package com.zickat.shopifymcpserver.api.mcp
 
 import arrow.core.left
 import arrow.core.right
+import com.zickat.shopifymcpserver.api.exposed_interface.AuthenticatedToolPipeline
 import com.zickat.shopifymcpserver.audit.AuditLogFakeRepository
 import com.zickat.shopifymcpserver.audit.domain.AuditExposedServiceImpl
 import com.zickat.shopifymcpserver.audit.domain.AuditLogUseCase
@@ -17,13 +18,13 @@ import com.zickat.shopifymcpserver.tenancy.exposed_interface.model.GrantedStore
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import java.time.Instant
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
-import java.time.Instant
 
 class AuthenticatedToolPipelineTest {
 
