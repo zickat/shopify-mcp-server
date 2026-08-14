@@ -331,7 +331,6 @@ class HexagonalArchitectureTest {
             "products",
             "redirects",
             "relay",
-            "seo",
             "shared_kernel",
             "shopify",
             "tenancy",
