@@ -1,12 +1,14 @@
 package com.zickat.shopifymcpserver.api.exposed_interface
 
+import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.core.importer.ImportOption
 import com.zickat.shopifymcpserver.layerName
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-class PipelineReachabilityAfterBe4Test {
+class ExposedInterfaceLayerAnchoringTest {
 
     private val classes = ClassFileImporter()
         .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
@@ -27,9 +29,10 @@ class PipelineReachabilityAfterBe4Test {
     }
 
     @Test
-    fun `a genuinely cross-module exposed_interface such as tenancy carries the same anchored layer`() {
-        val target = classes.get("com.zickat.shopifymcpserver.tenancy.exposed_interface.AccessExposedService")
+    fun exposedInterfacePackagesAreAnchoredAtModuleRoot() {
+        val exposedInterfaceClasses = classes.filter { resideInAPackage("..exposed_interface..").test(it) }
 
-        target.layerName() shouldBe "exposed_interface"
+        exposedInterfaceClasses.shouldNotBeEmpty()
+        exposedInterfaceClasses.forEach { it.layerName() shouldBe "exposed_interface" }
     }
 }
