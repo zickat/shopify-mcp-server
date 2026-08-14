@@ -1,8 +1,9 @@
 package com.zickat.shopifymcpserver.catalog_status.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourceType
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchStatusFilter
+import com.zickat.shopifymcpserver.catalog_status.api.mcp.CatalogStatusToolResults
+import com.zickat.shopifymcpserver.catalog_status.domain.models.SearchResourceType
+import com.zickat.shopifymcpserver.catalog_status.domain.models.SearchStatusFilter
+import com.zickat.shopifymcpserver.catalog_status.spi.shopify.CatalogStatusShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -49,7 +50,7 @@ class SearchResourcesUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return SearchResourcesUseCase(gateway) to mockServer
+        return SearchResourcesUseCase(CatalogStatusShopifyRepository(gateway)) to mockServer
     }
 
     private fun replayAndAssert(
@@ -73,7 +74,7 @@ class SearchResourcesUseCaseCassetteReplayTest {
             CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(call, mockServer.takeRequest())
         }
 
-        val rendered = McpToolResults.searchResourcesResult(storeSlug, result)
+        val rendered = CatalogStatusToolResults.searchResourcesResult(storeSlug, result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 

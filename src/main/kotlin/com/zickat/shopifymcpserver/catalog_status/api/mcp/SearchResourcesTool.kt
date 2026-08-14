@@ -1,9 +1,9 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.catalog_status.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.CatalogStatusExposedService
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourceType
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchStatusFilter
+import com.zickat.shopifymcpserver.catalog_status.domain.SearchResourcesUseCase
+import com.zickat.shopifymcpserver.catalog_status.domain.models.SearchResourceType
+import com.zickat.shopifymcpserver.catalog_status.domain.models.SearchStatusFilter
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service
 class SearchResourcesTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val catalogStatusExposedService: CatalogStatusExposedService,
+    private val searchResourcesUseCase: SearchResourcesUseCase,
 ) : HasToolUseCase {
 
     private object SearchResourcesToolUseCase : ToolUseCase {
@@ -67,15 +67,15 @@ class SearchResourcesTool(
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             when (val resourceType = parseResourceType(resource_type)) {
-                null -> McpToolResults.invalidResourceType(slug, resource_type)
-                else -> catalogStatusExposedService.searchResources(
+                null -> CatalogStatusToolResults.invalidResourceType(slug, resource_type)
+                else -> searchResourcesUseCase.execute(
                     tenant.storeId,
                     resourceType,
                     query,
                     parseStatusFilter(status_filter),
                 ).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.searchResourcesResult(slug, result) },
+                    { error -> CatalogStatusToolResults.errorResult(slug, error) },
+                    { result -> CatalogStatusToolResults.searchResourcesResult(slug, result) },
                 )
             }
         }

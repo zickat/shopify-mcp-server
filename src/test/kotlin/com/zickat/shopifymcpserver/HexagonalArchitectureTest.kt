@@ -316,14 +316,13 @@ class HexagonalArchitectureTest {
             "com.mongock..",
         )
 
-        private val CATALOG_MODULES = setOf("pages", "products", "seo", "menus", "metaobjects", "redirects", "collections")
-        private val CROSS_CUTTING_VIEW_MODULES = setOf("catalog_status")
+        private val CATALOG_MODULES = setOf("pages", "products", "seo", "menus", "metaobjects", "redirects", "collections", "catalog_status")
+        private val CROSS_CUTTING_VIEW_MODULES = emptySet<String>()
         private val CATALOG_FAMILY_ALLOWED = setOf("shared_kernel", "shopify")
 
         private val NOT_YET_REALIGNED: Set<String> = setOf(
             "api",
             "audit",
-            "catalog_status",
             "collections",
             "identity",
             "menus",

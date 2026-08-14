@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.catalog_status.exposed_interface.model
+package com.zickat.shopifymcpserver.catalog_status.domain.models
 
 data class ResourceSummary(
     val id: String,

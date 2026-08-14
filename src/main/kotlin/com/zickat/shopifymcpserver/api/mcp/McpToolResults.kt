@@ -1,7 +1,5 @@
 package com.zickat.shopifymcpserver.api.mcp
 
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourceType
-import com.zickat.shopifymcpserver.catalog_status.exposed_interface.model.SearchResourcesResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentOutcome
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetEnrichedContentResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.GetRawContentOutcome
@@ -15,7 +13,6 @@ import com.zickat.shopifymcpserver.products.exposed_interface.model.PublishResou
 import com.zickat.shopifymcpserver.products.exposed_interface.model.SearchProductsResult
 import com.zickat.shopifymcpserver.products.exposed_interface.model.UnpublishResourceOutcome
 import com.zickat.shopifymcpserver.products.exposed_interface.model.UnpublishResourceResult
-import com.zickat.shopifymcpserver.shared_kernel.MAX_SEARCH_PAGES
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseErrorException
 import com.zickat.shopifymcpserver.tenancy.exposed_interface.model.GrantedStore
@@ -49,27 +46,6 @@ object McpToolResults {
                     "d'image seront rechargés au prochain appel.",
             )
             .build()
-
-    fun searchResourcesResult(storeSlug: String, result: SearchResourcesResult): CallToolResult {
-        val label = if (result.resourceType == SearchResourceType.COLLECTION) "collection(s)" else "guide(s)"
-        val text = if (result.resources.isEmpty()) {
-            "Aucun(e) $label trouvé(e) pour ce filtre."
-        } else {
-            val truncationNote = if (result.truncated) {
-                " (résultats tronqués à ${MAX_SEARCH_PAGES * 50} — affiner la requête)"
-            } else {
-                ""
-            }
-            val lines = result.resources.joinToString("\n") { resource ->
-                "- ${resource.title} (${resource.handle}) — statut pipeline : ${resource.contentStatus} — id: ${resource.id}"
-            }
-            "${result.resources.size} $label trouvé(e)(s)$truncationNote.\n\n$lines"
-        }
-        return withBanner(storeSlug, text)
-    }
-
-    fun invalidResourceType(storeSlug: String, value: String): CallToolResult =
-        withBanner(storeSlug, "Type de ressource invalide : \"$value\" (attendu \"collection\" ou \"article\").", isError = true)
 
     fun invalidGidType(storeSlug: String, label: String, value: String, expectedType: String): CallToolResult =
         withBanner(
