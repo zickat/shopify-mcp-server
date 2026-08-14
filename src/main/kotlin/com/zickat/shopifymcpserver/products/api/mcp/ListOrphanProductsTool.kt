@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.products.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.products.exposed_interface.ProductsExposedService
+import com.zickat.shopifymcpserver.products.domain.ListOrphanProductsUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service
 class ListOrphanProductsTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val productsExposedService: ProductsExposedService,
+    private val listOrphanProductsUseCase: ListOrphanProductsUseCase,
 ) : HasToolUseCase {
 
     private object ListOrphanProductsToolUseCase : ToolUseCase {
@@ -42,9 +42,9 @@ class ListOrphanProductsTool(
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            productsExposedService.listOrphanProducts(tenant.storeId).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { result -> McpToolResults.listOrphanProductsResult(slug, result) },
+            listOrphanProductsUseCase.execute(tenant.storeId).fold(
+                { error -> ProductsToolResults.errorResult(slug, error) },
+                { result -> ProductsToolResults.listOrphanProductsResult(slug, result) },
             )
         }
     }

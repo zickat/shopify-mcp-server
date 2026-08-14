@@ -1,8 +1,8 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.products.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.products.exposed_interface.ProductsExposedService
-import com.zickat.shopifymcpserver.products.exposed_interface.model.ToReviewResourceType
+import com.zickat.shopifymcpserver.products.domain.ListToReviewUseCase
+import com.zickat.shopifymcpserver.products.domain.models.ToReviewResourceType
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service
 class ListToReviewTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val productsExposedService: ProductsExposedService,
+    private val listToReviewUseCase: ListToReviewUseCase,
 ) : HasToolUseCase {
 
     private object ListToReviewToolUseCase : ToolUseCase {
@@ -46,10 +46,10 @@ class ListToReviewTool(
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             when (val resourceType = parseResourceType(resource_type)) {
-                null -> McpToolResults.invalidToReviewResourceType(slug, resource_type)
-                else -> productsExposedService.listToReview(tenant.storeId, resourceType).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.listToReviewResult(slug, result) },
+                null -> ProductsToolResults.invalidToReviewResourceType(slug, resource_type)
+                else -> listToReviewUseCase.execute(tenant.storeId, resourceType).fold(
+                    { error -> ProductsToolResults.errorResult(slug, error) },
+                    { result -> ProductsToolResults.listToReviewResult(slug, result) },
                 )
             }
         }

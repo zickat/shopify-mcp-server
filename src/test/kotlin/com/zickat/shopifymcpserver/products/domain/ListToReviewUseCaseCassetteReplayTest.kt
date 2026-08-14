@@ -1,7 +1,8 @@
 package com.zickat.shopifymcpserver.products.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
-import com.zickat.shopifymcpserver.products.exposed_interface.model.ToReviewResourceType
+import com.zickat.shopifymcpserver.products.api.mcp.ProductsToolResults
+import com.zickat.shopifymcpserver.products.domain.models.ToReviewResourceType
+import com.zickat.shopifymcpserver.products.spi.shopify.ProductShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -53,7 +54,7 @@ class ListToReviewUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return ListToReviewUseCase(gateway) to mockServer
+        return ListToReviewUseCase(ProductShopifyRepository(gateway)) to mockServer
     }
 
     private fun replayAndAssert(
@@ -76,7 +77,7 @@ class ListToReviewUseCaseCassetteReplayTest {
             CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(call, mockServer.takeRequest())
         }
 
-        val rendered = McpToolResults.listToReviewResult(storeSlug, result)
+        val rendered = ProductsToolResults.listToReviewResult(storeSlug, result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 

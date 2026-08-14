@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.products.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.products.exposed_interface.ProductsExposedService
+import com.zickat.shopifymcpserver.products.domain.MarkBlockedUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service
 class MarkBlockedTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val productsExposedService: ProductsExposedService,
+    private val markBlockedUseCase: MarkBlockedUseCase,
 ) : HasToolUseCase {
 
     private object MarkBlockedToolUseCase : ToolUseCase {
@@ -55,12 +55,12 @@ class MarkBlockedTool(
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             val expectedGidType = if (resource_type in ALLOWED_RESOURCE_TYPES) ShopifyResourceTypes.gidTypeFor(resource_type) else null
             when {
-                expectedGidType == null -> McpToolResults.invalidMarkBlockedResourceType(slug, resource_type)
+                expectedGidType == null -> ProductsToolResults.invalidMarkBlockedResourceType(slug, resource_type)
                 !resource_id.isGidOfType(expectedGidType) ->
-                    McpToolResults.invalidGidType(slug, "resource_id", resource_id, expectedGidType)
-                else -> productsExposedService.markBlocked(tenant.storeId, resource_id).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.markBlockedResult(slug, resource_type, resource_id, reason, result) },
+                    ProductsToolResults.invalidGidType(slug, "resource_id", resource_id, expectedGidType)
+                else -> markBlockedUseCase.execute(tenant.storeId, resource_id).fold(
+                    { error -> ProductsToolResults.errorResult(slug, error) },
+                    { result -> ProductsToolResults.markBlockedResult(slug, resource_type, resource_id, reason, result) },
                 )
             }
         }

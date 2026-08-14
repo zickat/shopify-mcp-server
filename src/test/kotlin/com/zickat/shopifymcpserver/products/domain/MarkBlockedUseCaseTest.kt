@@ -1,53 +1,43 @@
 package com.zickat.shopifymcpserver.products.domain
 
 import arrow.core.right
-import com.zickat.shopifymcpserver.products.exposed_interface.model.MarkBlockedOutcome
-import com.zickat.shopifymcpserver.shopify.ShopifyAdminGatewayFake
+import com.zickat.shopifymcpserver.products.ProductsFakeRepository
+import com.zickat.shopifymcpserver.products.domain.repositories.ProductMetafieldWriteOutcome
 import io.kotest.assertions.arrow.core.shouldBeRight
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Test
 
 class MarkBlockedUseCaseTest {
 
-    private val json = Json
-
-    private fun useCase(gateway: ShopifyAdminGatewayFake = ShopifyAdminGatewayFake()) = MarkBlockedUseCase(gateway)
+    private fun useCase(repository: ProductsFakeRepository = ProductsFakeRepository()) = MarkBlockedUseCase(repository)
 
     @Test
-    fun `should mark the resource blocked with a single setMetafields call carrying the literal 'blocked' value`() {
-        val gateway = ShopifyAdminGatewayFake().apply {
-            enqueue(json.parseToJsonElement("""{"metafieldsSet":{"metafields":[{"id":"gid://shopify/Metafield/1","key":"content_status"}],"userErrors":[]}}""").right())
-        }
+    fun `should return Marked when the repository marks the resource`() {
+        val repository = ProductsFakeRepository().apply { markBlockedResponse = ProductMetafieldWriteOutcome.Marked.right() }
 
-        val result = useCase(gateway).execute("store-1", "gid://shopify/Product/1").shouldBeRight()
+        val result = useCase(repository).execute("store-1", "gid://shopify/Product/1").shouldBeRight()
 
         result.outcome shouldBe MarkBlockedOutcome.MARKED
-        gateway.calls shouldHaveSize 1
-        val metafield = gateway.calls.single().variables.jsonObject.getValue("metafields").jsonArray.single().jsonObject
-        metafield.getValue("ownerId").jsonPrimitive.content shouldBe "gid://shopify/Product/1"
-        metafield.getValue("namespace").jsonPrimitive.content shouldBe "custom"
-        metafield.getValue("key").jsonPrimitive.content shouldBe "content_status"
-        metafield.getValue("value").jsonPrimitive.content shouldBe "blocked"
     }
 
     @Test
-    fun `should return a failed outcome carrying the formatted Shopify user error when metafieldsSet rejects the write`() {
-        val gateway = ShopifyAdminGatewayFake().apply {
-            enqueue(
-                json.parseToJsonElement(
-                    """{"metafieldsSet":{"metafields":[],"userErrors":[{"field":["metafields","0","value"],"message":"is invalid"}]}}""",
-                ).right(),
-            )
+    fun `should return a failed outcome carrying the repository's detail`() {
+        val repository = ProductsFakeRepository().apply {
+            markBlockedResponse = ProductMetafieldWriteOutcome.Failed("metafields.0.value : is invalid").right()
         }
 
-        val result = useCase(gateway).execute("store-1", "gid://shopify/Product/1").shouldBeRight()
+        val result = useCase(repository).execute("store-1", "gid://shopify/Product/1").shouldBeRight()
 
         result.outcome shouldBe MarkBlockedOutcome.FAILED
         result.failureDetail shouldBe "metafields.0.value : is invalid"
+    }
+
+    @Test
+    fun `should forward storeId and resourceId to the repository untouched`() {
+        val repository = ProductsFakeRepository().apply { markBlockedResponse = ProductMetafieldWriteOutcome.Marked.right() }
+
+        useCase(repository).execute("store-1", "gid://shopify/Product/1").shouldBeRight()
+
+        repository.markBlockedCalls shouldBe listOf(ProductsFakeRepository.ResourceCall("store-1", "gid://shopify/Product/1"))
     }
 }

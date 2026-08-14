@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.products.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.products.exposed_interface.ProductsExposedService
+import com.zickat.shopifymcpserver.products.domain.PublishResourceUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -15,25 +15,26 @@ import org.springframework.ai.mcp.annotation.McpToolParam
 import org.springframework.stereotype.Service
 
 @Service
-class UnpublishResourceTool(
+class PublishResourceTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val productsExposedService: ProductsExposedService,
+    private val publishResourceUseCase: PublishResourceUseCase,
 ) : HasToolUseCase {
 
-    private object UnpublishResourceToolUseCase : ToolUseCase {
+    private object PublishResourceToolUseCase : ToolUseCase {
         override val kind = UseCaseKind.MUTATION
     }
 
-    override val toolUseCase: ToolUseCase = UnpublishResourceToolUseCase
+    override val toolUseCase: ToolUseCase = PublishResourceToolUseCase
 
     @McpTool(
-        name = "unpublish_resource",
-        description = "Removes a product from the Online Store sales channel. Does not change the " +
-            "product's native status (stays ACTIVE) — only its storefront visibility. No-op if the " +
-            "product is already on no channel. resource_id must be a Product gid.",
+        name = "publish_resource",
+        description = "Publishes a product: sets its status to ACTIVE, removes the internal pipeline " +
+            "metafield custom.content_status, and — if it was on no sales channel yet — publishes it " +
+            "to the Online Store channel. If already published on a channel, that step is skipped. " +
+            "resource_id must be a Product gid.",
     )
-    fun unpublishResource(
+    fun publishResource(
         @McpToolParam(description = "Resource type — only \"product\" is supported.", required = true)
         resource_type: String,
         @McpToolParam(description = "gid://shopify/Product/...", required = true)
@@ -43,18 +44,18 @@ class UnpublishResourceTool(
         val toolInput = mapOf("resource_type" to resource_type, "resource_id" to resource_id)
 
         return pipeline.runForActiveStore(
-            "unpublish_resource",
-            UnpublishResourceToolUseCase,
+            "publish_resource",
+            PublishResourceToolUseCase,
             exchange.sessionId(),
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             when {
-                resource_type != "product" -> McpToolResults.invalidPublishResourceType(slug, resource_type)
-                !resource_id.isGidOfType("Product") -> McpToolResults.invalidGidType(slug, "resource_id", resource_id, "Product")
-                else -> productsExposedService.unpublishResource(tenant.storeId, resource_id).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.unpublishResourceResult(slug, result) },
+                resource_type != "product" -> ProductsToolResults.invalidPublishResourceType(slug, resource_type)
+                !resource_id.isGidOfType("Product") -> ProductsToolResults.invalidGidType(slug, "resource_id", resource_id, "Product")
+                else -> publishResourceUseCase.execute(tenant.storeId, resource_id).fold(
+                    { error -> ProductsToolResults.errorResult(slug, error) },
+                    { result -> ProductsToolResults.publishResourceResult(slug, result) },
                 )
             }
         }

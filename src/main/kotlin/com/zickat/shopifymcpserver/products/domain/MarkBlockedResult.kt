@@ -1,4 +1,4 @@
-package com.zickat.shopifymcpserver.products.exposed_interface.model
+package com.zickat.shopifymcpserver.products.domain
 
 enum class MarkBlockedOutcome { MARKED, FAILED }
 

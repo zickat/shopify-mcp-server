@@ -325,7 +325,6 @@ class HexagonalArchitectureTest {
             "audit",
             "identity",
             "menus",
-            "products",
             "relay",
             "shared_kernel",
             "shopify",

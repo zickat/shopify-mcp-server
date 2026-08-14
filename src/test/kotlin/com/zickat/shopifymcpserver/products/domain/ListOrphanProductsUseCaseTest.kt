@@ -1,95 +1,69 @@
 package com.zickat.shopifymcpserver.products.domain
 
 import arrow.core.right
-import com.zickat.shopifymcpserver.shopify.ShopifyAdminGatewayFake
+import com.zickat.shopifymcpserver.products.ProductsFakeRepository
+import com.zickat.shopifymcpserver.products.domain.models.CollectionRef
+import com.zickat.shopifymcpserver.products.domain.models.OrphanScan
+import com.zickat.shopifymcpserver.products.domain.models.ProductFact
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 
 class ListOrphanProductsUseCaseTest {
 
-    private val json = Json
-
-    private val emptyCollectionsScan =
-        """{"collections":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[]}}"""
+    private fun useCase(repository: ProductsFakeRepository = ProductsFakeRepository()) = ListOrphanProductsUseCase(repository)
 
     @Test
-    fun `should report no orphan when every product belongs to at least one collection`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.nextResponseProvider = { call ->
-            when {
-                call.query.contains("OrphanScanCollections") ->
-                    json.parseToJsonElement(
-                        """{"collections":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[
-                            {"node":{"id":"gid://shopify/Collection/1","title":"C","products":{"pageInfo":{"hasNextPage":false},"nodes":[{"id":"gid://shopify/Product/1"}]}}}
-                        ]}}""",
-                    ).right()
-                else ->
-                    json.parseToJsonElement(
-                        """{"products":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[
-                            {"node":{"id":"gid://shopify/Product/1","title":"P","handle":"p","status":"ACTIVE","contentStatus":null,"summaryPoints":null}}
-                        ]}}""",
-                    ).right()
-            }
+    fun `should map each orphan fact to a listing entry deriving its pipeline status`() {
+        val fact = ProductFact(
+            id = "gid://shopify/Product/1",
+            title = "Orphan",
+            handle = "orphan",
+            status = "DRAFT",
+            contentStatusValue = null,
+            hasSummaryPoints = true,
+        )
+        val repository = ProductsFakeRepository().apply {
+            listOrphansResponse = OrphanScan(
+                orphans = listOf(fact),
+                collectionsTruncated = false,
+                collectionsWithTruncatedProducts = emptyList(),
+                productsTruncated = false,
+            ).right()
         }
-        val useCase = ListOrphanProductsUseCase(gateway)
 
-        val result = useCase.execute("store-1").shouldBeRight()
+        val result = useCase(repository).execute("store-1").shouldBeRight()
 
-        result.text shouldBe "Aucun produit orphelin actuellement (tout produit ACTIVE/DRAFT appartient à au moins " +
-            "une collection)."
+        result.orphans.single().contentStatus shouldBe "published"
+        result.orphans.single().id shouldBe "gid://shopify/Product/1"
     }
 
     @Test
-    fun `should list a product absent from every collection, excluding ARCHIVED`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.nextResponseProvider = { call ->
-            when {
-                call.query.contains("OrphanScanCollections") -> json.parseToJsonElement(emptyCollectionsScan).right()
-                else ->
-                    json.parseToJsonElement(
-                        """{"products":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[
-                            {"node":{"id":"gid://shopify/Product/1","title":"Orphan","handle":"orphan","status":"DRAFT","contentStatus":null,"summaryPoints":null}},
-                            {"node":{"id":"gid://shopify/Product/2","title":"Archived","handle":"archived","status":"ARCHIVED","contentStatus":null,"summaryPoints":null}}
-                        ]}}""",
-                    ).right()
-            }
+    fun `should forward truncation flags and the truncated collection refs untouched`() {
+        val repository = ProductsFakeRepository().apply {
+            listOrphansResponse = OrphanScan(
+                orphans = emptyList(),
+                collectionsTruncated = true,
+                collectionsWithTruncatedProducts = listOf(CollectionRef("gid://shopify/Collection/1", "Big collection")),
+                productsTruncated = true,
+            ).right()
         }
-        val useCase = ListOrphanProductsUseCase(gateway)
 
-        val result = useCase.execute("store-1").shouldBeRight()
+        val result = useCase(repository).execute("store-1").shouldBeRight()
 
-        result.text shouldContain "1 produit(s) orphelin(s)"
-        result.text shouldContain "gid://shopify/Product/1"
-        result.text.contains("gid://shopify/Product/2") shouldBe false
+        result.collectionsTruncated shouldBe true
+        result.productsTruncated shouldBe true
+        result.collectionsWithTruncatedProducts shouldBe listOf(CollectionRef("gid://shopify/Collection/1", "Big collection"))
     }
 
     @Test
-    fun `should signal a collection whose product scan is itself truncated at 250, distinctly from the collection-page truncation`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.nextResponseProvider = { call ->
-            when {
-                call.query.contains("OrphanScanCollections") ->
-                    json.parseToJsonElement(
-                        """{"collections":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[
-                            {"node":{"id":"gid://shopify/Collection/1","title":"Big collection","products":{"pageInfo":{"hasNextPage":true},"nodes":[]}}}
-                        ]}}""",
-                    ).right()
-                else -> json.parseToJsonElement(
-                    """{"products":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[
-                        {"node":{"id":"gid://shopify/Product/1","title":"Orphan","handle":"orphan","status":"ACTIVE","contentStatus":null,"summaryPoints":null}}
-                    ]}}""",
-                ).right()
-            }
+    fun `should forward storeId to the repository untouched`() {
+        val repository = ProductsFakeRepository().apply {
+            listOrphansResponse = OrphanScan(emptyList(), false, emptyList(), false).right()
         }
-        val useCase = ListOrphanProductsUseCase(gateway)
 
-        val result = useCase.execute("store-1").shouldBeRight()
+        useCase(repository).execute("store-1").shouldBeRight()
 
-        result.text shouldContain "dépassent 250 produits"
-        result.text shouldContain "Big collection"
-        result.text.contains("Balayage des collections tronqué") shouldBe false
+        repository.listOrphansCalls shouldBe listOf("store-1")
     }
 }

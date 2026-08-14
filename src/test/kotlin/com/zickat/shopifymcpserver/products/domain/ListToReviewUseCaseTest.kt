@@ -1,75 +1,43 @@
 package com.zickat.shopifymcpserver.products.domain
 
 import arrow.core.right
-import com.zickat.shopifymcpserver.products.exposed_interface.model.ToReviewResourceType
-import com.zickat.shopifymcpserver.shopify.ShopifyAdminGatewayFake
+import com.zickat.shopifymcpserver.products.ProductsFakeRepository
+import com.zickat.shopifymcpserver.products.domain.models.ToReviewEntry
+import com.zickat.shopifymcpserver.products.domain.models.ToReviewResourceType
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 
 class ListToReviewUseCaseTest {
 
-    private val json = Json
+    private fun useCase(repository: ProductsFakeRepository = ProductsFakeRepository()) = ListToReviewUseCase(repository)
 
     @Test
-    fun `should report none to review for an empty result, naming the requested resource type`() {
-        val gateway = ShopifyAdminGatewayFake().apply {
-            enqueue(json.parseToJsonElement("""{"products":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[]}}""").right())
-        }
-        val useCase = ListToReviewUseCase(gateway)
+    fun `should carry the requested resource type through to the result`() {
+        val repository = ProductsFakeRepository().apply { listToReviewResponse = emptyList<ToReviewEntry>().right() }
 
-        val result = useCase.execute("store-1", ToReviewResourceType.PRODUCT).shouldBeRight()
+        val result = useCase(repository).execute("store-1", ToReviewResourceType.ARTICLE).shouldBeRight()
 
-        result.text shouldBe "Aucun(e) product à review actuellement."
+        result.resourceType shouldBe ToReviewResourceType.ARTICLE
+        result.entries shouldBe emptyList()
     }
 
     @Test
-    fun `should keep only nodes whose content_status is exactly to_review`() {
-        val gateway = ShopifyAdminGatewayFake().apply {
-            enqueue(
-                json.parseToJsonElement(
-                    """{"collections":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[
-                        {"node":{"id":"gid://shopify/Collection/1","title":"To review","handle":"to-review","contentStatus":{"value":"to_review"}}},
-                        {"node":{"id":"gid://shopify/Collection/2","title":"Blocked","handle":"blocked","contentStatus":{"value":"blocked"}}},
-                        {"node":{"id":"gid://shopify/Collection/3","title":"Untreated","handle":"untreated","contentStatus":null}}
-                    ]}}""",
-                ).right(),
-            )
-        }
-        val useCase = ListToReviewUseCase(gateway)
+    fun `should forward the repository's entries untouched`() {
+        val entries = listOf(ToReviewEntry("gid://shopify/Collection/1", "To review", "to-review"))
+        val repository = ProductsFakeRepository().apply { listToReviewResponse = entries.right() }
 
-        val result = useCase.execute("store-1", ToReviewResourceType.COLLECTION).shouldBeRight()
+        val result = useCase(repository).execute("store-1", ToReviewResourceType.COLLECTION).shouldBeRight()
 
-        result.text shouldBe "1 collection(s) à review :\n- To review (to-review) — id: gid://shopify/Collection/1"
+        result.entries shouldBe entries
     }
 
     @Test
-    fun `should follow the cursor across pages of the article scan until hasNextPage is false`() {
-        val gateway = ShopifyAdminGatewayFake()
-        gateway.nextResponseProvider = { call ->
-            if (call.variables.toString().contains("null")) {
-                json.parseToJsonElement(
-                    """{"articles":{"pageInfo":{"hasNextPage":true,"endCursor":"cursor-1"},"edges":[
-                        {"node":{"id":"gid://shopify/Article/1","title":"A","handle":"a","contentStatus":{"value":"to_review"}}}
-                    ]}}""",
-                ).right()
-            } else {
-                json.parseToJsonElement(
-                    """{"articles":{"pageInfo":{"hasNextPage":false,"endCursor":null},"edges":[
-                        {"node":{"id":"gid://shopify/Article/2","title":"B","handle":"b","contentStatus":{"value":"to_review"}}}
-                    ]}}""",
-                ).right()
-            }
-        }
-        val useCase = ListToReviewUseCase(gateway)
+    fun `should forward storeId and resourceType to the repository untouched`() {
+        val repository = ProductsFakeRepository().apply { listToReviewResponse = emptyList<ToReviewEntry>().right() }
 
-        val result = useCase.execute("store-1", ToReviewResourceType.ARTICLE).shouldBeRight()
+        useCase(repository).execute("store-1", ToReviewResourceType.PRODUCT).shouldBeRight()
 
-        result.text shouldContain "2 article(s) à review :"
-        result.text shouldContain "gid://shopify/Article/1"
-        result.text shouldContain "gid://shopify/Article/2"
-        gateway.calls.size shouldBe 2
+        repository.listToReviewCalls shouldBe listOf(ProductsFakeRepository.ListToReviewCall("store-1", ToReviewResourceType.PRODUCT))
     }
 }

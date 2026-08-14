@@ -1,14 +1,16 @@
-package com.zickat.shopifymcpserver.products.exposed_interface.model
+package com.zickat.shopifymcpserver.products.domain
+
+import com.zickat.shopifymcpserver.products.domain.models.ProductEnrichedSnapshot
 
 enum class GetEnrichedContentOutcome { FOUND, NOT_FOUND }
 
 data class GetEnrichedContentResult(
     val outcome: GetEnrichedContentOutcome,
-    val text: String? = null,
+    val snapshot: ProductEnrichedSnapshot? = null,
     val productId: String? = null,
 ) {
     companion object {
-        fun found(text: String) = GetEnrichedContentResult(GetEnrichedContentOutcome.FOUND, text = text)
+        fun found(snapshot: ProductEnrichedSnapshot) = GetEnrichedContentResult(GetEnrichedContentOutcome.FOUND, snapshot = snapshot)
         fun notFound(productId: String) = GetEnrichedContentResult(GetEnrichedContentOutcome.NOT_FOUND, productId = productId)
     }
 }

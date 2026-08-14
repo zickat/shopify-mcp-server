@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.products.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
+import com.zickat.shopifymcpserver.products.api.mcp.ProductsToolResults
+import com.zickat.shopifymcpserver.products.spi.shopify.ProductShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -52,7 +53,7 @@ class GetEnrichedContentUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return GetEnrichedContentUseCase(gateway) to mockServer
+        return GetEnrichedContentUseCase(ProductShopifyRepository(gateway)) to mockServer
     }
 
     private fun replayAndAssert(cassetteResource: String, storeId: String, shopDomain: String, storeSlug: String, productId: String) {
@@ -69,7 +70,7 @@ class GetEnrichedContentUseCaseCassetteReplayTest {
             CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(call, mockServer.takeRequest())
         }
 
-        val rendered = McpToolResults.getEnrichedContentResult(storeSlug, result)
+        val rendered = ProductsToolResults.getEnrichedContentResult(storeSlug, result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 

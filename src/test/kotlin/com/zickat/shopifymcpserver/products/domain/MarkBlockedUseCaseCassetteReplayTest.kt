@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.products.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
+import com.zickat.shopifymcpserver.products.api.mcp.ProductsToolResults
+import com.zickat.shopifymcpserver.products.spi.shopify.ProductShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
 import com.zickat.shopifymcpserver.shared_kernel.CassetteMockWebServer
@@ -51,7 +52,7 @@ class MarkBlockedUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return MarkBlockedUseCase(gateway) to mockServer
+        return MarkBlockedUseCase(ProductShopifyRepository(gateway)) to mockServer
     }
 
     @Test
@@ -72,7 +73,7 @@ class MarkBlockedUseCaseCassetteReplayTest {
         val recorded = requireNotNull(mockServer.takeRequest(10, TimeUnit.SECONDS)) { "expected the setMetafields request, none arrived within 10s" }
         CassetteEquivalence.assertShopifyAdminGraphQLRequestMatches(cassette.calls.single(), recorded)
 
-        val rendered = McpToolResults.markBlockedResult("velotrip", resourceType, resourceId, reason, result)
+        val rendered = ProductsToolResults.markBlockedResult("velotrip", resourceType, resourceId, reason, result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 }

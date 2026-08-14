@@ -1,7 +1,7 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.products.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.products.exposed_interface.ProductsExposedService
+import com.zickat.shopifymcpserver.products.domain.GetRawContentUseCase
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service
 class GetRawContentTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val productsExposedService: ProductsExposedService,
+    private val getRawContentUseCase: GetRawContentUseCase,
 ) : HasToolUseCase {
 
     private object GetRawContentToolUseCase : ToolUseCase {
@@ -48,11 +48,11 @@ class GetRawContentTool(
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
             if (!product_id.isGidOfType("Product")) {
-                McpToolResults.invalidGidType(slug, "product_id", product_id, "Product")
+                ProductsToolResults.invalidGidType(slug, "product_id", product_id, "Product")
             } else {
-                productsExposedService.getRawContent(tenant.storeId, product_id).fold(
-                    { error -> McpToolResults.errorResult(slug, error) },
-                    { result -> McpToolResults.getRawContentResult(slug, result) },
+                getRawContentUseCase.execute(tenant.storeId, product_id).fold(
+                    { error -> ProductsToolResults.errorResult(slug, error) },
+                    { result -> ProductsToolResults.getRawContentResult(slug, result) },
                 )
             }
         }

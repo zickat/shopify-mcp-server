@@ -1,8 +1,8 @@
-package com.zickat.shopifymcpserver.api.mcp
+package com.zickat.shopifymcpserver.products.api.mcp
 
 import com.zickat.shopifymcpserver.api.exposed_interface.RoutedToolPipeline
-import com.zickat.shopifymcpserver.products.exposed_interface.ProductsExposedService
-import com.zickat.shopifymcpserver.products.exposed_interface.model.ProductStatusFilter
+import com.zickat.shopifymcpserver.products.domain.SearchProductsUseCase
+import com.zickat.shopifymcpserver.products.domain.models.ProductStatusFilter
 import com.zickat.shopifymcpserver.shared_kernel.HasToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.ToolUseCase
 import com.zickat.shopifymcpserver.shared_kernel.UseCaseKind
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service
 class SearchProductsTool(
     private val pipeline: RoutedToolPipeline,
     private val accessExposedService: AccessExposedService,
-    private val productsExposedService: ProductsExposedService,
+    private val searchProductsUseCase: SearchProductsUseCase,
 ) : HasToolUseCase {
 
     private object SearchProductsToolUseCase : ToolUseCase {
@@ -63,9 +63,9 @@ class SearchProductsTool(
             toolInput,
         ) { tenant, user ->
             val slug = accessExposedService.slugFor(user.identityId, tenant.storeId)
-            productsExposedService.searchProducts(tenant.storeId, query, parseStatusFilter(status_filter)).fold(
-                { error -> McpToolResults.errorResult(slug, error) },
-                { result -> McpToolResults.searchProductsResult(slug, result) },
+            searchProductsUseCase.execute(tenant.storeId, query, parseStatusFilter(status_filter)).fold(
+                { error -> ProductsToolResults.errorResult(slug, error) },
+                { result -> ProductsToolResults.searchProductsResult(slug, result) },
             )
         }
     }

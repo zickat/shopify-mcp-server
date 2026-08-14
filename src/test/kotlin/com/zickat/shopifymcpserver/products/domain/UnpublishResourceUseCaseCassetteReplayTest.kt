@@ -1,6 +1,7 @@
 package com.zickat.shopifymcpserver.products.domain
 
-import com.zickat.shopifymcpserver.api.mcp.McpToolResults
+import com.zickat.shopifymcpserver.products.api.mcp.ProductsToolResults
+import com.zickat.shopifymcpserver.products.spi.shopify.ProductShopifyRepository
 import com.zickat.shopifymcpserver.shared_kernel.Cassette
 import com.zickat.shopifymcpserver.shared_kernel.CassetteCall
 import com.zickat.shopifymcpserver.shared_kernel.CassetteEquivalence
@@ -59,7 +60,7 @@ class UnpublishResourceUseCaseCassetteReplayTest {
         }
         val graphQLUseCase = ShopifyAdminGraphQLUseCase(vault, httpClient)
         val gateway = ShopifyAdminGatewayImpl(graphQLUseCase)
-        return UnpublishResourceUseCase(gateway) to mockServer
+        return UnpublishResourceUseCase(ProductShopifyRepository(gateway)) to mockServer
     }
 
     private fun CassetteCall.withPatchedProduct(title: String, count: Int): CassetteCall {
@@ -115,7 +116,7 @@ class UnpublishResourceUseCaseCassetteReplayTest {
         }
         mockServer.requestCount shouldBe 1 + cassette.calls.size
 
-        val rendered = McpToolResults.unpublishResourceResult("velotrip", result)
+        val rendered = ProductsToolResults.unpublishResourceResult("velotrip", result)
         rendered.content().map { (it as TextContent).text() } shouldBe expectedTexts(cassette)
     }
 
