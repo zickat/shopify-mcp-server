@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -28,9 +29,88 @@ internal object MenusGraphQL {
             "            }\n" +
             "          }"
 
+    val FETCH_MENU_QUERY =
+        "query FetchMenu(\$id: ID!) {\n" +
+            "      menu(id: \$id) {\n" +
+            "        id handle title isDefault\n" +
+            "        items { $MENU_ITEMS_TREE }\n" +
+            "      }\n" +
+            "    }"
+
+    val UPDATE_MENU_MUTATION =
+        "mutation UpdateMenu(\$id: ID!, \$title: String!, \$handle: String, \$items: [MenuItemUpdateInput!]!) {\n" +
+            "      menuUpdate(id: \$id, title: \$title, handle: \$handle, items: \$items) {\n" +
+            "        menu { id items { $MENU_ITEMS_TREE } }\n" +
+            "        userErrors { field message }\n" +
+            "      }\n" +
+            "    }"
+
+    val CREATE_MENU_MUTATION =
+        "mutation CreateMenu(\$title: String!, \$handle: String!, \$items: [MenuItemCreateInput!]!) {\n" +
+            "            menuCreate(title: \$title, handle: \$handle, items: \$items) {\n" +
+            "              menu { id handle title isDefault items { $MENU_ITEMS_TREE } }\n" +
+            "              userErrors { field message }\n" +
+            "            }\n" +
+            "          }"
+
+    val DELETE_MENU_MUTATION =
+        "mutation DeleteMenu(\$id: ID!) {\n" +
+            "            menuDelete(id: \$id) {\n" +
+            "              deletedMenuId\n" +
+            "              userErrors { field message }\n" +
+            "            }\n" +
+            "          }"
+
     fun listMenusVariables(query: String?, cursor: String?): JsonObject = buildJsonObject {
         put("query", query?.let { JsonPrimitive(it) } ?: JsonNull)
         put("cursor", cursor?.let { JsonPrimitive(it) } ?: JsonNull)
+    }
+
+    fun fetchMenuVariables(menuId: String): JsonObject = buildJsonObject { put("id", JsonPrimitive(menuId)) }
+
+    fun updateMenuVariables(menuId: String, title: String, handle: String, items: List<MenuItemNode>): JsonObject = buildJsonObject {
+        put("id", JsonPrimitive(menuId))
+        put("title", JsonPrimitive(title))
+        put("handle", JsonPrimitive(handle))
+        put("items", buildJsonArray { items.forEach { add(serializeItemForWrite(it)) } })
+    }
+
+    fun createMenuVariables(handle: String, title: String, items: List<MenuItemNode>): JsonObject = buildJsonObject {
+        put("title", JsonPrimitive(title))
+        put("handle", JsonPrimitive(handle))
+        put("items", buildJsonArray { items.forEach { add(serializeItemForWrite(it)) } })
+    }
+
+    fun deleteMenuVariables(menuId: String): JsonObject = buildJsonObject { put("id", JsonPrimitive(menuId)) }
+
+    fun menuFromFetchResponse(response: JsonElement): MenuNode? =
+        ((response as? JsonObject)?.get("menu") as? JsonObject)?.let(::nodeToMenu)
+
+    fun menuUpdatePayload(response: JsonElement): JsonObject? = (response as? JsonObject)?.get("menuUpdate") as? JsonObject
+
+    fun updatedItems(payload: JsonObject): List<MenuItemNode> = normalizeItems((payload["menu"] as? JsonObject)?.get("items"))
+
+    fun menuCreatePayload(response: JsonElement): JsonObject? = (response as? JsonObject)?.get("menuCreate") as? JsonObject
+
+    fun createdMenu(payload: JsonObject): MenuNode? = (payload["menu"] as? JsonObject)?.let(::nodeToMenu)
+
+    fun menuDeletePayload(response: JsonElement): JsonObject? = (response as? JsonObject)?.get("menuDelete") as? JsonObject
+
+    fun deletedMenuId(payload: JsonObject): String? = payload["deletedMenuId"]?.jsonPrimitive?.contentOrNull
+
+    fun serializeItemForWrite(item: MenuItemNode): JsonObject = buildJsonObject {
+        put("title", JsonPrimitive(item.title))
+        put("type", JsonPrimitive(item.type.name))
+        put("tags", buildJsonArray { item.tags.forEach { add(JsonPrimitive(it)) } })
+        if (item.id.isNotEmpty()) put("id", JsonPrimitive(item.id))
+        val resourceId = item.resourceId
+        val url = item.url
+        if (resourceId != null) {
+            put("resourceId", JsonPrimitive(resourceId))
+        } else if (url != null) {
+            put("url", JsonPrimitive(url))
+        }
+        if (item.items.isNotEmpty()) put("items", buildJsonArray { item.items.forEach { add(serializeItemForWrite(it)) } })
     }
 
     fun menusConnection(response: JsonElement): JsonObject? = (response as? JsonObject)?.get("menus") as? JsonObject

@@ -6,28 +6,12 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Test
 
 class MenuWriteDiffTest {
 
     @Test
-    fun `serializeItem should re-emit every id of the normalized tree without error`() {
-        // given
-        val serialized = MenuTreeFixtures.tree().map { MenuWriteDiff.serializeItem(it) }
-
-        // when
-        val ids = idsOfSerialized(serialized)
-
-        // then
-        ids.sorted() shouldBe MenuTreeFixtures.ALL_IDS.sorted()
-    }
-
-    @Test
-    fun `diffAfterWrite should normalize the persisted payload, ignore declared removals and name the lost id with a full N4 snapshot`() {
+    fun `diffAfterWrite should normalize the persisted payload, ignore declared removals and name the lost id with a restoration snapshot`() {
         // given
         val before = MenuTreeFixtures.tree()
 
@@ -49,14 +33,25 @@ class MenuWriteDiffTest {
         warnings[0] shouldContain gid(504)
     }
 
-    private fun idsOfSerialized(nodes: List<JsonObject>): List<String> {
-        val ids = mutableListOf<String>()
-        for (node in nodes) {
-            node["id"]?.jsonPrimitive?.contentOrNull?.let { ids.add(it) }
-            (node["items"] as? JsonArray)?.let { items ->
-                ids.addAll(idsOfSerialized(items.map { child -> child as JsonObject }))
-            }
-        }
-        return ids
+    @Test
+    fun `locateItem should find an item at any depth or refuse naming it`() {
+        // given
+        val tree = MenuTreeFixtures.tree()
+
+        // when
+        val path = MenuWriteDiff.locateItem(tree, gid(504))
+
+        // then
+        path.map { it.id } shouldBe listOf(gid(501), gid(502), gid(503), gid(504))
+    }
+
+    @Test
+    fun `parentOf should resolve the parent id of a nested item, and null at the root`() {
+        // given
+        val tree = MenuTreeFixtures.tree()
+
+        // when / then
+        MenuWriteDiff.parentOf(gid(504))(tree) shouldBe gid(503)
+        MenuWriteDiff.parentOf(gid(501))(tree) shouldBe null
     }
 }

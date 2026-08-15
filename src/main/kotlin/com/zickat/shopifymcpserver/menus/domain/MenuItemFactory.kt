@@ -1,15 +1,6 @@
 package com.zickat.shopifymcpserver.menus.domain
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
 import com.zickat.shopifymcpserver.menus.domain.models.MenuItemNode
-import com.zickat.shopifymcpserver.shared_kernel.DomainError
-import com.zickat.shopifymcpserver.shared_kernel.UseCaseError
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import java.net.URI
 import java.net.URISyntaxException
 
@@ -21,39 +12,10 @@ data class NewMenuItemInput(
 
 object MenuItemFactory {
 
-    private val CREATE_MENU_ITEM_ALLOWED_KEYS = setOf("title", "resource_id", "url")
-
-    fun validateCreateMenuItem(raw: JsonElement): Either<UseCaseError, NewMenuItemInput> {
-        val obj = raw as? JsonObject
-            ?: return DomainError("menuItem.create.invalidShape").left()
-
-        val unknownKeys = obj.keys - CREATE_MENU_ITEM_ALLOWED_KEYS
-        if (unknownKeys.isNotEmpty()) {
-            return DomainError(
-                "menuItem.create.unrecognizedKeys",
-                mapOf("keys" to unknownKeys.sorted().joinToString(",")),
-            ).left()
-        }
-
-        val title = obj["title"]?.jsonPrimitive?.contentOrNull
-        if (title.isNullOrBlank()) {
-            return DomainError("menuItem.create.titleRequired").left()
-        }
-
-        val resourceId = obj["resource_id"]?.jsonPrimitive?.contentOrNull
-        if (obj.containsKey("resource_id") && resourceId.isNullOrBlank()) {
-            return DomainError("menuItem.create.resourceIdBlank").left()
-        }
-
-        val url = obj["url"]?.jsonPrimitive?.contentOrNull
-        if (obj.containsKey("url") && url.isNullOrBlank()) {
-            return DomainError("menuItem.create.urlBlank").left()
-        }
-
-        return NewMenuItemInput(title = title, resourceId = resourceId, url = url).right()
-    }
-
     fun buildNewMenuItem(input: NewMenuItemInput, label: String): MenuItemNode {
+        if (input.title.isBlank()) {
+            throw MenuItemValidationError("$label : le titre est requis — aucune modification.")
+        }
         if ((input.resourceId != null && input.url != null) || (input.resourceId == null && input.url == null)) {
             throw MenuItemValidationError(
                 "$label : fournir exactement un de resource_id ou url (pas les deux, pas aucun) — aucune modification.",
@@ -71,7 +33,7 @@ object MenuItemFactory {
         )
     }
 
-    private fun validateHref(href: String): String {
+    fun validateHref(href: String): String {
         val parsed = try {
             URI(href)
         } catch (e: URISyntaxException) {

@@ -2,163 +2,179 @@
 
 ## Context
 
-`menus` porte la lecture des menus de navigation Shopify (header `main-menu`, footer, autres) avec
-leur arbre d'items complet, jusqu'à 4 niveaux. C'est le quatrième module descendu (D50) — le plus
-proche de `redirects` sur la partie câblée (1 outil, 1 use case), mais il porte une question que les
-trois précédents n'avaient pas : quatre fichiers de domaine sans consommateur en production, du
-travail commencé pour un lot de mutation de menus (`catalog-plugin-oauth-tenancy`, lot 3) et laissé en
-jachère avant ce chantier. **Ce module reste exempté à l'issue de cette descente** —
-voir « Pourquoi le cliquet ne sort pas » ci-dessous.
+`menus` porte la lecture et l'écriture des menus de navigation Shopify (header `main-menu`, footer,
+autres) avec leur arbre d'items complet, jusqu'à 4 niveaux. Quatrième module descendu à l'exemption
+zéro (D50), il a été le dernier à en sortir : `LOT3-06` (initiative `catalog-plugin-oauth-tenancy`,
+lot 3, repris après suspension) a câblé les 7 outils de mutation dont le capital dormait dans
+`domain/` depuis la descente initiale — voir « Comment le cliquet est sorti » ci-dessous.
 
 ## Use cases
 
 | Use case | Signature |
 |---|---|
 | `ListMenusUseCase` | `execute(storeId: String, query: String?, depth: Int?): Either<UseCaseError, ListMenusResult>` |
+| `AddMenuItemUseCase` | `execute(storeId, menuId, title, resourceId?, url?, parentItemId?, position?): Either<UseCaseError, AddMenuItemResult>` |
+| `RemoveMenuItemUseCase` | `execute(storeId, menuId, itemId, withChildren): Either<UseCaseError, RemoveMenuItemResult>` |
+| `ReorderMenuItemsUseCase` | `execute(storeId, menuId, parentItemId?, orderedItemIds): Either<UseCaseError, ReorderMenuItemsResult>` |
+| `UpdateMenuItemUseCase` | `execute(storeId, menuId, itemId, title?, resourceId?, url?): Either<UseCaseError, UpdateMenuItemResult>` |
+| `UpdateMenuUseCase` | `execute(storeId, menuId, title?, handle?, confirmHandleChange): Either<UseCaseError, UpdateMenuResult>` |
+| `CreateMenuUseCase` | `execute(storeId, handle, title, items: List<CreateMenuItemInput>): Either<UseCaseError, CreateMenuResult>` |
+| `DeleteMenuUseCase` | `execute(storeId, menuId, confirmNonEmptyDeletion): Either<UseCaseError, DeleteMenuResult>` |
+
+Les cinq outils qui éditent un menu **existant** (`AddMenuItemUseCase`, `RemoveMenuItemUseCase`,
+`ReorderMenuItemsUseCase`, `UpdateMenuItemUseCase`, `UpdateMenuUseCase`) ne parlent jamais directement
+au port : ils passent tous par `MenuRewriteEngine` (classe nue, sans `@Bean` propre autre que
+son injection — câblée dans `MenusDomainBeansConfiguration`), l'unique primitive read-modify-write du
+module. `CreateMenuUseCase` et `DeleteMenuUseCase` sont les deux seuls à parler au port directement :
+rien à relire pour créer, et `delete_menu` a besoin de son propre enchaînement fetch → garde-fous →
+mutation, distinct du cycle de réécriture.
+
+### `MenuRewriteEngine` — le moteur read-modify-write
+
+Séquence, portée à l'identique de `menus.ts:503-514` (l'original TypeScript) :
+
+1. relecture immédiate du menu (`MenusRepository.fetch`), payload déjà normalisé par le port ;
+2. `precheck` optionnel (un seul appelant : `update_menu`, pour le refus de handle sur un menu par
+   défaut — dépend d'un champ du menu relu, retombe donc après la lecture et avant tout écriture) ;
+3. `MenuIntegrityGuards.assertNoUnreadableDepth` — refus en bloc si la sentinelle N5 a mordu ;
+4. résolution du parent et des retraits déclarés, sur l'arbre relu ;
+5. reconstruction immuable via `MenuTree.mapChildList` — le `transform` ne voit que sa fratrie ;
+6. `assertNoSilentLoss` puis `assertDepthNotWorsened` — **avant** tout appel réseau ;
+7. `MenusRepository.rewrite` (mutation `menuUpdate`), dont la réponse est comparée à l'arbre relu via
+   `MenuWriteDiff.diffAfterWrite`.
+
+Les quatre garde-fous (`MenuIntegrityGuards`) et les transformations d'arbre (`MenuTransforms`)
+lèvent `MenuItemValidationError` — exception interne au module, **jamais laissée s'échapper hors du
+moteur** : `MenuRewriteEngine` la rattrape à la frontière et la restitue comme un
+`MenuRewriteOutcome.Failed(detail)`, `Right` d'un `Either` jamais `Left`. C'est un choix délibéré,
+voir « Écart au principe "jamais d'exception dans le domaine" » plus bas.
 
 ## Ports (`domain/repositories/`)
 
 Un seul port, pour un seul agrégat — l'arbre de menu (D42) :
 
 **`MenusRepository`**
-- `list(storeId: String, query: String?): Either<UseCaseError, MenuListing>`
+- `list(storeId, query): Either<UseCaseError, MenuListing>`
+- `fetch(storeId, menuId): Either<UseCaseError, MenuNode?>`
+- `rewrite(storeId, menuId, title, handle, items): Either<UseCaseError, MenuUpdateOutcome>`
+- `create(storeId, handle, title, items): Either<UseCaseError, MenuCreateOutcome>`
+- `delete(storeId, menuId): Either<UseCaseError, MenuDeleteOutcome>`
 
-Implémentation : `spi/shopify/MenusShopifyRepository`, sur `spi/shopify/MenusGraphQL`. La requête
-GraphQL, la pagination par curseur et le parsing JSON → `MenuNode`/`MenuItemNode` (fonctions
-`normalizeItems`/`normalizeItem`, avant nommées `MenuTree.normalizeItems`) vivent entièrement dans
-cette implémentation. Le paramètre `depth` de l'outil **n'entre pas dans le port** : la requête
-GraphQL lit toujours 4 niveaux (`MENU_ITEMS_TREE`), `depth` ne pilote que l'affichage — voir « Notes /
-specifics ».
+Implémentation : `spi/shopify/MenusShopifyRepository`, sur `spi/shopify/MenusGraphQL`. Les quatre
+requêtes/mutations (`ListMenus`, `FetchMenu`, `UpdateMenu`/`menuUpdate`, `CreateMenu`/`menuCreate`,
+`DeleteMenu`/`menuDelete`), la pagination par curseur, le parsing JSON → `MenuNode`/`MenuItemNode`
+(`normalizeItems`/`normalizeItem`) et la sérialisation d'un `MenuItemNode` vers son entrée GraphQL
+(`serializeItemForWrite`, réutilisée telle quelle par `menuUpdate` et `menuCreate`) vivent entièrement
+dans cette implémentation — c'est la totalité du contact avec `kotlinx.serialization.json` du module.
+Le paramètre `depth` de l'outil `list_menus` **n'entre pas dans le port** : la requête GraphQL lit
+toujours 4 niveaux (`MENU_ITEMS_TREE`), `depth` ne pilote que l'affichage — voir « Notes / specifics ».
 
 ## Outils MCP exposés (`api/mcp/`)
 
-1 classe, 1 méthode `@McpTool` :
+8 classes, 8 méthodes `@McpTool` :
 
-| Nom | Description |
-|---|---|
-| `list_menus` | Liste les menus de navigation avec leur arbre complet (profondeur d'affichage réglable, 4 niveaux toujours lus), avertit explicitement sur toute troncature (profondeur, plafond de lignes, pagination) et signale les menus portant des items au-delà de la profondeur lue (non modifiables par les outils d'écriture). |
+| Nom | Description | Kind |
+|---|---|---|
+| `list_menus` | Liste les menus avec leur arbre complet (profondeur d'affichage réglable, 4 niveaux toujours lus). | READ |
+| `add_menu_item` | Ajoute un item à un menu existant, à n'importe quel niveau (borne N3 en création). | MUTATION |
+| `remove_menu_item` | Retire un item à profondeur quelconque ; refuse par défaut s'il porte des sous-items. | MUTATION |
+| `reorder_menu_items` | Réordonne une fratrie de menu selon une permutation exacte. | MUTATION |
+| `update_menu_item` | Modifie un item en place (titre et/ou cible), préserve `item_id` et sous-arbre. | MUTATION |
+| `update_menu` | Modifie le titre et/ou le handle du menu lui-même ; handle gardé (défaut jamais, sinon confirmation). | MUTATION |
+| `create_menu` | Crée un menu (`menuCreate`), items de premier niveau uniquement en entrée. | MUTATION |
+| `delete_menu` | Supprime un menu et tout son arbre (`menuDelete`, irréversible) ; deux garde-fous cumulatifs. | MUTATION |
 
 ## `exposed_interface`
 
 Aucune — ce module n'expose rien vers les autres modules (D44 : zéro consommateur hors `api/mcp/`,
-mesuré par recherche du package `menus.` en dehors de `menus/`). `MenusExposedService` et son
-implémentation ont été supprimés (l'ACL catalogue disparaît une fois E4 fait, même mesure que
-`redirects`).
+mesuré par recherche du package `menus.` en dehors de `menus/`).
 
 ## Événements
 
-Aucun — `menus` ne publie ni ne consomme d'événement applicatif (mesuré : aucune référence à
-`ApplicationEvent`/`ApplicationEventPublisher`/`@EventListener` dans le module).
+Aucun — `menus` ne publie ni ne consomme d'événement applicatif.
 
-## Pourquoi le cliquet ne sort pas — quatre fichiers de domaine, capital en attente du lot 3
+## Comment le cliquet est sorti — `LOT3-06`
 
-Le module contient six fichiers dans `domain/` en plus de `ListMenusUseCase` et `MenuTree` :
-`MenuTreeRenderer` (câblé, voir plus bas), et **quatre fichiers sans aucun appelant en dehors de leur
-propre test** : `MenuDeletionGuards`, `MenuWriteDiff`, `MenuItemFactory`, `MenuTransforms` (ce dernier
-via `MenuIntegrityGuards`, lui-même orphelin). **Reconfirmé par recherche fraîche à l'ouverture de
-cette tâche** (BE-18) — aucun des quatre n'a de consommateur en dehors de `*Test.kt`, dans `src/main`
-comme dans `src/test`.
+À l'ouverture de `LOT3-06`, `menus` restait la dernière entrée de `DEFERRED_TO_OTHER_INITIATIVE`
+(`"menus" to "lot 3 — oauth-tenancy, suspendu"`), pour deux fichiers de `domain/` violant R2
+(`domainHasNoWireFormatDependency`) : `MenuWriteDiff.kt` (sérialisation JSON du plan de restauration
+après une perte silencieuse) et `MenuItemFactory.kt` (validation de la forme JSON brute d'un item de
+`create_menu`). Câbler les 7 outils a permis de trancher les deux, avec la connaissance réelle de ce
+que ces outils exigent — ce que la note précédente de ce fichier disait explicitement attendre :
 
-**Ce ne sont pas des orphelins accidentels.** Leurs noms — garde de suppression, diff d'écriture après
-mutation, fabrique d'item de menu, transformations d'arbre (insert/remove/reorder/update) — nomment
-exactement les opérations qu'exigeraient les outils de mutation de menu du **lot 3** de l'initiative
-`catalog-plugin-oauth-tenancy`, suspendue par ce chantier de réalignement. `BE-1` (sur `collections`)
-avait mesuré 54 cassettes de production déjà enregistrées et orphelines de tout test, nommant
-explicitement `add-menu-item`, `update-menu-item`, `remove-menu-item`, `delete-menu`,
-`reorder-menu-items` — les mêmes outils. Val a tranché sur `collections` : ce lot sera repris. La même
-lecture s'applique ici.
+- **`MenuItemFactory`** — sa fonction `validateCreateMenuItem(raw: JsonElement)` n'a plus de raison
+  d'exister : `create_menu` reçoit ses items via un DTO typé (`CreateMenuItemInput`, lié directement
+  par Spring AI/Jackson depuis le schéma de l'outil), exactement comme `update_page_metafields` lie
+  `PageMetafieldInput`. Aucun autre outil natif du dépôt ne réplique la garde `.strict()` de la
+  version TS (refus explicite d'une clé `id` inconnue plutôt qu'ignorée en silence) — ce n'est donc
+  pas une régression propre à `menus`, c'est l'absence d'un mécanisme équivalent dans tout le
+  connecteur natif, signalée ici plutôt que résolue seule.
+- **`MenuWriteDiff`** — sa fonction `serializeItem` (sortie JSON pensée pour un humain, plan de
+  restauration en cas de perte silencieuse après écriture) est remplacée par un rendu texte via
+  `MenuTreeRenderer.renderMenuTree`, déjà du domaine pur, déjà le rendu utilisé par `list_menus` et
+  par l'instantané de `delete_menu`. Aucun test — cassette ou fake — n'exerçait le format JSON exact
+  de cette sortie (D34 : les 7 cassettes de `LOT3-05` s'enregistrent sur un menu jetable, aucune perte
+  silencieuse n'y a été capturée), donc ce changement de format est une décision prise dans le mandat
+  de cette tâche, pas un comportement observable reconstitué.
 
-**Décision de cette tâche : ils restent dans `menus/domain/`, hors du port `MenusRepository`.** Les y
-rattacher créerait un port avec des méthodes qu'aucun use case n'appelle — l'anti-pattern « port par
-intention » que D42 proscrit. Ce n'est pas une dette à nettoyer, c'est du capital en attente de portage
-— **ne pas proposer de « faire le ménage » ici sans réouvrir le lot 3.**
+Les deux fichiers ne dépendent plus de `kotlinx.serialization.json` : mesuré, `menus` ne viole plus
+aucune des 7 règles filtrées par `EXEMPTED` (R1, R2, R6b, R8, R10, R11, R13). Le module a quitté
+`DEFERRED_TO_OTHER_INITIATIVE`.
 
-**Et c'est ce qui maintient `menus` exempté : deux de ces quatre fichiers
-violent R2 (`domainHasNoWireFormatDependency`).**
+## Écart au principe « jamais d'exception dans le domaine »
 
-- `MenuWriteDiff.kt` importe `kotlinx.serialization.json.*` pour sérialiser un item en `JsonObject`
-  (`serializeItem`), utilisé pour produire un plan de restauration humain (`diffAfterWrite`) en cas de
-  perte silencieuse après une mutation Shopify. Ce n'est pas du parsing de réponse Shopify — c'est une
-  sortie JSON pensée pour un humain — mais R2 ne distingue pas l'intention, seul le paquet importé
-  compte.
-- `MenuItemFactory.kt` importe `kotlinx.serialization.json.JsonElement`/`JsonObject`/`contentOrNull`/
-  `jsonPrimitive` pour valider la forme brute d'un item de menu à créer (`validateCreateMenuItem`),
-  avant que l'entrée outil (JSON) ne devienne un type de domaine (`NewMenuItemInput`).
-
-Réécrire ces deux fichiers pour ne plus dépendre de `kotlinx.serialization.json` est un geste réel
-(retyper leurs entrées/sorties), pas un déplacement de fichier — et ce n'est pas le mandat de cette
-tâche : ces fichiers ne sont câblés à aucun use case, les toucher maintenant, c'est concevoir à l'aveugle
-l'API du lot 3 avant que ses outils MCP existent. **Signalé au Tech Lead/CTO plutôt que contourné** :
-`menus` reste exempté jusqu'à ce que le lot 3 soit repris (et purifie ces fichiers à
-cette occasion, avec la connaissance réelle de ce que ses outils MCP exigent), ou jusqu'à ce qu'une
-décision explicite tranche de les purifier hors mandat.
-
-`MenuDeletionGuards.kt` et `MenuTransforms.kt`/`MenuIntegrityGuards.kt` ne portent en revanche aucune
-dépendance à un framework ni à `kotlinx.serialization.json` — ils ne bloqueraient pas R1/R2 seuls.
+`guidelines/backend.md` prescrit `Either.left()`, jamais une exception levée depuis le domaine.
+`MenuTransforms`, `MenuTree.mapChildList` et `MenuIntegrityGuards` — écrits avant `LOT3-06`, pour le
+capital en jachère que cette tâche a câblé — lèvent `MenuItemValidationError`, une exception interne
+au module. `LOT3-06` n'a pas rouvert ce choix : il l'a border. `MenuRewriteEngine` est l'unique
+frontière qui la rattrape (`try/catch` autour de la séquence de garde-fous), et aucun appelant en
+dehors du moteur ne peut plus l'observer — les 7 use cases ne voient qu'un `Either` propre. Signalé au
+Tech Lead/CTO plutôt que tranché seul : soit ce patron (exception interne + frontière unique de
+capture) est une exception assumée à la règle pour ce genre de séquence de garde-fous imbriqués, soit
+il doit être réécrit en `Either` de bout en bout — ce que cette tâche n'a pas fait, faute de mandat
+pour redessiner une machinerie déjà en place et déjà testée.
 
 ## Notes / specifics
 
-**`MenusRepository` : un port par agrégat, pas par intention (D42).** Un seul use case, un seul port —
-même mesure que `redirects`.
+**`MenusRepository` : un port par agrégat, pas par intention (D42).** Cinq méthodes, un seul port —
+même mesure que `redirects`/`pages`.
 
-**`MenuTreeRenderer` reste dans `domain/` — décision explicite, pas un défaut.** Il rend du texte
-français (arbre numéroté, bandeaux, avertissements de troncature) : à lecture seule de sa forme, il
-ressemblerait à un candidat de sortie vers `api/mcp/`, au même titre que les `*ToolResults.kt` d'E6.
-**Mais `MenuTreeRenderer.deriveMenuItemType` — dérivation du type d'item de menu (`COLLECTION`,
-`PRODUCT`, `HTTP`…) à partir d'un gid ou d'une URL — est appelé par `MenuItemFactory` (orphelin, lot
-3), et c'est un choix métier, pas du rendu : classer une ressource externe, pas la mettre en forme
-pour un humain.** Si `MenuTreeRenderer` descendait vers `api/mcp/`, `MenuItemFactory` — domaine par
-construction, destiné à rester domaine quand le lot 3 le câblera — ne pourrait plus l'appeler sans
-violer R5 (le domaine ne dépend ni de `api/` ni de `spi/`). Un même objet sert donc aujourd'hui un
-usage câblé (rendu, via `ListMenusUseCase`) et un usage en jachère (classification, via
-`MenuItemFactory`) : le seul découpage honnête serait de scinder `MenuTreeRenderer` en une partie
-rendu et une partie classification, ce que cette tâche n'a pas mandat de faire (hors E3/E4, et
-`MAX_REEMITTABLE_DEPTH`, définie dans `MenuIntegrityGuards.kt`, est déjà partagée entre le rendu et les
-gardes d'intégrité du lot 3 — un découpage propre demande de revoir les deux ensemble). **Ni domaine
-« par choix métier » à 100 %, ni SPI (il ne touche jamais le format Shopify — il opère sur des
-`MenuNode`/`MenuItemNode` déjà parsés) : domaine par nécessité de cohabitation avec le lot 3, à
-rouvrir avec lui.**
+**`MenuTreeRenderer` reste dans `domain/`.** Il rend du texte français (arbre numéroté, bandeaux,
+avertissements de troncature) et sert maintenant TROIS usages câblés : l'affichage de `list_menus`,
+l'instantané de `delete_menu`, et le plan de restauration de `MenuWriteDiff.diffAfterWrite`. Sa
+fonction `deriveMenuItemType` (dérivation du type d'item depuis un gid ou une URL) reste un choix
+métier appelé par `MenuItemFactory.buildNewMenuItem` — classer une ressource externe, pas la mettre en
+forme pour un humain.
 
 **Le paramètre `depth` de l'outil ne fait pas partie du port.** La requête GraphQL
 (`spi/shopify/MenusGraphQL.MENU_ITEMS_TREE`) lit systématiquement 4 niveaux ; `depth` (1 à 4, défaut 3)
-ne pilote que ce que `MenuTreeRenderer` affiche. Documenté ainsi dans la description `@McpToolParam`
-de l'outil depuis avant ce chantier (« Purely cosmetic »). C'est ce qui confirme, indépendamment de la
-question précédente, que le clamp `(depth ?: 3).coerceIn(1, 4)` fait partie de ce qui reste dans
-`ListMenusUseCase` : il ne dépend d'aucun échange réseau, seulement de ce que l'appelant a fourni.
+ne pilote que ce que `MenuTreeRenderer` affiche.
 
-**Ce qui reste dans `ListMenusUseCase` après purification, et pourquoi (les deux questions du
-gabarit) :**
-- *Qu'est-ce qui dépend de ce que l'appelant a fourni ?* `hadQuery` (`searchQuery != null`, calculé
-  sur la requête telle que fournie, trimée) et `displayDepth` (le clamp du paramètre `depth`) — les
-  deux ne peuvent pas être reconstruits depuis la seule réponse Shopify.
-- *Qu'est-ce qui existe pour éviter un appel réseau ?* Rien — comme `redirects`, `list_menus` appelle
-  toujours le gateway, y compris avec une requête vide ou blanche (transformée en `null`). Il n'y a pas
-  de no-op à court-circuiter : lister est toujours un appel légitime.
+**`errorResult`/`withBanner`/`withWarnings` sont dupliqués en `private` dans
+`menus/api/mcp/MenuToolResults.kt` (D58)**, même justification que `redirects`/`pages` : helpers de
+rendu MCP pur, couverts par R13 plutôt que partagés. **`invalidGidType` est ajouté par `LOT3-06`** —
+les 7 nouveaux outils valident `menu_id`/`item_id`/`parent_item_id`/`ordered_item_ids` avant tout appel
+réseau, contrairement à `list_menus` qui n'en avait pas besoin. **`slugFor` est importé directement
+depuis `tenancy.exposed_interface`**, comme sur `seo`/`redirects`/`pages` — jamais sa propre copie.
 
-**`E6` était déjà soldé mécaniquement pour `menus` avant ce chantier** (aucun `*Result` ne porte de
-champ nommé `text` — `ListMenusResult.blocks` est un `List<String>`, ce que R10 ne détecte pas par
-construction, puisqu'il ne vérifie que le nom et le type exact du champ). **Signalé, pas retypé : ce
-n'était pas le mandat de cette tâche**, et retyper `ListMenusResult` aurait nécessité de faire
-descendre `MenuTreeRenderer` hors du domaine, ce que la note précédente exclut pour cette tâche.
-`blocks` reste donc une liste de blocs déjà rendus, produite dans le use case — une exception de fait à
-la lettre de la règle « un use case ne rend jamais de chaîne destinée à l'affichage », déjà actée par
-le chantier avant cette tâche et non rouverte ici.
+**Résultats des 7 outils de mutation : `enum` + `data class` à champs nullables, pas `sealed
+interface`.** Mesuré sur le gabarit indiqué par la tâche (`pages`, `metaobjects`) avant d'écrire :
+`UpdatePageResult`, `DeleteMetaobjectResult`, etc. suivent tous ce patron (`enum class XxxOutcome` +
+`data class XxxResult(val outcome: XxxOutcome, ...champs nullables, companion object { fun xxx(...) })`),
+pas des `sealed interface`. `menus` suit le même patron pour rester cohérent avec le reste du dépôt —
+écart assumé par rapport à la fiche de dispatch qui demandait des `sealed interface`, signalé plutôt
+que tranché en silence.
 
-**`errorResult` et `withBanner` sont dupliqués en `private` dans `menus/api/mcp/MenuToolResults.kt`
-(D58)**, même justification que `redirects` : helpers de rendu MCP pur, couverts par R13 plutôt que
-partagés. **`invalidGidType` n'est pas dupliqué ici** : `ListMenusTool` ne valide aucun gid en entrée
-(ses deux paramètres sont une requête de recherche et une profondeur d'affichage). **`slugFor` est
-importé directement depuis `tenancy.exposed_interface`**, comme sur `seo`/`redirects` — jamais sa
-propre copie.
+**Modélisation des refus : `Either.Right` avec un `outcome` dédié, jamais `Either.Left`.** Un refus de
+garde-fou (profondeur dépassée, item introuvable, permutation invalide, handle non confirmé…) porte un
+texte français précis, déjà éprouvé par les cassettes `LOT3-05` — `Either.Left`/`UseCaseErrorException`
+ne rend qu'une `messageKey` i18n, pas un texte dynamique déjà formé. Chaque refus devient donc une
+valeur d'`outcome` (`INVALID_ITEM`, `REFUSED`, `NO_FIELD_PROVIDED`, `AMBIGUOUS_TARGET`,
+`HANDLE_CHANGE_NOT_CONFIRMED`, `FAILED`…) rendue par `MenuToolResults`, jamais un `Left`. `Either.Left`
+reste réservé aux erreurs techniques/infra propagées depuis le port (ex. `TechnicalError` sur une
+réponse GraphQL malformée).
 
-## Où vit cette dette depuis `BE-25`
+## Où vit cette dette
 
-`NOT_YET_REALIGNED` est **vide** depuis `BE-25`. La dette de `menus` a été déplacée dans
-`DEFERRED_TO_OTHER_INITIATIVE` (`D63`) — une `Map` module → motif, et non un `Set`, **pour qu'on ne
-puisse pas y déposer un module sans écrire pourquoi et chez qui**. Son entrée :
-
-    "menus" to "lot 3 — oauth-tenancy, suspendu"
-
-La distinction n'est pas cosmétique : `NOT_YET_REALIGNED` portait la dette **de ce chantier**, que ce
-chantier pouvait solder. Celle-ci ne lui appartient pas — elle sera soldée par le lot 3, quand il
-reprendra. Un critère d'achèvement mécanique qui attend une autre initiative n'est plus mécanique.
+`NOT_YET_REALIGNED` et `DEFERRED_TO_OTHER_INITIATIVE` sont tous deux **vides** depuis `LOT3-06`. Le
+dépôt est à zéro exemption.

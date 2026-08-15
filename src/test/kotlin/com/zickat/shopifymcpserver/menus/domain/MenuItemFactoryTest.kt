@@ -1,60 +1,22 @@
 package com.zickat.shopifymcpserver.menus.domain
 
 import com.zickat.shopifymcpserver.menus.domain.models.MenuItemType
-import com.zickat.shopifymcpserver.shared_kernel.DomainError
-import io.kotest.assertions.arrow.core.shouldBeLeft
-import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
 import org.junit.jupiter.api.Test
 
 class MenuItemFactoryTest {
 
     @Test
-    fun `20 - create_menu item with title and resource_id only should pass validation`() {
+    fun `buildNewMenuItem should refuse a blank title`() {
         // given
-        val raw = buildJsonObject {
-            put("title", JsonPrimitive("Guides"))
-            put("resource_id", JsonPrimitive("gid://shopify/Collection/77"))
-        }
+        val input = NewMenuItemInput(title = "   ", resourceId = "gid://shopify/Collection/77")
 
         // when
-        val input = MenuItemFactory.validateCreateMenuItem(raw).shouldBeRight()
+        val error = shouldThrow<MenuItemValidationError> { MenuItemFactory.buildNewMenuItem(input, "add_menu_item") }
 
         // then
-        input shouldBe NewMenuItemInput(title = "Guides", resourceId = "gid://shopify/Collection/77", url = null)
-    }
-
-    @Test
-    fun `20 - create_menu item carrying an id should be refused, not silently stripped`() {
-        // given
-        val raw = buildJsonObject {
-            put("title", JsonPrimitive("Guides"))
-            put("resource_id", JsonPrimitive("gid://shopify/Collection/77"))
-            put("id", JsonPrimitive("gid://shopify/MenuItem/501"))
-        }
-
-        // when
-        val error = MenuItemFactory.validateCreateMenuItem(raw).shouldBeLeft().shouldBeInstanceOf<DomainError>()
-
-        // then
-        error.messageKey shouldBe "menuItem.create.unrecognizedKeys"
-        error.parameters?.get("keys") shouldBe "id"
-    }
-
-    @Test
-    fun `create_menu item without a title should be refused`() {
-        // given
-        val raw = buildJsonObject { put("resource_id", JsonPrimitive("gid://shopify/Collection/77")) }
-
-        // when
-        val error = MenuItemFactory.validateCreateMenuItem(raw).shouldBeLeft().shouldBeInstanceOf<DomainError>()
-
-        // then
-        error.messageKey shouldBe "menuItem.create.titleRequired"
+        error.message shouldBe "add_menu_item : le titre est requis — aucune modification."
     }
 
     @Test

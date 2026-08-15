@@ -96,7 +96,7 @@ class MenuIntegrityGuardsTest {
 
         // then
         MenuTree.collectItemIds(after) shouldBe MenuTree.collectItemIds(before)
-        after.map { MenuWriteDiff.serializeItem(it) } shouldBe before.map { MenuWriteDiff.serializeItem(it) }
+        after shouldBe before
         shouldNotThrowAny { MenuIntegrityGuards.assertNoSilentLoss(before, after, emptyList()) }
         shouldNotThrowAny { MenuIntegrityGuards.assertDepthNotWorsened(before, after) }
 

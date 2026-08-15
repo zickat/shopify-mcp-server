@@ -62,9 +62,9 @@ class NativeToolContractsTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `discovers exactly the twenty-eight native tool methods carrying McpTool`() {
+    fun `discovers exactly the thirty-five native tool methods carrying McpTool`() {
         discoverNativeToolMethods().map { it.getAnnotation(McpTool::class.java).name.ifBlank { it.name } }
-            .toSet() shouldHaveSize 28
+            .toSet() shouldHaveSize 35
     }
 
     @Test

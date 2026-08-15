@@ -369,9 +369,7 @@ class HexagonalArchitectureTest {
 
         private val NOT_YET_REALIGNED: Set<String> = emptySet()
 
-        private val DEFERRED_TO_OTHER_INITIATIVE: Map<String, String> = mapOf(
-            "menus" to "lot 3 — oauth-tenancy, suspendu",
-        )
+        private val DEFERRED_TO_OTHER_INITIATIVE: Map<String, String> = emptyMap()
 
         private val EXEMPTED: Set<String> = NOT_YET_REALIGNED + DEFERRED_TO_OTHER_INITIATIVE.keys
 

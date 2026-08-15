@@ -689,7 +689,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
     }
 
     @Test
-    fun `tools list exposes exactly the 80 real tools — 28 native and 52 relayed, no duplicate name`() {
+    fun `tools list exposes exactly the 80 real tools — 35 native and 45 relayed, no duplicate name`() {
         val storeId = registerStore()
         val subject = "operator-tools-list-count"
         val identityId = resolveIdentity(subject)
@@ -731,6 +731,13 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         names shouldContain "update_page"
         names shouldContain "delete_page"
         names shouldContain "update_page_metafields"
+        names shouldContain "add_menu_item"
+        names shouldContain "remove_menu_item"
+        names shouldContain "reorder_menu_items"
+        names shouldContain "update_menu_item"
+        names shouldContain "update_menu"
+        names shouldContain "create_menu"
+        names shouldContain "delete_menu"
     }
 
     @Test
@@ -778,7 +785,7 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
             .toMap()
 
         val relayedNames = relayGateway.relayedTools().map { it.toolName }.filterNot { it in nativeToolNames.names }
-        relayedNames shouldHaveSize 52
+        relayedNames shouldHaveSize 45
 
         relayedNames.forEach { toolName ->
             val exposedInputSchema = toolsByName[toolName]?.get("inputSchema")
@@ -2061,5 +2068,222 @@ class McpToolIntegrationTest : WithMongoDBContainer() {
         val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
         val entry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_page_metafields" }
         checkNotNull(entry) { "no audit entry written for the refused call — the attempt must be journaled (D17)" }
+    }
+
+    @Test
+    fun `add_menu_item (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-add-menu-item"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "add_menu_item",
+            mapOf("menu_id" to "gid://shopify/Menu/1", "title" to "Guides", "resource_id" to "gid://shopify/Collection/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "add_menu_item" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on add_menu_item" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `remove_menu_item (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-remove-menu-item"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "remove_menu_item",
+            mapOf("menu_id" to "gid://shopify/Menu/1", "item_id" to "gid://shopify/MenuItem/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "remove_menu_item" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on remove_menu_item" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `reorder_menu_items (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-reorder-menu-items"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "reorder_menu_items",
+            mapOf("menu_id" to "gid://shopify/Menu/1", "ordered_item_ids" to listOf("gid://shopify/MenuItem/1", "gid://shopify/MenuItem/2")),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "reorder_menu_items" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on reorder_menu_items" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `update_menu_item (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-update-menu-item"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_menu_item",
+            mapOf("menu_id" to "gid://shopify/Menu/1", "item_id" to "gid://shopify/MenuItem/1", "title" to "Renommé"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_menu_item" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on update_menu_item" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `update_menu (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-update-menu"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "update_menu",
+            mapOf("menu_id" to "gid://shopify/Menu/1", "title" to "Renommé"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "update_menu" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on update_menu" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `create_menu (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-create-menu"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "create_menu",
+            mapOf("handle" to "guides-sidebar", "title" to "Guides"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "create_menu" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on create_menu" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
+    }
+
+    @Test
+    fun `delete_menu (MUTATION) is refused for a viewer with an active store selected, and the refusal is journaled`() {
+        val storeId = registerStore()
+        val subject = "viewer-delete-menu"
+        val identityId = resolveIdentity(subject)
+        grant(identityId, storeId, GrantRole.VIEWER)
+        val token = jwt(subject)
+
+        val sessionId = handshake(token)
+        activeStoreExposedService.select(identityId, sessionId, storeId)
+
+        val (callResponse, callPayload) = toolsCall(
+            token,
+            sessionId,
+            "delete_menu",
+            mapOf("menu_id" to "gid://shopify/Menu/1"),
+        )
+
+        callResponse.statusCode shouldBe HttpStatus.OK
+        val (isError, text) = toolResultText(callPayload)
+        isError shouldBe true
+        text shouldContain "access.role.insufficient"
+
+        val entries = auditLogRepository.findByStore(storeId).shouldBeRight()
+        val deniedEntry = entries.firstOrNull { it.identityId == identityId && it.toolName == "delete_menu" }
+        checkNotNull(deniedEntry) { "no audit entry written for the role-insufficient refusal on delete_menu" }
+        deniedEntry.outcome shouldBe "denied"
+        deniedEntry.denialReason shouldBe "access.role.insufficient"
+        deniedEntry.isMutation shouldBe true
     }
 }

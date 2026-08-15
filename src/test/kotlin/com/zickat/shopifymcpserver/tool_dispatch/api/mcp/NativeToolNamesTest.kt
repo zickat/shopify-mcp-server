@@ -13,7 +13,7 @@ class NativeToolNamesTest : WithMongoDBContainer() {
     private lateinit var nativeToolNames: NativeToolNames
 
     @Test
-    fun `derives exactly the twenty-eight known native tool names from the real application context`() {
+    fun `derives exactly the thirty-five known native tool names from the real application context`() {
         nativeToolNames.names shouldBe setOf(
             "list_stores", "use_store", "create_redirect", "search_resources",
             "list_menus", "get_seo", "list_metaobjects", "get_metaobject",
@@ -22,6 +22,8 @@ class NativeToolNamesTest : WithMongoDBContainer() {
             "mark_blocked", "publish_resource", "unpublish_resource", "update_seo",
             "create_metaobject", "update_metaobject", "delete_metaobject",
             "create_page", "update_page", "publish_page", "unpublish_page", "delete_page", "update_page_metafields",
+            "add_menu_item", "remove_menu_item", "reorder_menu_items", "update_menu_item", "update_menu",
+            "create_menu", "delete_menu",
         )
     }
 }

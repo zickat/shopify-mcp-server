@@ -139,6 +139,11 @@ mcp:
 # `RELAIS`+`READ` restent après ce lot (`check_shopify_connection`, `get_guide_section_state`,
 # `get_home_editorial`, `list_guide_themes`, `list_home_selection`, `list_testimonials`) — épinglées
 # dans `RelayManifestCompletenessTest`.
+#
+# LOT3-06 — `add_menu_item`/`remove_menu_item`/`reorder_menu_items`/`update_menu_item`/`update_menu`/
+# `create_menu`/`delete_menu` basculent NATIF : le moteur read-modify-write (`MenuRewriteEngine`) et
+# les 7 outils de mutation de `menus` sont portés, équivalence de requête vérifiée cassette par
+# cassette (`LOT3-05`). 35 en NATIF désormais, 45 en RELAIS — total inchangé (80).
 relay:
   ts:
     base-url: ${RELAY_TS_BASE_URL:http://127.0.0.1:8765}
@@ -147,7 +152,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: add_menu_item
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: add_testimonial
       route: RELAIS
@@ -171,7 +176,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: create_menu
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: create_metaobject
       route: NATIF
@@ -189,7 +194,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: delete_menu
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: delete_metaobject
       route: NATIF
@@ -288,7 +293,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: remove_menu_item
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: remove_testimonial
       route: RELAIS
@@ -300,7 +305,7 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: reorder_menu_items
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: replace_home_item
       route: RELAIS
@@ -360,10 +365,10 @@ relay:
       route: RELAIS
       kind: MUTATION
     - tool-name: update_menu
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: update_menu_item
-      route: RELAIS
+      route: NATIF
       kind: MUTATION
     - tool-name: update_metaobject
       route: NATIF
